@@ -1,10 +1,9 @@
 name: Update site
 
-# Runs whenever minutes (or the site's code) change on the main branch, and on demand from the Actions tab.
+# Runs whenever anything changes on the main branch, and on demand from the Actions tab.
 on:
   push:
-    branches: [main]
-    paths: ['minutes/**', 'pipeline/**', 'web/**', 'narrative/**', '.github/workflows/**']
+    branches: [main, master]
   workflow_dispatch:
 
 permissions:
@@ -21,16 +20,70 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Find the site files
+        shell: bash
+        run: |
+          set -e
+          # Locate the site files. Works whether they are in folders (pipeline/, web/, ...), inside one extra folder,
+          # or uploaded flat with no folders at all (they are then sorted into a working copy).
+          run_py=$(find . -path ./.git -prune -o -path ./_project -prune -o -type f -path '*/pipeline/run.py' -print | head -1)
+          if [ -n "$run_py" ]; then
+            dir=$(dirname "$(dirname "$run_py")")
+            rel=${dir#./}; [ "$rel" = "." ] && up="minutes" || up="$rel/minutes"
+          else
+            if [ -z "$(find . -path ./.git -prune -o -type f -name run.py -print | head -1)" ]; then
+              echo "::error title=Site files not found::Could not find run.py anywhere in this repository. Upload all files from the package's stpaul-council-site folder."
+              find . -path ./.git -prune -o -type f -print | head -60
+              exit 1
+            fi
+            echo "Files were uploaded without folders; sorting them into the expected layout."
+            dir=./_project
+            rm -rf "$dir"; mkdir -p "$dir/pipeline" "$dir/web/pages" "$dir/web/vendor" "$dir/narrative" "$dir/minutes"
+            pick() { find . -path ./.git -prune -o -path ./_project -prune -o -type f -name "$1" -print | head -1; }
+            find . -path ./.git -prune -o -path ./_project -prune -o -type f -name '*.py' -print0 | while IFS= read -r -d '' f; do cp "$f" "$dir/pipeline/"; done
+            for n in library.js print.js shim.js site.css theme.css; do f=$(pick "$n"); [ -n "$f" ] && cp "$f" "$dir/web/"; done
+            f=$(pick d3.min.js); [ -n "$f" ] && cp "$f" "$dir/web/vendor/"
+            for n in course-of-action.html course-of-action.js member-by-member.html member-by-member.js playbook.html playbook.js voting-trends.html; do
+              f=$(pick "$n"); [ -n "$f" ] && cp "$f" "$dir/web/pages/"
+            done
+            for n in c_members_text.csv c_priorities.csv; do f=$(pick "$n"); [ -n "$f" ] && cp "$f" "$dir/narrative/"; done
+            find . -path ./.git -prune -o -path ./_project -prune -o -type f -iname '*.pdf' -print0 | while IFS= read -r -d '' f; do cp "$f" "$dir/minutes/"; done
+            first_pdf=$(find . -path ./.git -prune -o -path ./_project -prune -o -type f -iname '*.pdf' -print | head -1)
+            up=$(dirname "${first_pdf:-./x}"); up=${up#./}; [ "$up" = "." ] && up=""
+          fi
+          missing=""
+          for need in pipeline/run.py pipeline/build_site.py web/print.js web/shim.js web/site.css web/theme.css web/library.js web/vendor/d3.min.js \
+                      web/pages/voting-trends.html web/pages/member-by-member.html web/pages/playbook.html web/pages/course-of-action.html \
+                      narrative/c_members_text.csv narrative/c_priorities.csv; do
+            [ -f "$dir/$need" ] || missing="$missing $(basename "$need")"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error title=Missing files::These files are not in the repository:$missing. Upload them from the package."
+            exit 1
+          fi
+          n=$(find "$dir/minutes" -maxdepth 1 -iname '*.pdf' | wc -l)
+          if [ "$n" -eq 0 ]; then echo "::error title=No minutes found::No minutes PDFs in the repository."; exit 1; fi
+          echo "Site files ready in '$dir' with $n minutes PDFs. New minutes upload to: '${up:-(top level)}'."
+          echo "PROJECT_DIR=$dir" >> "$GITHUB_ENV"
+          echo "MINUTES_UPLOAD_PATH=$up" >> "$GITHUB_ENV"
+
       - name: Install PDF tools
         run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
+
       - name: Read the minutes and rebuild the data
+        working-directory: ${{ env.PROJECT_DIR }}
         run: python3 pipeline/run.py
+
       - name: Build the website
+        working-directory: ${{ env.PROJECT_DIR }}
         run: python3 pipeline/build_site.py
+
       - uses: actions/configure-pages@v5
+
       - uses: actions/upload-pages-artifact@v4
         with:
-          path: _site
+          path: ${{ env.PROJECT_DIR }}/_site
 
   deploy:
     needs: build
@@ -41,4 +94,3 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
-
