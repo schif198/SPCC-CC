@@ -13,7 +13,12 @@ SITE = os.path.join(ROOT, '_site')
 LEGISTAR = 'https://stpaul.legistar.com/DepartmentDetail.aspx?ID=11351&GUID=54C2264A-286D-435B-85A5-F0C20155343F&Mode=MainBody'
 REPO = os.environ.get('GITHUB_REPOSITORY', '').strip()
 BRANCH = os.environ.get('GITHUB_REF_NAME', 'main').strip() or 'main'
-UPLOAD_URL = f'https://github.com/{REPO}/upload/{BRANCH}/minutes' if REPO else ''
+_ws = os.environ.get('GITHUB_WORKSPACE', '')
+_rel = os.path.relpath(ROOT, _ws).replace(os.sep, '/') if _ws else '.'
+MINUTES_PATH = 'minutes' if _rel in ('.', '') else f'{_rel}/minutes'
+if 'MINUTES_UPLOAD_PATH' in os.environ:  # set by the workflow, which knows where the minutes live in the repository
+    MINUTES_PATH = os.environ['MINUTES_UPLOAD_PATH'].strip('/')
+UPLOAD_URL = (f'https://github.com/{REPO}/upload/{BRANCH}' + (f'/{MINUTES_PATH}' if MINUTES_PATH else '')) if REPO else ''
 ACTIONS_URL = f'https://github.com/{REPO}/actions' if REPO else ''
 
 
