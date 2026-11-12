@@ -1,0 +1,43 @@
+name: Update site
+
+# Runs whenever minutes (or the site's code) change on the main branch, and on demand from the Actions tab.
+on:
+  push:
+    branches: [main]
+    paths: ['minutes/**', 'pipeline/**', 'web/**', 'narrative/**', '.github/workflows/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PDF tools
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
+      - name: Read the minutes and rebuild the data
+        run: python3 pipeline/run.py
+      - name: Build the website
+        run: python3 pipeline/build_site.py
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
