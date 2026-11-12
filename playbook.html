@@ -1,0 +1,186 @@
+<meta name="dash-one-writer">
+<style>
+#dash-root { --dash-gutter: var(--cds-pad-lg); }
+.pb { font-family: var(--font-anthropic-sans); color: var(--color-fg); display: flex; flex-direction: column; gap: var(--cds-gap-lg); max-width: 1280px; margin-inline: auto; }
+.pb h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; }
+.pb h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.pb h3 { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.pb .lede { margin: var(--cds-gap-xs) 0 0; color: var(--color-fg-muted); max-width: 62rem; }
+.pb .lede b { color: var(--color-fg); }
+.pb .step { font-size: var(--cds-font-size-caption); text-transform: uppercase; letter-spacing: .06em; color: var(--color-fg-muted); margin-bottom: var(--cds-gap-xs); }
+.pb section { display: flex; flex-direction: column; gap: var(--cds-gap-sm); }
+.pb .meters { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: var(--cds-gap-md); }
+.pb .meter, .pb .card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md); position: relative; }
+.pb .card { padding: var(--cds-pad-lg); }
+.pb .meter .lab { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.pb .note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 0 0 var(--cds-gap-sm); }
+.pb .chart { position: relative; min-height: 200px; }
+.pb .gauge { min-height: 6.5rem; }
+.pb .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: var(--cds-gap-md); }
+.pb .watch { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr)); gap: var(--cds-gap-md); min-height: 9rem; }
+.pb .wcard { background: var(--color-panel); border: 1px solid var(--color-border-line); border-left: 4px solid; border-radius: var(--cds-radius); padding: var(--cds-pad-md); display: flex; flex-direction: column; gap: var(--cds-gap-xs); }
+.pb .wcard .when { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.pb .wcard .what { font-size: var(--cds-font-size-body); }
+.pb .tag { display: inline-block; font-size: var(--cds-font-size-caption); padding: 1px 8px; border-radius: 999px; border: 1px solid var(--color-border-line); color: var(--color-fg); margin-right: 4px; }
+.pb .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr)); gap: var(--cds-gap-md); min-height: 20rem; }
+.pb .mcard { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md); display: flex; flex-direction: column; gap: var(--cds-gap-xs); text-align: left; font: inherit; color: inherit; cursor: pointer; }
+.pb .mcard[aria-pressed=true] { outline: 2px solid var(--color-fg); }
+.pb .mcard .nm { font-family: var(--font-anthropic-serif); font-size: var(--cds-font-size-heading); }
+.pb .mcard .rl { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.pb .mrow { display: grid; grid-template-columns: 8.5rem 1fr 2.4rem; align-items: center; gap: var(--cds-gap-xs); font-size: var(--cds-font-size-caption); }
+.pb .mrow .k { color: var(--color-fg-muted); }
+.pb .mrow .v { text-align: right; font-variant-numeric: tabular-nums; }
+.pb .mtrack { height: .5rem; background: var(--color-border-line); border-radius: 1rem; overflow: hidden; display: flex; }
+.pb .mtrack > span { display: block; height: 100%; }
+.pb .small { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.pb .small b { color: var(--color-fg); font-weight: 600; }
+.pb .tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); white-space: nowrap; z-index: 5; }
+.pb .tip .k { color: var(--cds-text-secondary); }
+.pb .legend { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); display: flex; align-items: center; gap: var(--cds-gap-xs); flex-wrap: wrap; margin-bottom: var(--cds-gap-sm); }
+.pb .sw { display: inline-block; width: .7rem; height: .7rem; border-radius: 2px; margin-left: var(--cds-gap-sm); border: 1px solid var(--color-border-line); }
+.pb .plays { margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: var(--cds-gap-sm); }
+.pb .plays li { line-height: 1.5; }
+.pb .plays b { font-weight: 600; }
+.pb details { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md) var(--cds-pad-lg); }
+.pb summary { cursor: pointer; font-weight: var(--cds-font-weight-medium); }
+.pb .tbl-wrap { overflow: auto; max-height: 28rem; margin-top: var(--cds-gap-sm); }
+.pb table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+.pb th { text-align: left; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); border-bottom: 1px solid var(--color-border-line); padding: var(--cds-pad-xs) var(--cds-pad-sm); position: sticky; top: 0; background: var(--color-panel); white-space: nowrap; }
+.pb td { padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
+.pb .bad { color: var(--color-bad); font-weight: 600; }
+.pb .muted { color: var(--color-fg-muted); }
+.pb .clear { font: inherit; font-size: var(--cds-font-size-caption); border: 1px solid var(--color-border-line); background: var(--color-panel); color: var(--color-fg); border-radius: 999px; padding: 2px 10px; cursor: pointer; }
+.pb .method { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.pb .method li { margin-bottom: var(--cds-gap-xs); }
+.pb .ptiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 12.5rem), 1fr)); gap: var(--cds-gap-md); min-height: 14rem; }
+.pb .ptile { background: var(--color-panel); border: 1px solid var(--color-border-line); border-top: 4px solid; border-radius: var(--cds-radius); padding: var(--cds-pad-md); display: flex; flex-direction: column; gap: var(--cds-gap-xs); }
+.pb .ptile .big { font-family: var(--font-anthropic-serif); font-size: var(--cds-font-size-title); line-height: 1; }
+.pb .ptile .ln { font-weight: var(--cds-font-weight-medium); }
+.pb .ptile .tx { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.45; }
+[data-dash-source-state=empty] { color: transparent; }
+[data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+</style>
+
+<div class="pb">
+  <header id="top">
+    <h1>Chamber of Commerce playbook: St. Paul City Council, 2026</h1>
+    <p class="lede">Where business-related decisions get made, who drives them, how votes line up, and how much time there is to weigh in. Built from the council's 2026 minutes (January 7 – October 28). Every item is read through the <b>PERSIA</b> lenses (Political, Economic, Religious, Social, Intellectual, Artistic) so the chamber sees not only the economic stakes but the political, social and cultural currents that shape each vote. It describes what members have done on the record, not how they will vote.</p>
+  </header>
+
+  <section id="numbers">
+    <div class="step">The terrain</div>
+    <div class="meters">
+      <div class="meter"><div class="lab">Business-related votes</div><div class="chart gauge" data-draw="knum" data-source="b_kpis" data-field="biz_votes" data-sub="votes"></div></div>
+      <div class="meter"><div class="lab">Passed with no dissent</div><div class="chart gauge" data-draw="kgauge" data-source="b_kpis" data-field="biz_unanimous_share" data-sub="splits"></div></div>
+      <div class="meter"><div class="lab">Votes needed to win</div><div class="chart gauge" data-draw="knum" data-source="b_kpis" data-field="min_winning_yeas" data-sub="seats"></div></div>
+      <div class="meter"><div class="lab">Typical ordinance timeline</div><div class="chart gauge" data-draw="knum" data-source="b_kpis" data-field="ord_median_days" data-sub="days"></div></div>
+      <div class="meter"><div class="lab">Ordinances amended before passage</div><div class="chart gauge" data-draw="kgauge" data-source="b_kpis" data-field="ord_amended_share" data-sub="ord"></div></div>
+      <div class="meter"><div class="lab">Delayed items later adopted</div><div class="chart gauge" data-draw="kgauge" data-source="b_kpis" data-field="delays_adopted_share" data-sub="delays"></div></div>
+    </div>
+  </section>
+
+  <section id="watch">
+    <div class="step">Act now</div>
+    <h2>Business items on the next agenda</h2>
+    <p class="note">Laid over at the last meeting with minutes and scheduled to return. Second-reading ordinances still face a public hearing before final adoption.</p>
+    <div class="watch" data-draw="watch" data-source="b_watch"></div>
+  </section>
+
+  <section id="persia">
+    <div class="step">PERSIA scan</div>
+    <h2>The council's agenda through six lenses</h2>
+    <p class="note">Each tile shows how many 2026 votes touched that lens (an item can touch several), the share that passed with no dissent, how many split the council, and the two members who most often move or speak on it.</p>
+    <div class="ptiles" data-draw="persia" data-source="b_persia"></div>
+  </section>
+
+  <section id="coalition">
+    <div class="step">Count the votes</div>
+    <h2>Coalition map</h2>
+    <p class="note">The gauge is how often each member sided with the majority on split votes. Bars show how active they are on business-related items (motions and remarks) and how often they push back on them (spoke against, raised concerns, moved to delay or deny), scaled to the most active member. The hexagon is the member's PERSIA profile: how much of their motions and remarks fall in each lens compared with the council as a whole (the dashed ring is the council average). Click a member to filter their record below.</p>
+    <div class="cards" data-draw="cards" data-source="b_members b_persia_member"></div>
+  </section>
+
+  <section id="issues">
+    <div class="step">Find the right door</div>
+    <div class="grid2">
+      <div class="card">
+        <h3>PERSIA lens map</h3>
+        <p class="note">Each member's share of motions and remarks in a lens compared with the council's share (1.0× = average). Darker means that lens is a bigger part of their agenda.</p>
+        <div class="chart" style="min-height:240px" data-draw="lensmap" data-source="b_persia_member"></div>
+      </div>
+      <div class="card">
+        <h3>Economic lens: who leads on each business issue</h3>
+        <p class="note">Motions and remarks per member on each business issue. The outlined cell in a row is the member who most often carries that issue. Members typically move items located in their own ward.</p>
+        <div class="chart" style="min-height:300px" data-draw="leadmap" data-source="b_issue_member"></div>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h3>Economic lens: how contested each business issue is</h3>
+        <p class="note">Share of votes on the issue that passed with no dissent, and the number of business votes on it. Lower bars are where the council splits and where lobbying can change the outcome.</p>
+        <div class="chart" style="min-height:300px" data-draw="contested" data-source="b_issues"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="splits">
+    <div class="card">
+      <h3>Business-related votes that split the council</h3>
+      <p class="note">How each member voted. An outlined cell means that member was on the losing side. Letters show the PERSIA lenses each vote touched.</p>
+      <div class="legend"><span class="sw" data-sw="yea"></span>Yea <span class="sw" data-sw="nay"></span>Nay <span class="sw" data-sw="absent"></span>Absent</div>
+      <div class="chart" data-draw="splitgrid" data-source="b_splits"></div>
+    </div>
+  </section>
+
+  <section id="timing">
+    <div class="step">Mind the clock</div>
+    <div class="grid2">
+      <div class="card">
+        <h3>Days from first appearance to adoption, every 2026 ordinance</h3>
+        <p class="note">Each dot is one ordinance. Filled dots were amended along the way. Hover for the title.</p>
+        <div class="chart" data-draw="ordclock" data-source="b_ordinances b_kpis"></div>
+      </div>
+      <div class="card">
+        <h3>Who moves to delay, and what happened next</h3>
+        <p class="note">Motions to lay over, continue or refer, by member, colored by the item's later outcome.</p>
+        <div class="legend"><span class="sw" data-sw="adopted"></span>Later adopted <span class="sw" data-sw="failed"></span>Failed or denied <span class="sw" data-sw="other"></span>No separate vote recorded later</div>
+        <div class="chart" data-draw="delays" data-source="b_delays"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="plays" class="card">
+    <div class="step">The playbook</div>
+    <ol class="plays">
+      <li><b>Start before the first reading.</b> The median ordinance passed <b data-draw="kv" data-source="b_kpis" data-field="ord_median_days" data-fmt="int">—</b> days after it first appeared in the minutes, so there is little time once an item is on the agenda. Talk to the member who leads on the issue (see the lead map) before it is introduced.</li>
+      <li><b>Bring amendment language, not only opposition.</b> <b data-draw="kv" data-source="b_kpis" data-field="ord_amended_share" data-fmt="pct">—</b> of ordinances were amended before passage, usually by a substitute version offered by a member.</li>
+      <li><b>Count to <span data-draw="kv" data-source="b_kpis" data-field="min_winning_yeas" data-fmt="int">—</span>.</b> That many yeas carried every split vote this year. Members marked "usually in the majority" decide close votes; two members who reliably vote together can move a third.</li>
+      <li><b>Read a delay as negotiation, not defeat.</b> Of delayed items that came back for a recorded vote, <b data-draw="kv" data-source="b_kpis" data-field="delays_adopted_share" data-fmt="pct">—</b> were adopted. A layover is a window to resolve concerns, often raised by the member who moved it.</li>
+      <li><b>Get written comments into the record early.</b> Per the minutes, comments on public-hearing items received by noon the day before a meeting are attached to the public record (Contact-Council@ci.stpaul.mn.us or CouncilHearing@ci.stpaul.mn.us).</li>
+      <li><b>Read every item through all six PERSIA lenses.</b> An economic item with a social or political dimension (housing rules, appointments, ballot questions) is where the council has split; a purely economic or artistic item (grants, fees, sound permits) almost never does. Frame asks in the lens the lead member works in most (see the hexagons).</li>
+      <li><b>Watch the issues that split.</b> Housing and tenant rules, land-use appeals and economic-development appointments drew most of the business-related split votes; routine grants, fees and licenses almost always pass without dissent.</li>
+    </ol>
+  </section>
+
+  <details id="log">
+    <summary>Business-related motions and remarks, as recorded <span class="muted" data-draw="logwho">—</span></summary>
+    <div style="margin-top:.5rem"><button class="clear" type="button">Show all members</button></div>
+    <div class="tbl-wrap"><table data-source="b_log" data-row-key="id">
+      <thead><tr><th data-field="date">Date</th><th data-field="member">Member</th><th data-field="issue">Issue</th><th data-field="action">Action</th><th data-field="file">File</th><th data-field="minutes_text">From the minutes</th></tr></thead>
+      <tbody data-draw="logrows"></tbody></table></div>
+  </details>
+
+  <details class="method" id="method">
+    <summary>How this is measured</summary>
+    <ul>
+      <li>Source: St. Paul City Council minutes PDFs (stpaul.legistar.com), January 7 – October 28, 2026. Votes come from roll calls; motions and remarks come from the minutes' narrative.</li>
+      <li>"Business-related" items are tagged from item titles by keyword into eight issue areas: labor and wages; housing and tenant rules; economic development and incentives; licensing and enforcement; land use and permitting; utilities, franchises and fees; taxes, levies and assessments; and events and sound permits. Property-appeal hearings and consent-agenda blocks are left out.</li>
+      <li>PERSIA lenses (Political, Economic, Religious, Social, Intellectual, Artistic) are assigned from item titles by keyword. An item can carry several lenses; property appeals count as Social, and infrastructure, land use and code changes as Economic or Political. Religious items are few (church property petitions, faith-based event permits, religious observances).</li>
+      <li>"Usually in the majority" means a member sided with the majority on at least 80% of all split votes they cast this year.</li>
+      <li>Ordinance timing runs from the first meeting where the ordinance appears in the minutes to the meeting where it was adopted. Items adopted inside a consent agenda after a delay have no separate vote and are counted as "no separate vote recorded later".</li>
+      <li>Members usually move items in their own ward, so the lead map partly reflects geography. Past actions don't predict votes on new items; use this to decide whom to brief and when.</li>
+    </ul>
+  </details>
+</div>
+
+<script src="app.js"></script>

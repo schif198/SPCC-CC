@@ -1,0 +1,217 @@
+<meta name="dash-one-writer">
+<style>
+#dash-root { --dash-gutter: var(--cds-pad-lg); }
+.cg { font-family: var(--font-anthropic-sans); color: var(--color-fg); display: flex; flex-direction: column; gap: var(--cds-gap-lg); max-width: 1280px; margin-inline: auto; }
+.cg h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; }
+.cg h2 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; }
+.cg h3 { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.cg .lede { margin: var(--cds-gap-xs) 0 0; color: var(--color-fg-muted); max-width: 60rem; }
+.cg .bar { position: sticky; top: 0; z-index: 4; background: var(--color-bg); padding: var(--cds-pad-sm) 0; display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); align-items: center; border-bottom: 1px solid var(--color-border-line); }
+.cg .chips { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); }
+.cg .chip { font: inherit; font-size: var(--cds-font-size-caption); padding: var(--cds-pad-xs) var(--cds-pad-md); border-radius: 999px; border: 1px solid var(--color-border-line); background: var(--color-panel); color: var(--color-fg); cursor: pointer; }
+.cg .chip[aria-pressed=true] { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
+.cg .range { display: flex; align-items: center; gap: var(--cds-gap-sm); flex: 1 1 22rem; min-width: 16rem; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.cg .range .sliders { position: relative; flex: 1; height: 2rem; }
+.cg .range input[type=range] { position: absolute; left: 0; right: 0; top: .5rem; width: 100%; margin: 0; pointer-events: none; background: transparent; -webkit-appearance: none; appearance: none; height: 1rem; }
+.cg .range input[type=range]::-webkit-slider-thumb { pointer-events: auto; -webkit-appearance: none; width: 1.1rem; height: 1.1rem; border-radius: 50%; background: var(--color-fg); border: 2px solid var(--color-bg); cursor: pointer; }
+.cg .range input[type=range]::-moz-range-thumb { pointer-events: auto; width: 1rem; height: 1rem; border-radius: 50%; background: var(--color-fg); border: 2px solid var(--color-bg); cursor: pointer; }
+.cg .range .track { position: absolute; left: 0; right: 0; top: .9rem; height: .25rem; border-radius: 1rem; background: var(--color-border-line); }
+.cg .range .fill { position: absolute; top: .9rem; height: .25rem; border-radius: 1rem; }
+.cg .range .ends { font-variant-numeric: tabular-nums; color: var(--color-fg); font-weight: 600; white-space: nowrap; min-width: 9.5rem; text-align: right; }
+.cg .view { display: flex; flex-direction: column; gap: var(--cds-gap-md); }
+.cg .card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); }
+.cg .note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: var(--cds-gap-xs) 0 var(--cds-gap-md); }
+.cg .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); gap: var(--cds-gap-md); }
+.cg .meters { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: var(--cds-gap-md); }
+.cg .meter { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md); min-height: 8.5rem; position: relative; }
+.cg .meter .lab { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.cg .chart { position: relative; min-height: 220px; }
+.cg .chart.tall { min-height: 360px; }
+.cg .gauge { min-height: 6rem; }
+.cg .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15.5rem), 1fr)); gap: var(--cds-gap-md); min-height: 20rem; }
+.cg .mcard { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md); cursor: pointer; display: flex; flex-direction: column; gap: var(--cds-gap-xs); text-align: left; font: inherit; color: inherit; }
+.cg .mcard:hover { border-color: var(--color-fg-muted); }
+.cg .mcard .nm { font-family: var(--font-anthropic-serif); font-size: var(--cds-font-size-heading); }
+.cg .mcard .rl { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.cg .mrow { display: grid; grid-template-columns: 7.5rem 1fr 2.6rem; align-items: center; gap: var(--cds-gap-xs); font-size: var(--cds-font-size-caption); }
+.cg .mrow .k { color: var(--color-fg-muted); }
+.cg .mrow .v { text-align: right; font-variant-numeric: tabular-nums; }
+.cg .mtrack { height: .5rem; background: var(--color-border-line); border-radius: 1rem; overflow: hidden; display: flex; }
+.cg .mtrack > span { display: block; height: 100%; }
+.cg .lead { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.cg .lead b { color: var(--color-fg); font-weight: 600; }
+.cg .hero { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: var(--cds-gap-md); align-items: stretch; }
+.cg .hero .who { display: flex; flex-direction: column; justify-content: center; gap: var(--cds-gap-xs); }
+.cg .hero .role { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.cg .tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); white-space: nowrap; z-index: 5; }
+.cg .tip .k { color: var(--cds-text-secondary); }
+.cg .legend { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); display: flex; align-items: center; gap: var(--cds-gap-xs); flex-wrap: wrap; margin-bottom: var(--cds-gap-sm); }
+.cg .sw { display: inline-block; width: .7rem; height: .7rem; border-radius: 2px; margin-left: var(--cds-gap-sm); border: 1px solid var(--color-border-line); }
+.cg details { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md) var(--cds-pad-lg); }
+.cg summary { cursor: pointer; font-weight: var(--cds-font-weight-medium); font-size: var(--cds-font-size-body); }
+.cg .tbl-wrap { overflow: auto; max-height: 28rem; margin-top: var(--cds-gap-sm); }
+.cg table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+.cg th { text-align: left; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); border-bottom: 1px solid var(--color-border-line); padding: var(--cds-pad-xs) var(--cds-pad-sm); position: sticky; top: 0; background: var(--color-panel); white-space: nowrap; }
+.cg td { padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
+.cg td.n, .cg th.n { text-align: right; }
+.cg .bad { color: var(--color-bad); font-weight: 600; }
+.cg .muted { color: var(--color-fg-muted); }
+.cg .method { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.cg .method li { margin-bottom: var(--cds-gap-xs); }
+[data-dash-source-state=empty] { color: transparent; }
+[data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+</style>
+
+<div class="cg">
+  <header id="top">
+    <h1>St. Paul City Council: member by member, 2026</h1>
+    <p class="lede">Gauges show how often each member votes and sides with the majority; meters show how active they are in debate and how often they push back. Drag the month slider to focus on any stretch of the year.</p>
+  </header>
+
+  <div class="bar" id="controls">
+    <nav class="chips" aria-label="Councilmember">
+      <button class="chip" data-pick="All" aria-pressed="true">All members</button>
+      <button class="chip" data-pick="Noecker" aria-pressed="false">Noecker</button>
+      <button class="chip" data-pick="Yang" aria-pressed="false">Yang</button>
+      <button class="chip" data-pick="Kim" aria-pressed="false">Kim</button>
+      <button class="chip" data-pick="Bowie" aria-pressed="false">Bowie</button>
+      <button class="chip" data-pick="Jost" aria-pressed="false">Jost</button>
+      <button class="chip" data-pick="Johnson" aria-pressed="false">Johnson</button>
+      <button class="chip" data-pick="Coleman" aria-pressed="false">Coleman</button>
+    </nav>
+    <div class="range" id="months">
+      <span>Months</span>
+      <div class="sliders" data-draw="slider" data-source="p_months"></div>
+      <span class="ends" data-draw="rangelabel" data-source="p_months">—</span>
+    </div>
+  </div>
+
+  <section class="view" data-view="All" id="overview">
+    <div class="meters" id="council">
+      <div class="meter"><div class="lab">Votes with no dissent</div><div class="chart gauge" data-draw="cgauge" data-source="p_council" data-field="unanimous_share"></div></div>
+      <div class="meter"><div class="lab">Recorded votes</div><div class="chart gauge" data-draw="cnum" data-source="p_council" data-field="votes"></div></div>
+      <div class="meter"><div class="lab">Split votes</div><div class="chart gauge" data-draw="cnum" data-source="p_council" data-field="splits"></div></div>
+      <div class="meter"><div class="lab">Meetings with votes</div><div class="chart gauge" data-draw="cnum" data-source="p_council" data-field="meetings"></div></div>
+    </div>
+
+    <div class="card" id="cards-card">
+      <h3>Every member at a glance</h3>
+      <p class="note">The gauge shows participation. Bars show yea / nay / absent, how often they side with the majority on split votes, motions made, and pushback (spoke against, raised concerns, moved to delay or deny), scaled to the most active member. Click a card for the full profile.</p>
+      <div class="legend"><span class="sw" data-sw="yea"></span>Yea <span class="sw" data-sw="nay"></span>Nay <span class="sw" data-sw="absent"></span>Absent</div>
+      <div class="cards" data-draw="cards" data-source="p_member"></div>
+    </div>
+
+    <div class="grid2">
+      <div class="card" id="network">
+        <h3>Who votes together</h3>
+        <p class="note">Lines join members who voted the same way on split votes. Thicker, darker lines mean they agreed more often. Hover a line for the count.</p>
+        <div class="chart tall" data-draw="network" data-source="p_agree"></div>
+      </div>
+      <div class="card" id="focusmap">
+        <h3>What each member takes the lead on</h3>
+        <p class="note">Motions and remarks by topic relative to the council's mix. Darker means more than their share (partly reflects which items fall in their ward).</p>
+        <div class="chart tall" data-draw="focusmap" data-source="p_focus"></div>
+      </div>
+    </div>
+
+    <div class="card" id="splitgrid">
+      <h3>Every split vote in the selected months</h3>
+      <p class="note">Each row is a vote where members disagreed. An outlined cell means that member was on the losing side.</p>
+      <div class="legend"><span class="sw" data-sw="yea"></span>Yea <span class="sw" data-sw="nay"></span>Nay <span class="sw" data-sw="absent"></span>Absent</div>
+      <div class="chart" data-draw="splitgrid" data-source="m_splits"></div>
+    </div>
+
+    <details id="compare">
+      <summary>Side-by-side numbers</summary>
+      <div class="tbl-wrap"><table data-source="p_member" data-row-key="member,from,to">
+        <thead><tr>
+          <th data-field="member">Member</th><th class="n" data-field="participation">Participation</th><th class="n" data-field="yea">Yea</th><th class="n" data-field="nay">Nay</th><th class="n" data-field="absent">Absent</th>
+          <th class="n" data-field="majority_share">With majority</th><th class="n" data-field="dissents">Dissents</th><th class="n" data-field="motions">Motions</th><th class="n" data-field="pushback">Pushback</th>
+          <th data-field="top_focus">Leads on</th><th data-field="closest">Most like</th><th data-field="farthest">Least like</th>
+        </tr></thead>
+        <tbody data-draw="comparerows"></tbody></table></div>
+    </details>
+  </section>
+
+  <section class="view" data-view="one" id="member" hidden>
+    <div class="hero">
+      <div class="card who">
+        <h2 data-draw="mv" data-source="p_member" data-field="full_name" data-fmt="text">—</h2>
+        <div class="role" data-draw="mv" data-source="p_member" data-field="role" data-fmt="text">—</div>
+        <div class="lead">Leads most on <b data-draw="mv" data-source="p_member" data-field="top_focus" data-fmt="text">—</b></div>
+        <div class="lead">Votes most like <b data-draw="mv" data-source="p_member" data-field="closest" data-fmt="text">—</b>, least like <b data-draw="mv" data-source="p_member" data-field="farthest" data-fmt="text">—</b></div>
+      </div>
+      <div class="meter"><div class="lab">Participation</div><div class="chart gauge" data-draw="mgauge" data-source="p_member" data-field="participation"></div></div>
+      <div class="meter"><div class="lab">Sided with majority on split votes</div><div class="chart gauge" data-draw="mgauge" data-source="p_member" data-field="majority_share"></div></div>
+      <div class="meter" id="member-meters">
+        <div class="lab">Activity in debate</div>
+        <div class="chart gauge" data-draw="mmeters" data-source="p_member"></div>
+      </div>
+    </div>
+
+    <div class="card" id="member-ballot">
+      <h3>How their votes split</h3>
+      <div class="legend"><span class="sw" data-sw="yea"></span>Yea <span class="sw" data-sw="nay"></span>Nay <span class="sw" data-sw="absent"></span>Absent</div>
+      <div class="chart" style="min-height:64px" data-draw="ballot" data-source="p_member"></div>
+    </div>
+
+    <div class="grid2">
+      <div class="card" id="member-topics">
+        <h3>Votes by topic</h3>
+        <p class="note">Each bar is every vote on that topic; color shows how they voted.</p>
+        <div class="chart tall" data-draw="topicvotes" data-source="p_topic"></div>
+      </div>
+      <div class="card" id="member-focus">
+        <h3>Where they take the lead</h3>
+        <p class="note">Their motions and remarks by topic, against the council average (dashed line).</p>
+        <div class="chart tall" data-draw="focusbars" data-source="p_focus"></div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card" id="member-allies">
+        <h3>Agreement with each colleague</h3>
+        <p class="note">Share of split votes on which they voted the same way, when both were present.</p>
+        <div class="chart" data-draw="allies" data-source="p_agree"></div>
+      </div>
+      <div class="card" id="member-month">
+        <h3>Participation by month</h3>
+        <p class="note">Selected months are highlighted.</p>
+        <div class="chart" data-draw="monthbars" data-source="member_monthly"></div>
+      </div>
+    </div>
+
+    <div class="card" id="member-positions">
+      <h3>Their side on each split vote</h3>
+      <p class="note">Top row: voted yea. Bottom row: voted nay. A filled dot means they were in the majority; a hollow dot means they lost. Hover for the question.</p>
+      <div class="chart" data-draw="positions" data-source="m_splits"></div>
+    </div>
+
+    <details id="member-splits">
+      <summary>Split votes, in detail</summary>
+      <div class="tbl-wrap"><table data-source="m_splits" data-row-key="member,date,issue">
+        <thead><tr><th data-field="date">Date</th><th data-field="issue">Question</th><th data-field="vote">Their vote</th><th class="n" data-field="tally">Tally</th><th data-field="outcome">Outcome</th><th data-field="with_majority">With majority</th></tr></thead>
+        <tbody data-draw="splitrows"></tbody></table></div>
+    </details>
+    <details id="member-log">
+      <summary>Motions and remarks, as recorded in the minutes</summary>
+      <div class="tbl-wrap"><table data-source="m_action_log" data-row-key="id">
+        <thead><tr><th data-field="date">Date</th><th data-field="action">Action</th><th data-field="topic">Topic</th><th data-field="file">File</th><th data-field="minutes_text">From the minutes</th></tr></thead>
+        <tbody data-draw="logrows"></tbody></table></div>
+    </details>
+  </section>
+
+  <details class="method" id="method">
+    <summary>How this is measured</summary>
+    <ul>
+      <li>Source: the City Council minutes PDFs (stpaul.legistar.com), January 7 – October 28, 2026. Votes come from each roll call; motions and remarks come from the minutes' narrative.</li>
+      <li>Nearly every vote was unanimous, so differences between members show up mainly in split votes, motions, and remarks recorded against an item or raising concerns.</li>
+      <li>Pushback counts times a member spoke against an item, raised concerns, or moved to delay or deny. Motions counts motions to approve, amend or deny. Both meters are scaled to the most active member in the selected months.</li>
+      <li>Topic focus compares a member's share of motions and remarks on a topic with the council's overall share. Members usually move items in their own ward, so it partly reflects geography.</li>
+      <li>Agreement uses only split votes both members took part in, so in short month ranges it can rest on very few votes, or none.</li>
+      <li>These are patterns in the public record, not ideological labels.</li>
+    </ul>
+  </details>
+</div>
+
+<script src="app.js"></script>

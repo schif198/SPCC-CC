@@ -1,0 +1,153 @@
+<meta name="dash-one-writer">
+<style>
+#dash-root { --dash-gutter: var(--cds-pad-lg); }
+.ca { font-family: var(--font-anthropic-sans); color: var(--color-fg); display: flex; flex-direction: column; gap: var(--cds-gap-lg); max-width: 1280px; margin-inline: auto; }
+.ca h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; }
+.ca h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.ca h3 { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.ca .lede { margin: var(--cds-gap-xs) 0 0; color: var(--color-fg-muted); max-width: 64rem; line-height: 1.5; }
+.ca .note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 0 0 var(--cds-gap-sm); }
+.ca .tabs { display: flex; gap: var(--cds-gap-xs); border-bottom: 1px solid var(--color-border-line); position: sticky; top: 0; background: var(--color-bg); z-index: 4; padding-top: var(--cds-pad-xs); }
+.ca .tab { font: inherit; font-size: var(--cds-font-size-body); padding: var(--cds-pad-sm) var(--cds-pad-md); border: 0; border-bottom: 2px solid transparent; background: none; color: var(--color-fg-muted); cursor: pointer; }
+.ca .tab[aria-selected=true] { color: var(--color-fg); border-bottom-color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
+.ca .pane { display: flex; flex-direction: column; gap: var(--cds-gap-md); }
+.ca .card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); position: relative; }
+.ca .values { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: var(--cds-gap-sm); }
+.ca .value { border-left: 3px solid var(--color-border-line); padding: 2px var(--cds-pad-sm); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.ca .value b { display: block; color: var(--color-fg); font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); }
+.ca .chart { position: relative; min-height: 180px; }
+.ca .gauge { min-height: 5.5rem; }
+.ca .plans { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr)); gap: var(--cds-gap-md); min-height: 24rem; }
+.ca .plan { background: var(--color-panel); border: 1px solid var(--color-border-line); border-top: 4px solid; border-radius: var(--cds-radius); padding: var(--cds-pad-md); display: flex; flex-direction: column; gap: var(--cds-gap-sm); }
+.ca .plan .top { display: grid; grid-template-columns: 1fr 8.5rem; gap: var(--cds-gap-sm); align-items: center; }
+.ca .plan .nm { font-family: var(--font-anthropic-serif); font-size: var(--cds-font-size-heading); }
+.ca .plan .rl { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.ca .plan .sec { font-size: var(--cds-font-size-caption); line-height: 1.5; }
+.ca .plan .sec b { display: block; font-size: var(--cds-font-size-caption); text-transform: uppercase; letter-spacing: .05em; color: var(--color-fg-muted); font-weight: 600; margin-bottom: 2px; }
+.ca .plan details { font-size: var(--cds-font-size-caption); line-height: 1.5; }
+.ca .plan summary { cursor: pointer; color: var(--color-fg-muted); }
+.ca .tag { display: inline-block; font-size: var(--cds-font-size-caption); padding: 1px 8px; border-radius: 999px; border: 1px solid var(--color-border-line); color: var(--color-fg); margin: 0 4px 4px 0; }
+.ca .mrow { display: grid; grid-template-columns: 8rem 1fr 2.6rem; align-items: center; gap: var(--cds-gap-xs); font-size: var(--cds-font-size-caption); }
+.ca .mrow .k { color: var(--color-fg-muted); }
+.ca .mrow .v { text-align: right; font-variant-numeric: tabular-nums; }
+.ca .mtrack { height: .5rem; background: var(--color-border-line); border-radius: 1rem; overflow: hidden; display: flex; }
+.ca .mtrack > span { display: block; height: 100%; }
+.ca .na { font-weight: 600; letter-spacing: .02em; }
+.ca .search { display: flex; gap: var(--cds-gap-sm); flex-wrap: wrap; align-items: center; }
+.ca .search input { flex: 1 1 22rem; font: inherit; font-size: var(--cds-font-size-body); padding: var(--cds-pad-sm) var(--cds-pad-md); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-bg); color: var(--color-fg); }
+.ca .btn { font: inherit; font-size: var(--cds-font-size-caption); padding: var(--cds-pad-xs) var(--cds-pad-md); border-radius: 999px; border: 1px solid var(--color-border-line); background: var(--color-panel); color: var(--color-fg); cursor: pointer; }
+.ca .btn.primary { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
+.ca .examples { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); align-items: center; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.ca .coa { display: flex; flex-direction: column; gap: var(--cds-gap-md); min-height: 10rem; }
+.ca .coa ol { margin: 0; padding-left: 1.3rem; display: flex; flex-direction: column; gap: var(--cds-gap-sm); line-height: 1.5; }
+.ca .coa .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); gap: var(--cds-gap-md); }
+.ca .who { display: flex; flex-direction: column; gap: var(--cds-gap-xs); font-size: var(--cds-font-size-caption); line-height: 1.45; border-left: 3px solid; padding-left: var(--cds-pad-sm); }
+.ca .who b { font-size: var(--cds-font-size-body); }
+.ca .tbl-wrap { overflow: auto; max-height: 26rem; }
+.ca table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); }
+.ca th { text-align: left; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); border-bottom: 1px solid var(--color-border-line); padding: var(--cds-pad-xs) var(--cds-pad-sm); position: sticky; top: 0; background: var(--color-panel); }
+.ca td { padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
+.ca .pri { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 24rem), 1fr)); gap: var(--cds-gap-md); min-height: 16rem; }
+.ca .pcard { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md); display: flex; flex-direction: column; gap: var(--cds-gap-sm); font-size: var(--cds-font-size-caption); line-height: 1.5; }
+.ca .pcard .t { font-family: var(--font-anthropic-serif); font-size: var(--cds-font-size-heading); }
+.ca .pcard .gap { border-top: 1px dashed var(--color-border-line); padding-top: var(--cds-gap-xs); }
+.ca .tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); white-space: nowrap; z-index: 5; }
+.ca .tip .k { color: var(--cds-text-secondary); }
+.ca .method { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.ca .method li { margin-bottom: var(--cds-gap-xs); }
+.ca details.method { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md) var(--cds-pad-lg); }
+[data-dash-source-state=empty] { color: transparent; }
+[data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+</style>
+
+<div class="ca">
+  <header id="top">
+    <h1>St. Paul Area Chamber: council course of action</h1>
+    <p class="lede">A recommended plan for engaging each St. Paul councilmember on the Chamber's directives, built from the Chamber's 2024–2026 Strategic Plan and 2026 Report to Our Community, and from the council's 2026 minutes (January 7 – October 28). Where the documents or minutes don't contain something, it says NOT AVAILABLE. Use the Topic search tab to get a course of action for any new issue.</p>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button class="tab" role="tab" data-tab="plan" aria-selected="true">Course of action</button>
+    <button class="tab" role="tab" data-tab="search" aria-selected="false">Topic search</button>
+    <button class="tab" role="tab" data-tab="priorities" aria-selected="false">Chamber priorities</button>
+  </nav>
+
+  <section class="pane" data-pane="plan" id="plan">
+    <div class="card">
+      <h3>What the Chamber stands for (from its own documents)</h3>
+      <p class="note">Every recommendation below leads with one of these, so asks are framed in the Chamber's own terms.</p>
+      <div class="values">
+        <div class="value"><b>A strong business climate equals a strong community</b>Good jobs and a tax base that supports infrastructure, public safety and schools.</div>
+        <div class="value"><b>Equity is the lens</b>Fully engage a diverse labor force; challenge barriers that created disparities.</div>
+        <div class="value"><b>Quality of life matters</b>A livable community that attracts and retains top talent.</div>
+        <div class="value"><b>Catalytic leadership drives progress</b>Collaborate with the public sector on the region's highest aspirations.</div>
+        <div class="value"><b>Courageous, deep listening effects change</b>Make space for courageous conversations; bring people together.</div>
+        <div class="value"><b>2026 priorities</b>Stop Drive-thru Ban · Downtown Revitalization · CUB Tax Credit and Housing.</div>
+      </div>
+    </div>
+
+    <div class="card" id="ladder">
+      <h3>Order of engagement: building to a winning vote</h3>
+      <p class="note">Members in the recommended order of outreach. The dashed line marks the yeas that carried every split vote in 2026. Each dot's ring shows how often that member sided with the majority on split votes; the bar shows activity on business-related items.</p>
+      <div class="chart" style="min-height:230px" data-draw="ladder" data-source="c_members b_kpis"></div>
+    </div>
+
+    <div>
+      <h2>Member-by-member course of action</h2>
+      <p class="note">Stance, the recommended approach, what to engage on, how to frame the ask, and cautions. Open "On the record" for the evidence behind each recommendation.</p>
+    </div>
+    <div class="plans" data-draw="plans" data-source="c_members"></div>
+
+    <div class="card" id="next">
+      <h3>Next meeting: Wednesday, November 4</h3>
+      <p class="note">Business-related items scheduled to return, with whom to call first. Written comments on public-hearing items should reach the council by noon the day before.</p>
+      <div class="chart" style="min-height:8rem" data-draw="next" data-source="b_watch c_issues"></div>
+    </div>
+  </section>
+
+  <section class="pane" data-pane="search" id="search" hidden>
+    <div class="card">
+      <h3>Get a course of action for any topic</h3>
+      <p class="note">Type an issue the Chamber is tracking (for example a proposed ordinance, a policy area or a project). The plan is built from the 2026 council record and the Chamber's documents; anything they don't cover is marked NOT AVAILABLE.</p>
+      <div class="search">
+        <input type="search" class="q" placeholder="e.g. paid sick leave, downtown safety, drive-thru, rent stabilization" aria-label="Topic">
+        <button class="btn primary go" type="button">Build course of action</button>
+        <button class="btn clearq" type="button">Clear</button>
+      </div>
+      <div class="examples" style="margin-top:.6rem">Try:
+        <button class="btn ex" type="button" data-q="prevailing wage">prevailing wage</button>
+        <button class="btn ex" type="button" data-q="downtown safety">downtown safety</button>
+        <button class="btn ex" type="button" data-q="drive-thru zoning">drive-thru zoning</button>
+        <button class="btn ex" type="button" data-q="rent stabilization housing">rent stabilization housing</button>
+        <button class="btn ex" type="button" data-q="workforce child care">workforce child care</button>
+        <button class="btn ex" type="button" data-q="garbage fees">garbage fees</button>
+      </div>
+    </div>
+    <div class="coa" data-draw="coa" data-source="c_issues c_members b_kpis"></div>
+    <div class="card" id="related">
+      <h3>Related 2026 council actions</h3>
+      <p class="note">Items whose titles match the topic, newest first, with the vote and who moved or spoke.</p>
+      <div class="tbl-wrap"><table data-source="c_items" data-row-key="id">
+        <thead><tr><th data-field="date">Date</th><th data-field="file">File</th><th data-field="title">Item</th><th data-field="tally">Vote</th><th data-field="action">Result</th><th data-field="movers">Moved or spoke</th></tr></thead>
+        <tbody data-draw="related"></tbody></table></div>
+    </div>
+  </section>
+
+  <section class="pane" data-pane="priorities" id="priorities" hidden>
+    <p class="note">Each Chamber priority or directive, what the council did on it in 2026, who led, and what the record can't show (NOT AVAILABLE).</p>
+    <div class="pri" data-draw="priorities" data-source="c_priorities"></div>
+  </section>
+
+  <details class="method" id="method">
+    <summary>How this was built</summary>
+    <ul>
+      <li>Chamber sources: <i>2024–2026 Strategic Plan</i> (purpose, priorities, core values, strategies) and <i>2026 Report to Our Community</i> (2026 priorities, local government wins, PAC endorsement). The 2025–26 Policy Platform referenced in the report was not supplied, so specific Chamber positions beyond these documents are NOT AVAILABLE.</li>
+      <li>Council sources: St. Paul City Council minutes PDFs (stpaul.legistar.com), January 7 – October 28, 2026: roll-call votes, motions and remarks.</li>
+      <li>Stances and recommended approaches are Claude's recommendations drawn from each member's public record (votes, motions, remarks, voting partners) and the Chamber's stated values. They describe how to engage, not how a member will vote.</li>
+      <li>Topic search matches the words typed against issue keywords and 2026 item titles, then assembles a plan from the matching issue areas: Chamber priority and framing, members who lead on the issue, members who dissented or pushed back on related items, and council timing. A topic with no match in the record is marked NOT AVAILABLE.</li>
+      <li>Recommendations assume lawful, transparent advocacy: meetings, testimony, written comments, coalition-building and data. Follow the City of Saint Paul's lobbyist registration and reporting rules, and keep PAC activity separate from official requests.</li>
+    </ul>
+  </details>
+</div>
+
+<script src="app.js"></script>

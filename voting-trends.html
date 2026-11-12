@@ -1,0 +1,280 @@
+<meta name="dash-one-writer">
+<style>
+#dash-root { --dash-gutter: var(--cds-pad-lg); }
+.cv { font-family: var(--font-anthropic-sans); color: var(--color-fg); display: flex; flex-direction: column; gap: var(--cds-gap-lg); max-width: 1200px; margin-inline: auto; }
+.cv h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; }
+.cv h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.cv h3 { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.cv .lede { margin: var(--cds-gap-xs) 0 0; color: var(--color-fg-muted); font-size: var(--cds-font-size-body); max-width: 60rem; }
+.cv .lede b { color: var(--color-fg); font-weight: 600; }
+.cv .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr)); gap: var(--cds-gap-md); }
+.cv .tile, .cv .card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); }
+.cv .tile .lab { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.cv .tile .num { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; margin-top: var(--cds-gap-xs); min-height: 1.3em; }
+.cv .tile .sub { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-top: var(--cds-gap-xs); }
+.cv .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr)); gap: var(--cds-gap-md); }
+.cv .note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: var(--cds-gap-xs) 0 var(--cds-gap-md); }
+.cv .chart { position: relative; min-height: 240px; }
+.cv .chart.heat { min-height: 260px; }
+.cv .tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); white-space: nowrap; z-index: 2; }
+.cv .tip .k { color: var(--cds-text-secondary); }
+.cv .tbl-wrap { overflow: auto; max-height: 34rem; }
+.cv table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+.cv th { text-align: left; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); border-bottom: 1px solid var(--color-border-line); padding: var(--cds-pad-xs) var(--cds-pad-sm); position: sticky; top: 0; background: var(--color-panel); }
+.cv td { padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
+.cv td.n, .cv th.n { text-align: right; }
+.cv .bad { color: #8a2617; font-weight: 600; }
+.cv .legend { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); display: flex; align-items: center; gap: var(--cds-gap-xs); flex-wrap: wrap; margin-bottom: var(--cds-gap-sm); }
+.cv .sw { display: inline-block; width: .7rem; height: .7rem; border-radius: 2px; margin-left: var(--cds-gap-sm); }
+.cv .method { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.cv .method li { margin-bottom: var(--cds-gap-xs); }
+[data-dash-source-state=empty] { color: transparent; }
+[data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+</style>
+
+<div class="cv">
+  <header id="top">
+    <h1>St. Paul City Council voting trends, 2026</h1>
+    <p class="lede">Across <b data-draw="t-votes" data-source="totals" data-field="votes" data-row="0">—</b> recorded votes from <b data-draw="t-first" data-source="totals" data-field="first_meeting" data-row="0">—</b> to <b data-draw="t-last" data-source="totals" data-field="last_meeting" data-row="0">—</b>, <b data-draw="t-ushare" data-source="totals" data-field="unanimous_share" data-row="0">—</b> had no dissent. Only <b data-draw="t-contested" data-source="totals" data-field="contested" data-row="0">—</b> votes split the council, so absences, not disagreement, drive most of the differences between members.</p>
+  </header>
+
+  <section class="tiles" id="kpis">
+    <div class="tile"><div class="lab">Meetings with votes</div><div class="num" data-draw="k-meetings" data-source="totals" data-field="meetings" data-row="0">—</div><div class="sub">Regular and special</div></div>
+    <div class="tile"><div class="lab">Recorded votes</div><div class="num" data-draw="k-votes" data-source="totals" data-field="votes" data-row="0">—</div><div class="sub">Consent block = one vote</div></div>
+    <div class="tile"><div class="lab">Agenda items decided</div><div class="num" data-draw="k-items" data-source="totals" data-field="items" data-row="0">—</div><div class="sub">Incl. items inside consent blocks</div></div>
+    <div class="tile"><div class="lab">Votes with no dissent</div><div class="num" data-draw="k-ushare" data-source="totals" data-field="unanimous_share" data-row="0">—</div><div class="sub">Share of recorded votes</div></div>
+    <div class="tile"><div class="lab">Split votes</div><div class="num" data-draw="k-contested" data-source="totals" data-field="contested" data-row="0">—</div><div class="sub">At least one yea and one nay</div></div>
+    <div class="tile"><div class="lab">Motions that failed</div><div class="num" data-draw="k-failed" data-source="totals" data-field="failed" data-row="0">—</div><div class="sub">Incl. unanimous denials</div></div>
+  </section>
+
+  <section id="members">
+    <h2>Each councilmember's record</h2>
+    <p class="note">Yea, nay and absent count every recorded vote. "Sided with majority" looks only at split votes the member took part in.</p>
+    <div class="card">
+      <div class="tbl-wrap">
+        <table data-source="members" data-row-key="member">
+          <thead><tr>
+            <th data-field="member">Member</th>
+            <th class="n" data-field="yea">Yea</th>
+            <th class="n" data-field="nay">Nay</th>
+            <th class="n" data-field="absent">Absent</th>
+            <th class="n" data-field="participation">Participation</th>
+            <th class="n" data-field="split_votes_cast">Split votes cast</th>
+            <th class="n" data-field="with_majority">With majority</th>
+            <th class="n" data-field="majority_share">Sided with majority</th>
+            <th class="n" data-field="dissents">Dissents</th>
+          </tr></thead>
+          <tbody data-draw="members-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="card" id="attendance">
+      <h3>Participation by month</h3>
+      <p class="note">Share of that month's recorded votes each member cast. Darker is fuller participation; hover for absences.</p>
+      <div class="chart heat" data-source="member_monthly" data-draw="heat"></div>
+    </div>
+    <div class="card" id="agreement">
+      <h3>Who votes together on split votes</h3>
+      <p class="note">Share of split votes on which each pair voted the same way (both present). Darker means more alike.</p>
+      <div class="chart heat" data-source="agreement" data-draw="agree"></div>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="card" id="volume">
+      <h3>Agenda items decided per month</h3>
+      <p class="note">Every item the council acted on, including those inside consent and legislative-hearing blocks.</p>
+      <div class="chart" data-source="monthly" data-draw="items"></div>
+    </div>
+    <div class="card" id="friction">
+      <h3>Split votes and votes taken short-handed</h3>
+      <p class="note">Per month: votes with a dissent, and votes where at least one member was absent.</p>
+      <div class="legend"><span class="sw" data-sw="1"></span>Split votes <span class="sw" data-sw="2"></span>Votes with an absence</div>
+      <div class="chart" data-source="monthly" data-draw="friction"></div>
+    </div>
+  </section>
+
+  <section id="contested">
+    <h2>Every split vote</h2>
+    <p class="note">Votes where at least one member voted yea and another nay, newest first.</p>
+    <div class="card">
+      <div class="tbl-wrap">
+        <table data-source="contested" data-row-key="date,file,action">
+          <thead><tr>
+            <th data-field="date">Date</th>
+            <th data-field="file">File</th>
+            <th data-field="title">Item</th>
+            <th data-field="action">Result</th>
+            <th class="n" data-field="tally">Tally</th>
+            <th data-field="yea">Yea</th>
+            <th data-field="nay">Nay</th>
+            <th data-field="absent">Absent</th>
+          </tr></thead>
+          <tbody data-draw="contested-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="card method" id="method">
+    <h3>How this was built</h3>
+    <ul>
+      <li>Source: the City Council meeting-minutes PDFs from the city's Legistar site (stpaul.legistar.com), January 7 through October 28, 2026, parsed line by line from each roll call. Closed sessions record no votes; the November 4 meeting had no minutes yet.</li>
+      <li>Each roll-call vote is one row, including procedural motions (closing hearings, layovers, amendments). A consent agenda adopted in one vote counts as one vote; "Agenda items decided" counts the items inside it, less any pulled for a separate vote.</li>
+      <li>"Absent" means the member isn't listed as voting on that item, whether absent for the meeting, arriving late or leaving early. Johnson cast no votes in January and missed most of February's.</li>
+      <li>A motion to deny that every member supported is recorded by the clerk as all "nay" with the item failing; those count as unanimous, not split. Votes reported only as "approved 7-0" in narrative text (some motions to close a hearing) have no roll call and aren't counted.</li>
+      <li>Each vote's yea count was checked against the clerk's tally, and every split vote against the minutes text. The full vote-by-vote file is in Sources.</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+(() => {
+  const fmtInt = d3.format(','), fmtPct = d3.format('.1%'), fmtPct0 = d3.format('.0%');
+  const fmtDate = (s) => d3.utcFormat('%b %-d, %Y')(new Date(s + 'T00:00:00Z'));
+  const one = (id) => { const d = dash.data(id); return d.status === 'ok' && d.data.length ? d.data[0] : null; };
+  const val = (name, id, field, fmt) => dash.draw(name, (el) => {
+    const r = one(id); el.textContent = r ? fmt(r[field]) : '—';
+  });
+  val('t-votes', 'totals', 'votes', (v) => fmtInt(+v));
+  val('t-first', 'totals', 'first_meeting', fmtDate);
+  val('t-last', 'totals', 'last_meeting', fmtDate);
+  val('t-ushare', 'totals', 'unanimous_share', (v) => fmtPct(+v));
+  val('t-contested', 'totals', 'contested', (v) => fmtInt(+v));
+  val('k-meetings', 'totals', 'meetings', (v) => fmtInt(+v));
+  val('k-votes', 'totals', 'votes', (v) => fmtInt(+v));
+  val('k-items', 'totals', 'items', (v) => fmtInt(+v));
+  val('k-ushare', 'totals', 'unanimous_share', (v) => fmtPct(+v));
+  val('k-contested', 'totals', 'contested', (v) => fmtInt(+v));
+  val('k-failed', 'totals', 'failed', (v) => fmtInt(+v));
+
+  dash.draw('members-body', (tb) => {
+    const d = dash.data('members');
+    tb.replaceChildren();
+    if (d.status !== 'ok') return;
+    const cols = [['member', (v) => v, ''], ['yea', (v) => fmtInt(+v), 'n'], ['nay', (v) => fmtInt(+v), 'n'], ['absent', (v) => fmtInt(+v), 'n'],
+      ['participation', (v) => fmtPct(+v), 'n'], ['split_votes_cast', (v) => fmtInt(+v), 'n'], ['with_majority', (v) => fmtInt(+v), 'n'],
+      ['majority_share', (v) => fmtPct0(+v), 'n'], ['dissents', (v) => fmtInt(+v), 'n']];
+    for (const r of d.data) {
+      const tr = document.createElement('tr');
+      for (const [c, f, cls] of cols) { const td = document.createElement('td'); td.className = cls; td.textContent = f(r[c]); tr.appendChild(td); }
+      tb.appendChild(tr);
+    }
+  });
+
+  dash.draw('contested-body', (tb) => {
+    const d = dash.data('contested');
+    tb.replaceChildren();
+    if (d.status !== 'ok') return;
+    const rows = d.data.slice().sort((a, b) => b.date.localeCompare(a.date));
+    for (const r of rows) {
+      const tr = document.createElement('tr');
+      for (const c of ['date', 'file', 'title', 'action', 'tally', 'yea', 'nay', 'absent']) {
+        const td = document.createElement('td'); td.textContent = r[c];
+        if (c === 'tally') td.className = 'n';
+        if (c === 'nay') td.className = 'bad';
+        tr.appendChild(td);
+      }
+      tb.appendChild(tr);
+    }
+  });
+
+  const monthLabel = (m) => d3.utcFormat('%b')(new Date(m + '-01T00:00:00Z'));
+  const tipIn = (box) => { const t = document.createElement('div'); t.className = 'tip'; t.hidden = true; box.appendChild(t); return t; };
+  const placeTip = (box, tip, ev) => {
+    const b = box.getBoundingClientRect(); let x = ev.clientX - b.left + 12, y = ev.clientY - b.top + 12;
+    tip.hidden = false; const w = tip.offsetWidth, h = tip.offsetHeight;
+    if (x + w > b.width) x = ev.clientX - b.left - w - 12; if (y + h > b.height) y = Math.max(0, ev.clientY - b.top - h - 12);
+    tip.style.left = Math.max(0, x) + 'px'; tip.style.top = y + 'px';
+  };
+  const tipLines = (tip, head, lines) => {
+    tip.replaceChildren();
+    const k = document.createElement('div'); k.className = 'k'; k.textContent = head; tip.appendChild(k);
+    for (const l of lines) { const dv = document.createElement('div'); dv.textContent = l; tip.appendChild(dv); }
+  };
+  document.querySelectorAll('.cv [data-sw]').forEach((el) => { el.style.background = dash.colors[+el.dataset.sw]; });
+
+  const heatmap = (box, rowsKeys, colsKeys, cell, colLabel, tipFn, fmt) => {
+    box.replaceChildren();
+    const W = Math.max(280, box.clientWidth);
+    const svg = d3.select(box).append('svg').attr('width', '100%');
+    const probe = svg.append('text').attr('font-size', 12).text('Coleman');
+    const left = probe.node().getComputedTextLength() + 10; probe.remove();
+    const top = 22, cw = (W - left) / colsKeys.length, ch = 30, H = top + ch * rowsKeys.length + 4;
+    svg.attr('viewBox', `0 0 ${W} ${H}`).attr('height', H);
+    const lo = getComputedStyle(box).getPropertyValue('--color-panel').trim() || '#f5f5f5';
+    const ramp = d3.interpolateRgb(lo, dash.colors[0]);
+    const tip = tipIn(box);
+    svg.selectAll('.cl').data(colsKeys).join('text').attr('x', (d, i) => left + i * cw + cw / 2).attr('y', 14)
+      .attr('text-anchor', 'middle').attr('font-size', 11).attr('fill', 'var(--color-fg-muted)').text(colLabel);
+    svg.selectAll('.rl').data(rowsKeys).join('text').attr('x', left - 8).attr('y', (d, i) => top + i * ch + ch / 2 + 4)
+      .attr('text-anchor', 'end').attr('font-size', 12).attr('fill', 'var(--color-fg)').text((d) => d);
+    rowsKeys.forEach((r, i) => colsKeys.forEach((c, j) => {
+      const v = cell(r, c);
+      const g = svg.append('g');
+      g.append('rect').attr('x', left + j * cw + 1).attr('y', top + i * ch + 1).attr('width', Math.max(0, cw - 2)).attr('height', ch - 2).attr('rx', 3)
+        .attr('fill', v == null ? 'transparent' : ramp(v.t)).attr('stroke', v == null ? 'var(--color-border-line)' : 'none');
+      if (v != null && cw > 34) g.append('text').attr('x', left + j * cw + cw / 2).attr('y', top + i * ch + ch / 2 + 4).attr('text-anchor', 'middle')
+        .attr('font-size', 10.5).attr('fill', v.t > 0.55 ? '#fff' : 'var(--color-fg)').text(fmt(v));
+      if (v != null) g.on('mousemove', (ev) => { tipLines(tip, ...tipFn(r, c, v)); placeTip(box, tip, ev); }).on('mouseleave', () => { tip.hidden = true; });
+    }));
+  };
+
+  dash.draw('heat', (box) => {
+    const d = dash.data('member_monthly');
+    if (d.status !== 'ok') { box.replaceChildren(); return; }
+    const rows = d.data.map((r) => ({ ...r, votes: +r.votes, absent: +r.absent, nay: +r.nay, participation: +r.participation }));
+    const members = [...new Set(rows.map((r) => r.member))], months = [...new Set(rows.map((r) => r.month))].sort();
+    const idx = new Map(rows.map((r) => [r.member + '|' + r.month, r]));
+    const minP = 0.5;
+    heatmap(box, members, months, (m, mo) => { const r = idx.get(m + '|' + mo); return r ? { r, t: Math.max(0, (r.participation - minP) / (1 - minP)) } : null; },
+      monthLabel, (m, mo, v) => [`${m} · ${d3.utcFormat('%B')(new Date(mo + '-01T00:00:00Z'))}`, [`Participation ${fmtPct(v.r.participation)}`, `Absent on ${fmtInt(v.r.absent)} of ${fmtInt(v.r.votes)} votes`, `Nay votes ${fmtInt(v.r.nay)}`]],
+      (v) => fmtPct0(v.r.participation));
+  });
+
+  dash.draw('agree', (box) => {
+    const d = dash.data('agreement');
+    if (d.status !== 'ok') { box.replaceChildren(); return; }
+    const rows = d.data;
+    const members = [...new Set(rows.map((r) => r.a))];
+    const idx = new Map(rows.map((r) => [r.a + '|' + r.b, r]));
+    heatmap(box, members, members, (a, b) => { const r = idx.get(a + '|' + b); if (!r || r.share === '') return null; const s = +r.share; return { r, s, t: s }; },
+      (m) => (box.clientWidth < 520 ? m.slice(0, 3) : m),
+      (a, b, v) => [`${a} & ${b}`, [`Voted alike ${fmtPct0(v.s)}`, `${fmtInt(+v.r.agree)} of ${fmtInt(+v.r.n)} split votes`]],
+      (v) => fmtPct0(v.s));
+  });
+
+  const bars = (box, data, series) => {
+    box.replaceChildren();
+    const W = Math.max(280, box.clientWidth), H = 240, m = { t: 12, r: 8, b: 26, l: 8 };
+    const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('height', H);
+    const ymax = d3.max(data, (d) => d3.max(series, (s) => d[s.key])) || 1;
+    const y = d3.scaleLinear([0, ymax], [H - m.b, m.t]).nice();
+    const probe = svg.append('text').attr('font-size', 11).text(fmtInt(y.domain()[1])); m.l = probe.node().getComputedTextLength() + 12; probe.remove();
+    const x = d3.scaleBand(data.map((d) => d.month), [m.l, W - m.r]).padding(0.25);
+    const xi = d3.scaleBand(series.map((s) => s.key), [0, x.bandwidth()]).padding(0.1);
+    const ga = svg.append('g').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(4).tickSize(-(W - m.l - m.r)).tickFormat(fmtInt));
+    ga.attr('font-size', null).attr('font-family', null); ga.select('.domain').remove();
+    ga.selectAll('line').attr('stroke', 'var(--cds-chart-grid)'); ga.selectAll('text').attr('fill', 'var(--color-fg-muted)').attr('font-size', 11);
+    const gx = svg.append('g').attr('transform', `translate(0,${H - m.b})`).call(d3.axisBottom(x).tickFormat(monthLabel).tickSize(0));
+    gx.attr('font-size', null).attr('font-family', null); gx.select('.domain').attr('stroke', 'var(--cds-chart-axis)');
+    gx.selectAll('text').attr('fill', 'var(--color-fg-muted)').attr('font-size', 11).attr('dy', '1.2em');
+    const tip = tipIn(box);
+    const bw = Math.min(32, xi.bandwidth());
+    series.forEach((s, i) => {
+      svg.append('g').selectAll('rect').data(data).join('rect')
+        .attr('x', (d) => x(d.month) + xi(s.key) + (xi.bandwidth() - bw) / 2).attr('width', bw)
+        .attr('y', (d) => y(d[s.key])).attr('height', (d) => y(0) - y(d[s.key])).attr('rx', 3).attr('fill', s.color)
+        .on('mousemove', (ev, d) => { tipLines(tip, d3.utcFormat('%B %Y')(new Date(d.month + '-01T00:00:00Z')), series.map((q) => `${q.label}: ${fmtInt(d[q.key])}`).concat([`Meetings: ${fmtInt(d.meetings)}`])); placeTip(box, tip, ev); })
+        .on('mouseleave', () => { tip.hidden = true; });
+    });
+  };
+
+  const monthly = () => { const d = dash.data('monthly'); return d.status === 'ok' ? d.data.map((r) => ({ month: r.month, meetings: +r.meetings, items: +r.items, votes: +r.votes, contested: +r.contested, absence: +r.votes_with_absence })) : null; };
+  dash.draw('items', (box) => { const m = monthly(); if (!m) { box.replaceChildren(); return; } bars(box, m, [{ key: 'items', label: 'Items decided', color: dash.colors[0] }]); });
+  dash.draw('friction', (box) => { const m = monthly(); if (!m) { box.replaceChildren(); return; } bars(box, m, [{ key: 'contested', label: 'Split votes', color: dash.colors[1] }, { key: 'absence', label: 'Votes with an absence', color: dash.colors[2] }]); });
+})();
+</script>
