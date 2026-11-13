@@ -63,8 +63,4 @@
   }
   render();
 
-  // upload dialog
-  const dlg = $('#lib-upload');
-  $('#lib-upload-open').addEventListener('click', () => { if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', ''); });
-  dlg.querySelector('.lib-close').addEventListener('click', () => dlg.close ? dlg.close() : dlg.removeAttribute('open'));
 })();

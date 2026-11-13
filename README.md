@@ -35,17 +35,43 @@ When a new minutes PDF is added to the `minutes` folder, GitHub re-reads every s
 
 Share that address with anyone. It works on phones and computers, and no login is needed.
 
-## Adding new minutes (every week)
+## Adding new minutes (every week): right on the website
 
-1. Open the site's **Minutes library** and click **Upload new minutes**.
-2. Click **Open the upload page**, and sign in to GitHub if asked.
-3. Drag in the new minutes PDF from Legistar and click **Commit changes**.
-4. Wait about 3 minutes. Every dashboard, one-pager and the library update.
+1. Download the new minutes PDF from the city’s Legistar page. The site has a **Council minutes on Legistar** link at the top of every page.
+2. On the site, open the **Minutes library** and click **Upload new minutes**.
+3. Drag the PDF into the box, or click **choose files**. Before anything is sent, the site reads the file and shows one of these:
+   - **Ready**: the meeting it found, such as "Wednesday, November 4, 2026 · 3:30 PM · 8 pages".
+   - **Already added**: that meeting is already in the library.
+   - **Can’t use**: not a City Council minutes PDF.
+4. Paste the **upload key** (only needed the first time on each computer or phone). Click **Publish**.
+5. A progress checklist shows: **Send the files → Add to the minutes library → Rebuild the dashboards → Live on the site**. It takes about 3 minutes. You can close the window, and the update keeps going. The library page also shows a notice while an update is running.
 
-Notes:
-- Only City Council meeting-minutes PDFs are used. Other PDFs, and copies of minutes already in the library, are skipped automatically.
-- To watch an update, or to see why one failed, open the **Actions** tab. A red X means the build stopped, and the site keeps showing the last good version.
-- Uploading from a phone may not work well, so use a computer if you can.
+### The upload key (one-time setup by the site owner)
+
+The upload key is what lets the website save files to the site. Without it, nobody can add or change anything. To create one:
+
+1. While signed in to GitHub, open <https://github.com/settings/personal-access-tokens/new>.
+2. **Token name:** "Minutes upload". **Expiration:** up to one year. Put a reminder in your calendar to make a new key before it expires.
+3. **Repository access:** choose **Only select repositories**, then pick this repository (for example SPCC-CC).
+4. **Permissions → Repository permissions:**
+   - **Contents:** Read and write
+   - **Actions:** Read-only (this lets the website show progress)
+5. Click **Generate token**. Copy the key; it starts with `github_pat_`.
+
+Share the key only with people who should add minutes. Anyone with it can change files in this repository, so treat it like a password. The key is stored only in the browser of the computer where it was entered, and only if **Remember on this device** is checked. To revoke it, delete the token on the same GitHub page; then create a new one.
+
+If you prefer, uploading through GitHub still works: in the upload window, use **Prefer GitHub? Upload there instead**.
+
+## If an update fails (red X in the Actions tab)
+
+Click the failed run, then the red step, to see the message.
+
+- **"Site files not found"** or **"exit code 2"**: GitHub can't find the site's files. Open the repository's main page. You should see the folders `minutes`, `narrative`, `pipeline` and `web`, either at the top level or inside one folder such as `stpaul-council-site`. If any of them are missing, upload them from the package (**Add file → Upload files**), keeping their subfolders.
+- **"Missing file"**: one subfolder didn't upload, often `web/vendor`. Upload it again.
+- **Deploy step fails with "Get Pages site failed" or a 404**: go to **Settings → Pages** and set **Source** to **GitHub Actions**. Then use **Actions → Update site → Run workflow**.
+- **The upload window says the key wasn’t accepted**: the key is mistyped, expired or revoked. Create a new one (see above).
+- **The upload window says the key can’t see this repository, or doesn’t allow saving**: recreate the key, choosing this repository and setting **Contents: Read and write**.
+- **"Step ... failed" while reading minutes**: a PDF couldn't be read as City Council minutes. Remove the most recent upload from the `minutes` folder, then send me the file and the message.
 
 ## What updates automatically, and what doesn't
 
