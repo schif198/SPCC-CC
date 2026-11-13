@@ -19,7 +19,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Find the site files
         shell: bash
@@ -42,8 +42,8 @@ jobs:
             rm -rf "$dir"; mkdir -p "$dir/pipeline" "$dir/web/pages" "$dir/web/vendor" "$dir/narrative" "$dir/minutes"
             pick() { find . -path ./.git -prune -o -path ./_project -prune -o -type f -name "$1" -print | head -1; }
             find . -path ./.git -prune -o -path ./_project -prune -o -type f -name '*.py' -print0 | while IFS= read -r -d '' f; do cp "$f" "$dir/pipeline/"; done
-            for n in library.js print.js shim.js site.css theme.css; do f=$(pick "$n"); [ -n "$f" ] && cp "$f" "$dir/web/"; done
-            f=$(pick d3.min.js); [ -n "$f" ] && cp "$f" "$dir/web/vendor/"
+            for n in library.js upload.js print.js shim.js site.css theme.css; do f=$(pick "$n"); [ -n "$f" ] && cp "$f" "$dir/web/"; done
+            for n in d3.min.js pdfjs.min.js pdfjs.worker.min.js; do f=$(pick "$n"); [ -n "$f" ] && cp "$f" "$dir/web/vendor/"; done
             for n in course-of-action.html course-of-action.js member-by-member.html member-by-member.js playbook.html playbook.js voting-trends.html; do
               f=$(pick "$n"); [ -n "$f" ] && cp "$f" "$dir/web/pages/"
             done
@@ -53,7 +53,7 @@ jobs:
             up=$(dirname "${first_pdf:-./x}"); up=${up#./}; [ "$up" = "." ] && up=""
           fi
           missing=""
-          for need in pipeline/run.py pipeline/build_site.py web/print.js web/shim.js web/site.css web/theme.css web/library.js web/vendor/d3.min.js \
+          for need in pipeline/run.py pipeline/build_site.py web/print.js web/shim.js web/site.css web/theme.css web/library.js web/upload.js web/vendor/d3.min.js \
                       web/pages/voting-trends.html web/pages/member-by-member.html web/pages/playbook.html web/pages/course-of-action.html \
                       narrative/c_members_text.csv narrative/c_priorities.csv; do
             [ -f "$dir/$need" ] || missing="$missing $(basename "$need")"
@@ -79,9 +79,9 @@ jobs:
         working-directory: ${{ env.PROJECT_DIR }}
         run: python3 pipeline/build_site.py
 
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
 
-      - uses: actions/upload-pages-artifact@v4
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: ${{ env.PROJECT_DIR }}/_site
 
@@ -93,4 +93,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
