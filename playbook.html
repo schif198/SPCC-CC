@@ -99,6 +99,58 @@
 .pb .plays li:last-child::after { display: none; }
 .pb .plays li > b:first-child { display: block; font-size: 1.05rem; font-weight: 700; color: #2a0157; margin-bottom: 2px; }
 .pb .plays li b[data-draw] { color: #b9420c; font-weight: 800; }
+.pb button.wcard { font: inherit; color: inherit; text-align: left; cursor: pointer; transition: transform .12s, box-shadow .12s; }
+.pb button.wcard:hover, .pb button.wcard:focus-visible { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(42,1,87,.14); outline: none; }
+.pb button.wcard:focus-visible { outline: 3px solid #f15a25; }
+.pb .wmeta { display: flex; flex-wrap: wrap; gap: 4px; }
+.pb .wmeta .tag { margin: 0; }
+@media (max-width: 640px) { .wd .wd-top { position: static; padding: 14px 52px 12px 16px; } .wd .wd-t { font-size: 1rem; } .wd .wd-body { padding: 4px 16px 18px; } }
+.pb .wmore { margin-top: auto; padding-top: 6px; font-size: var(--cds-font-size-caption); font-weight: 700; color: #5b2a86; }
+dialog.wd { width: min(760px, 94vw); max-height: 88vh; padding: 0; border: 0; border-radius: 14px; box-shadow: 0 24px 60px rgba(42,1,87,.3); font-family: var(--font-anthropic-sans); color: var(--color-fg); overflow: auto; }
+dialog.wd::backdrop { background: rgba(34,24,44,.45); }
+.wd .wd-top { position: sticky; top: 0; background: #fff; border-top: 6px solid; padding: 18px 56px 14px 24px; border-bottom: 1px solid var(--color-border-line); z-index: 1; }
+.wd .wd-x { position: absolute; right: 14px; top: 12px; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--color-border-line); background: #fff; font-size: 20px; line-height: 1; cursor: pointer; color: #2a0157; }
+.wd .wd-x:hover { background: #f6f0fb; }
+.wd .wd-kick { font-size: var(--cds-font-size-caption); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #b9420c; }
+.wd .wd-t { font-size: 1.15rem; line-height: 1.35; font-weight: 700; color: #2a0157; margin: 6px 0 10px; }
+.wd .wd-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.wd .tag { display: inline-block; font-size: var(--cds-font-size-caption); padding: 1px 8px; border-radius: 999px; border: 1px solid var(--color-border-line); }
+.wd .wd-body { padding: 6px 24px 22px; display: flex; flex-direction: column; gap: 4px; }
+.wd .wd-sec { padding-top: 12px; }
+.wd .wd-sec h3 { font-size: var(--cds-font-size-caption); text-transform: uppercase; letter-spacing: .08em; color: var(--color-fg-muted); margin: 0 0 8px; }
+.wd .wd-sum { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; line-height: 1.5; }
+.wd .wd-sum b { color: #2a0157; }
+.wd .wd-who { display: flex; flex-wrap: wrap; gap: 8px; }
+.wd .wd-pc { border: 1px solid var(--color-border-line); border-radius: 10px; padding: 6px 12px; display: flex; flex-direction: column; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.wd .wd-pc b { font-size: var(--cds-font-size-body); color: var(--color-fg); }
+.wd .wd-pc.first { border-color: #2a0157; background: #f6f0fb; }
+.wd .wd-tl { list-style: none; margin: 0; padding: 0 0 0 18px; border-left: 2px solid #f3c3ad; display: flex; flex-direction: column; gap: 14px; }
+.wd .wd-tl li { position: relative; font-size: var(--cds-font-size-caption); line-height: 1.5; }
+.wd .wd-tl li::before { content: ''; position: absolute; left: -25px; top: 3px; width: 12px; height: 12px; border-radius: 50%; background: #fff; border: 3px solid #f15a25; }
+.wd .wd-d { display: flex; gap: 8px; align-items: center; }
+.wd .wd-d b { font-size: var(--cds-font-size-body); color: #2a0157; }
+.wd .wd-tally { font-weight: 700; font-size: 11px; padding: 0 7px; border-radius: 999px; background: #2a0157; color: #fff; }
+.wd .wd-a { font-weight: 700; color: var(--color-fg); }
+.wd .wd-n { color: var(--color-fg-muted); }
+.wd a.wd-link { color: #5b2a86; font-weight: 600; text-underline-offset: 2px; }
+.wd .wd-links { display: flex; flex-wrap: wrap; gap: 8px; }
+.wd .wd-links a { border: 1.5px solid #2a0157; border-radius: 8px; padding: 6px 12px; text-decoration: none; font-size: var(--cds-font-size-caption); }
+.wd .wd-links a.primary { background: #2a0157; color: #fff; }
+.wd .wd-links a:hover { background: #f6f0fb; } .wd .wd-links a.primary:hover { background: #3d0a78; }
+.wd .wd-hint { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 8px 0 0; }
+.pb .ptile { cursor: pointer; transition: opacity .15s, box-shadow .15s, transform .12s; position: relative; }
+.pb .ptile:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(42,1,87,.12); }
+.pb .ptile:focus-visible { outline: 3px solid #f15a25; }
+.pb .ptile.on { outline: 3px solid var(--lc); box-shadow: 0 12px 28px rgba(42,1,87,.16); }
+.pb .ptile.off { opacity: .45; }
+.pb .ptile.off:hover { opacity: .85; }
+.pb .pact { margin-top: auto; padding-top: 8px; font-size: var(--cds-font-size-caption); display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
+.pb .pact .poff { color: var(--color-fg-muted); font-weight: 600; }
+.pb .pact .pon { font-weight: 800; color: #fff; background: var(--lc); border-radius: 999px; padding: 1px 9px; }
+.pb .pact a { color: #5b2a86; font-weight: 700; }
+.pb .whead { font-size: 1.02rem; font-weight: 800; color: #2a0157; line-height: 1.3; }
+.pb .wcard .what { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.wd .wd-full { margin: 0 0 10px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.45; }
 [data-dash-source-state=empty] { color: transparent; }
 [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
 </style>
@@ -124,14 +176,14 @@
   <section id="watch">
     <div class="step">Act now</div>
     <h2>Business items on the next agenda</h2>
-    <p class="note">Scheduled to return. Second-reading ordinances still get a public hearing.</p>
+    <p class="note">Scheduled to return. Second-reading ordinances still get a public hearing. <b>Click an item</b> for a full summary, its history and where to read more.</p>
     <div class="watch" data-draw="watch" data-source="b_watch"></div>
   </section>
 
   <section id="persia">
     <div class="step">PERSIA scan</div>
     <h2>The council's agenda through six lenses</h2>
-    <p class="note">Votes per lens, share with no dissent, splits, and who leads on it.</p>
+    <p class="note">Votes per lens, share with no dissent, splits, and who leads on it. <b>Click a lens</b> to focus it on the coalition map and the PERSIA lens map below.</p>
     <div class="ptiles" data-draw="persia" data-source="b_persia"></div>
   </section>
 

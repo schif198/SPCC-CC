@@ -58,19 +58,104 @@
   dash.draw('kv', (el) => { const k = kp(); el.dataset.row = '0'; el.textContent = k ? fmt[el.dataset.fmt](k[el.dataset.field]) : '—'; });
 
   // ---------- watch list ----------
+  // ---------- next-agenda items: card → pop-up summary ----------
+  const lname = (s) => d3.utcFormat('%A, %B %-d')(new Date(s + 'T00:00:00Z'));
+  const dayBefore = (s) => { const d = new Date(s + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() - 1); return d3.utcFormat('%A, %B %-d')(d); };
+  const h = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+  const linkTo = (href, text, ext) => { const a = h('a', 'wd-link', text); a.href = href; if (ext) { a.target = '_blank'; a.rel = 'noopener'; } return a; };
+  let dlg = null;
+  const openWatch = (r) => {
+    if (!dlg) {
+      dlg = document.createElement('dialog'); dlg.className = 'wd'; document.body.appendChild(dlg);
+      dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+    }
+    dlg.replaceChildren();
+    const hist = (ok('b_watch_hist') || []).filter((x) => x.file === r.file).sort((a, b) => a.date.localeCompare(b.date));
+    const iss = (ok('b_issues') || []).find((x) => x.issue === r.issue);
+    const im = (ok('b_issue_member') || []).filter((x) => x.issue === r.issue && +x.lead > 0).sort((a, b) => +b.lead - +a.lead);
+    const full = hist.length ? hist[hist.length - 1].title : r.item;
+
+    const top = h('div', 'wd-top'); top.style.borderTopColor = issueColor(r.issue);
+    const x = h('button', 'wd-x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Close'); x.addEventListener('click', () => dlg.close());
+    const kick = h('div', 'wd-kick', `${r.file} · ${r.stage} · ${lname(r.next_meeting)}`);
+    const t = h('h2', 'wd-t', r.short || full.replace(/\.$/, '')); const ft = h('p', 'wd-full', full);
+    const chips = h('div', 'wd-chips'); const ic = h('span', 'tag', r.issue); ic.style.borderColor = issueColor(r.issue); chips.appendChild(ic); lensChips(chips, r.persia);
+    top.append(x, kick, t, ft, chips); dlg.appendChild(top);
+
+    const body = h('div', 'wd-body');
+    // summary
+    const sum = h('section', 'wd-sec'); sum.appendChild(h('h3', '', 'Summary'));
+    const ul = h('ul', 'wd-sum');
+    const li = (parts) => { const l = h('li'); for (const p of parts) l.append(p); ul.appendChild(l); };
+    const B = (s) => h('b', '', s);
+    li([B(`${r.stage} on ${lname(r.next_meeting)}.`), ` Written comments are due by noon ${dayBefore(r.next_meeting)} to be attached to the public record.`]);
+    if (hist.length) {
+      const f0 = hist[0];
+      li(['First seen in the minutes ', B(date(f0.date, '%B %-d')), hist.length > 1 ? `; it has come before the council ${hist.length} times since.`.replace(' since.', '.') : '.']);
+      const amended = hist.some((x) => /amend|version/i.test(x.action + ' ' + x.notes));
+      if (amended) li([B('Amended along the way'), ', so the current language may differ from the original.']);
+    }
+    li([r.last_tally === 'no roll call yet' ? B('No roll-call vote yet.') : ['Last roll call: ', B(r.last_tally), ` on ${date(r.last_action_date, '%B %-d')}.`]].flat());
+    if (iss && iss.unanimous_share !== '') {
+      const u = +iss.unanimous_share;
+      li([`${r.issue} items passed with no dissent `, B(fPct(u)), ` of the time this year (${fInt(+iss.splits)} split vote${+iss.splits === 1 ? '' : 's'}). `, u < 1 ? 'This is an issue that has divided the council, so early outreach can change the outcome.' : 'These almost always pass unanimously, so the time to shape the details is before the final vote.']);
+    }
+    if (r.persia) li(['Reads through the ', B(r.persia.replace(' · ', ' and ')), ` lens${r.persia.includes('·') ? 'es' : ''}: frame the ask in those terms.`]);
+    sum.appendChild(ul); body.appendChild(sum);
+
+    // who to call
+    if (im.length) {
+      const wc = h('section', 'wd-sec'); wc.appendChild(h('h3', '', `Who carries ${shortIssue(r.issue).toLowerCase()} items`));
+      const row = h('div', 'wd-who');
+      im.slice(0, 4).forEach((x, i) => { const c = h('div', 'wd-pc' + (i === 0 ? ' first' : '')); c.append(h('b', '', x.member), h('span', '', `${fInt(+x.lead)} motion${+x.lead === 1 ? '' : 's'}/remark${+x.lead === 1 ? '' : 's'}${+x.pushback ? ` · ${fInt(+x.pushback)} pushback` : ''}`)); row.appendChild(c); });
+      wc.appendChild(row); body.appendChild(wc);
+    }
+
+    // history
+    if (hist.length) {
+      const hs = h('section', 'wd-sec'); hs.appendChild(h('h3', '', 'How it got here'));
+      const ol = h('ol', 'wd-tl');
+      for (const e of hist) {
+        const l = h('li');
+        const d = h('div', 'wd-d'); d.append(h('b', '', date(e.date, '%b %-d')), e.tally ? h('span', 'wd-tally', e.tally) : '');
+        const a = h('div', 'wd-a', e.action || 'On the agenda');
+        l.append(d, a);
+        if (e.notes) l.appendChild(h('div', 'wd-n', e.notes));
+        l.appendChild(linkTo('minutes/' + encodeURIComponent(e.pdf), 'Read these minutes (PDF) ↗', true));
+        ol.appendChild(l);
+      }
+      hs.appendChild(ol); body.appendChild(hs);
+    }
+
+    // read more
+    const rm = h('section', 'wd-sec wd-more'); rm.appendChild(h('h3', '', 'Read more'));
+    const links = h('div', 'wd-links');
+    const last = hist[hist.length - 1];
+    if (last) { const a = linkTo('minutes/' + encodeURIComponent(last.pdf), `Latest minutes (${date(last.date, '%b %-d')}) ↗`, true); a.classList.add('primary'); links.appendChild(a); }
+    links.appendChild(linkTo('library.html#q=' + encodeURIComponent(r.file), `Every mention of ${r.file} in the minutes library`));
+    const lg = linkTo(window.__LEGISTAR__ || 'https://stpaul.legistar.com/Legislation.aspx', 'Full text and attachments on the city’s Legistar site ↗', true); links.appendChild(lg);
+    rm.appendChild(links);
+    rm.appendChild(h('p', 'wd-hint', `On Legistar, search for “${r.file}” to see the ordinance text, staff report and attachments.`));
+    body.appendChild(rm);
+    dlg.appendChild(body);
+    dlg.showModal(); x.focus();
+  };
   dash.draw('watch', (box) => {
     const rows = ok('b_watch'); box.replaceChildren(); if (!rows) return;
     for (const r of rows) {
-      const c = document.createElement('div'); c.className = 'wcard'; c.style.borderLeftColor = issueColor(r.issue);
+      const c = document.createElement('button'); c.type = 'button'; c.className = 'wcard'; c.style.borderLeftColor = issueColor(r.issue);
+      c.setAttribute('aria-haspopup', 'dialog'); c.title = 'Open the full summary';
       const when = document.createElement('div'); when.className = 'when'; when.textContent = `${date(r.next_meeting, '%a, %b %-d')} · ${r.stage}`;
+      const head = h('div', 'whead', r.short || r.item);
       const what = document.createElement('div'); what.className = 'what'; what.textContent = r.item.replace(/\s+\S*$/, '') + '…';
-      const meta = document.createElement('div');
+      const meta = document.createElement('div'); meta.className = 'wmeta';
       const t1 = document.createElement('span'); t1.className = 'tag'; t1.textContent = r.issue;
       const t2 = document.createElement('span'); t2.className = 'tag'; t2.textContent = r.file;
       meta.append(t1, t2); lensChips(meta, r.persia);
       const last = document.createElement('div'); last.className = 'small';
       last.textContent = r.last_tally === 'no roll call yet' ? 'No roll-call vote yet' : `Last roll call ${r.last_tally} (${date(r.last_action_date)})`;
-      c.append(when, what, meta, last); box.appendChild(c);
+      const more = h('div', 'wmore', 'Full summary and links →');
+      c.append(when, head, what, meta, last, more); c.addEventListener('click', () => openWatch(r)); box.appendChild(c);
     }
   });
 
@@ -111,7 +196,14 @@
     const rows = ok('b_persia'); box.replaceChildren(); if (!rows) return;
     for (const l of LENSES) {
       const r = rows.find((x) => x.lens === l); if (!r) continue;
-      const c = document.createElement('div'); c.className = 'ptile'; c.style.borderTopColor = lensColor(l);
+      const on = F.lens === l;
+      const c = document.createElement('div'); c.className = 'ptile' + (on ? ' on' : '') + (F.lens && !on ? ' off' : ''); c.style.borderTopColor = lensColor(l); c.style.setProperty('--lc', lensColor(l));
+      c.setAttribute('role', 'button'); c.tabIndex = 0; c.setAttribute('aria-pressed', String(on));
+      c.title = on ? 'Clear the lens focus' : `Focus the ${l} lens on the coalition map and lens map`;
+      const pickL = () => { F.lens = on ? null : l; refocus(); };
+      c.addEventListener('click', (e) => { if (e.target.closest('a')) return; pickL(); });
+      c.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickL(); } });
+      c.addEventListener('mouseenter', () => setFocusAttr(l)); c.addEventListener('mouseleave', () => setFocusAttr(F.lens));
       const head = document.createElement('div'); head.style.display = 'flex'; head.style.alignItems = 'baseline'; head.style.gap = '.5rem';
       const big = document.createElement('span'); big.className = 'big'; big.textContent = r.letter; big.style.color = lensColor(l);
       const ln = document.createElement('span'); ln.className = 'ln'; ln.textContent = l;
@@ -121,7 +213,12 @@
       stats.append(Object.assign(document.createElement('b'), { textContent: fInt(+r.votes) }), ' votes · ', Object.assign(document.createElement('b'), { textContent: fInt(+r.splits) }), ' split');
       const ch = document.createElement('div'); ch.className = 'small';
       ch.append('Leads: ', Object.assign(document.createElement('b'), { textContent: r.champion_1 }), ` (${fInt(+r.champion_1_n)}), `, Object.assign(document.createElement('b'), { textContent: r.champion_2 }), ` (${fInt(+r.champion_2_n)})`);
-      c.append(head, g, stats, ch, noteRich(r.note)); box.appendChild(c);
+      const act = h('div', 'pact');
+      if (on) {
+        act.append(h('span', 'pon', 'Focused ✓'));
+        for (const [href, txt] of [['#coalition', 'Coalition map'], ['#issues', 'Lens map']]) { const a = h('a', '', txt + ' ↓'); a.href = href; a.addEventListener('click', (e) => { e.preventDefault(); document.querySelector(href)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }); act.appendChild(a); }
+      } else act.append(h('span', 'poff', 'Click to focus this lens'));
+      c.append(head, g, stats, ch, noteRich(r.note), act); box.appendChild(c);
       requestAnimationFrame(() => gauge(g, r.unanimous_share === '' ? null : +r.unanimous_share, r.unanimous_share === '' ? '—' : fPct(+r.unanimous_share), 'no dissent'));
     }
   });
@@ -210,7 +307,7 @@
 
   const radar = (box, rows, m) => {
     box.replaceChildren();
-    const W = Math.max(160, box.clientWidth), H = 158, cx = W / 2, cy = H / 2 + 2, R = Math.min(W / 2 - 34, H / 2 - 20);
+    const W = Math.max(180, box.clientWidth), R = Math.max(34, Math.min(W / 2 - 40, 56)), cx = W / 2, cy = R + 28, H = cy + R + 28 + 20;
     const svg = d3.select(box).append('svg').attr('class', 'rad').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('height', H);
     const maxV = 2.5, ang = (i) => -Math.PI / 2 + (i * 2 * Math.PI) / LENSES.length;
     const pt = (i, v) => [cx + R * Math.min(v, maxV) / maxV * Math.cos(ang(i)), cy + R * Math.min(v, maxV) / maxV * Math.sin(ang(i))];
@@ -228,7 +325,7 @@
         .on('click', (ev) => { ev.stopPropagation(); F.lens = F.lens === l ? null : l; refocus(); });
       const [x, y] = pt(i, vals[i]);
       svg.append('circle').attr('data-l', l).attr('cx', x).attr('cy', y).attr('r', 4.5).attr('fill', lensColor(l)).attr('stroke', '#fff').attr('stroke-width', 1);
-      svg.append('text').attr('class', 'rv').attr('data-l', l).attr('x', cx).attr('y', H - 2).attr('text-anchor', 'middle').attr('font-size', 11.5).attr('font-weight', 700).attr('fill', '#2a0157').text(`${l}: ${d3.format('.1f')(vals[i])}× council share`);
+      svg.append('text').attr('class', 'rv').attr('data-l', l).attr('x', cx).attr('y', H - 6).attr('text-anchor', 'middle').attr('font-size', 11.5).attr('font-weight', 700).attr('fill', '#2a0157').text(`${l}: ${d3.format('.1f')(vals[i])}× council share`);
     });
   };
 
@@ -267,7 +364,7 @@
       const tag = document.createElement('div'); const t = document.createElement('span'); t.className = 'tag'; t.textContent = r.coalition;
       t.style.borderColor = r.coalition.startsWith('Usually') ? dash.colors[0] : 'var(--color-bad)'; if (!r.coalition.startsWith('Usually')) t.style.borderStyle = 'dashed'; tag.appendChild(t);
       const g = document.createElement('div'); g.className = 'chart gauge'; g.style.minHeight = '5.5rem';
-      const rd = document.createElement('div'); rd.className = 'chart'; rd.style.minHeight = '158px';
+      const rd = document.createElement('div'); rd.className = 'chart'; rd.style.minHeight = '180px';
       c.append(nm, rl, tag, g, rd);
       meterRow(c, 'Business engagement', +r.biz_lead / +r.biz_lead_max, dash.colors[2], fInt(+r.biz_lead));
       meterRow(c, 'Pushback on business', +r.biz_pushback / +r.biz_pushback_max, dash.colors[3], fInt(+r.biz_pushback));

@@ -4,7 +4,7 @@ Usage (from the repository root):  python3 pipeline/build_site.py
 Optional environment: GITHUB_REPOSITORY (owner/repo) and GITHUB_REF_NAME (branch) set the upload button target;
 both are set automatically inside GitHub Actions.
 """
-import csv, datetime, html, json, os, re, shutil
+import csv, datetime, html, io, json, os, re, shutil
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'build', 'out')
@@ -150,7 +150,7 @@ def dashboard(out, title, page_file, app_file, data, params, kind):
     app = rd('pages/' + app_file) if app_file else ''
     raw = {k: (v if isinstance(v, str) and '\n' in v else csvtext(v)) for k, v in data.items()}
     head = (f'<script>{js(D3)}</script>\n<script>window.__DASH_DATA__ = {js(json.dumps(raw))}; window.__DASH_PARAMS__ = {json.dumps(params)}; '
-            f'window.__META__ = {json.dumps(META)}; window.__LOGO__ = {json.dumps(LOGO_URI)};</script>\n<script>{js(SHIM)}</script>')
+            f'window.__META__ = {json.dumps(META)}; window.__LOGO__ = {json.dumps(LOGO_URI)}; window.__LEGISTAR__ = {json.dumps(LEGISTAR)};</script>\n<script>{js(SHIM)}</script>')
     body = (f'{nav(out, True)}\n<div id="dash-root">\n{page}\n<p class="sa-foot">Data: St. Paul City Council meeting minutes, {SPAN_LONG}. '
             f'Updates automatically when new minutes are added to the <a href="library.html">minutes library</a>.</p>\n</div>')
     scripts = (f'<script>{js(app)}</script>\n<script>window.__PRINT_KIND__ = {json.dumps(kind)};</script>\n<script>{js(PRINTJS)}</script>\n'
@@ -158,15 +158,85 @@ def dashboard(out, title, page_file, app_file, data, params, kind):
     open(os.path.join(SITE, out), 'w', encoding='utf-8').write(shell(title, body, head, scripts))
 
 
+def short_title(t):
+    """A plain-language headline for a council item, for at-a-glance reading."""
+    t = re.sub(r'\s+', ' ', t or '').strip().rstrip('.')
+    cap = lambda x: x[:1].upper() + x[1:]
+    m = re.search(r'rezone property at (.+?) from .+? to ([A-Z]\w*) ([a-z ]+?) district', t)
+    if m: return f'Rezone {m.group(1)} to {m.group(3).strip()} ({m.group(2)})'
+    m = re.match(r'Adding Chapter [\w.]+, (.+?), to the Legislative Code', t)
+    if m: return f'{cap(m.group(1).lower())}: new rules' + (' and license fee' if re.search(r'licen[cs]e fee|licensing fee', t, re.I) else '')
+    m = re.search(r'set rates for (.+?) to be effective \w+ \d+, (\d{4})', t)
+    if m: return f'{cap(re.sub(r"^base level ", "", m.group(1)))} rates for {m.group(2)}'
+    m = re.search(r'sound level variance .*?for the (.+?) (?:event )?on ', t)
+    if m: return f'Sound variance: {m.group(1)}'
+    m = re.search(r'pertaining to (.+)$', t)
+    if m and t.startswith('Amending'): return cap(re.split(r'[;,] (?:and )?(?:amending|to )', m.group(1))[0]) + ': code change'
+    m = re.match(r'Approving the application of (.+?) for (?:a |an )?(.+?)(?: in order| at |$)', t)
+    if m: return f'{cap(m.group(2))}: {m.group(1)}'
+    t = re.sub(r'^(Amending|Approving|Authorizing|Establishing|Granting|Accepting|Adding|Ratifying)\s+(the\s+)?', '', t)
+    t = re.sub(r' of the (Legislative|Administrative) Code', '', t)
+    t = re.sub(r' in (Chapter|Section)s? [\w.]+( and [\w.]+)?', '', t)
+    if len(t) > 70: t = t[:70].rsplit(' ', 1)[0] + '…'
+    return cap(t)
+
+
 def playbook_watch():
     rows = list(csv.DictReader(open(os.path.join(OUT, 'b_watch.csv'))))
+    try: hist = list(csv.DictReader(io.StringIO(watch_history())))
+    except Exception: hist = []
     for r in rows:
         if r.get('last_tally') == 'NOT AVAILABLE': r['last_tally'] = 'no roll call yet'
         if r.get('movers') == 'NOT AVAILABLE': r['movers'] = ''
+        full = r['item']
+        for h in hist:
+            if h['file'] == r['file'] and len(h['title']) > len(full): full = h['title']
+        r['short'] = short_title(full)
     if not rows:
-        return 'file,item,issue,next_meeting,stage,last_action_date,last_tally,movers,persia\n'
-    import io
+        return 'file,item,issue,next_meeting,stage,last_action_date,last_tally,movers,persia,short\n'
     s = io.StringIO(); w = csv.DictWriter(s, fieldnames=list(rows[0])); w.writeheader(); w.writerows(rows)
+    return s.getvalue()
+
+
+def watch_history():
+    """Every appearance of each upcoming business item in the minutes: date, action, remarks and vote."""
+    watch = list(csv.DictReader(open(os.path.join(OUT, 'b_watch.csv'))))
+    files = [w['file'] for w in watch]
+    cols = ['file', 'date', 'pdf', 'title', 'action', 'notes', 'tally']
+    rows = []
+    try: meetings = sorted(json.load(open(os.path.join(OUT, 'meetings.json')))['meetings'], key=lambda m: m['date'])
+    except Exception: meetings = []
+    head = re.compile(r'^\s*\d{1,3}\s+([A-Z][A-Za-z]*(?: [A-Z][A-Za-z]*)* \d{2}-\d+)\s{2,}(\S.*)$')
+    stop = re.compile(r'^\s*(Yea:|Nay:|Absent:|City of Saint Paul\b|City Council\s{3,}|Page \d)')
+    ACT = re.compile(r'^(Laid over|Adopted|Approved|Denied|Withdrawn|Referred|Continued|Received and filed|Rejected|Failed|Amended|Public hearing (?:held|closed)|Moved to)', re.I)
+    NOTE = re.compile(r'\b(Councilmember|Council President|Council Vice President|spoke|moved|answered|testified|remarks|raised)\b')
+    for m in meetings:
+        p = os.path.join(ROOT, 'build', 'pdftxt', m.get('txt', ''))
+        if not files or not os.path.exists(p): continue
+        lines = open(p, encoding='utf-8', errors='ignore').read().split('\n')
+        for i, ln in enumerate(lines):
+            h = head.match(ln)
+            if not h or h.group(1) not in files: continue
+            title = [h.group(2).strip()]; acts = []; notes = []; tally = ''; in_vote = False; body = False
+            for ln2 in lines[i + 1:i + 60]:
+                if head.match(ln2): break
+                t = ln2.strip()
+                if not t: in_vote = False; continue
+                if re.match(r'^[A-Z][A-Z &,\-]{5,}$', t.split('  ')[0]) and not t.startswith('NOT '): break  # next section heading
+                if stop.match(ln2):
+                    if t.startswith('Yea:'): tally = re.sub(r'\D', '', t[4:9]); in_vote = True
+                    elif t.startswith('Nay:'): tally = f"{tally}-{re.sub(r'[^0-9]', '', t[4:9]) or '0'}"; in_vote = True
+                    elif t.startswith('Absent:'): in_vote = True
+                    continue
+                if in_vote: continue
+                if ACT.match(t): acts.append(t); body = True
+                elif body or NOTE.search(t): notes.append(t); body = True
+                else: title.append(t)
+            action = acts[-1] if acts else ''
+            note_txt = ' '.join(notes + acts[:-1])
+            rows.append(dict(file=h.group(1), date=m['date'], pdf=m['file'], title=' '.join(title), action=action, notes=note_txt, tally=tally))
+    import io
+    s = io.StringIO(); w = csv.DictWriter(s, fieldnames=cols); w.writeheader(); w.writerows(rows)
     return s.getvalue()
 
 
@@ -484,6 +554,7 @@ def main():
               {'from': months[0]['month'], 'member': 'All', 'to': months[-1]['month']}, 'members')
     pb = {k: k for k in ['b_kpis', 'b_members', 'b_issue_member', 'b_issues', 'b_splits', 'b_ordinances', 'b_delays', 'b_log', 'b_persia', 'b_persia_member']}
     pb['b_watch'] = playbook_watch()
+    pb['b_watch_hist'] = watch_history()
     dashboard('playbook.html', 'Chamber of Commerce playbook: St. Paul City Council, 2026', 'playbook.html', 'playbook.js', pb, {'member': 'All'}, 'playbook')
     dashboard('course-of-action.html', 'St. Paul Chamber course of action: City Council 2026', 'course-of-action.html', 'course-of-action.js',
               {k: k for k in ['c_members', 'c_priorities', 'c_issues', 'c_items', 'b_kpis', 'b_watch']}, {'tab': 'plan', 'q': '', 'member': 'All'}, 'coa')
