@@ -218,6 +218,8 @@
   openBtn.addEventListener('click', () => { if (!busy) view(prog.hidden ? 'form' : (steps[3].classList.contains('done') ? 'form' : 'progress')); renderKey(); render(); if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', ''); });
   dlg.querySelectorAll('.up-close').forEach((b) => b.addEventListener('click', () => { if (dlg.close) dlg.close(); else dlg.removeAttribute('open'); }));
   if (!CFG.repo) { $('#up-setup-warn').hidden = false; }
+  const openFromHash = () => { if (/(^|[#&])upload\b/.test(location.hash) && !dlg.open) openBtn.click(); };
+  openFromHash(); window.addEventListener('hashchange', openFromHash);
 
   // ---------- site status banner (public, no key needed) ----------
   const banner = $('#lib-status');

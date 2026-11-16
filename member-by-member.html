@@ -96,7 +96,7 @@
 
     <div class="card" id="cards-card">
       <h3>Every member at a glance</h3>
-      <p class="note">The gauge shows participation. Bars show yea / nay / absent, how often they side with the majority on split votes, motions made, and pushback (spoke against, raised concerns, moved to delay or deny), scaled to the most active member. Click a card for the full profile.</p>
+      <p class="note">Gauge = participation. Bars compare members; longest = most active. Click a card for the full profile.</p>
       <div class="legend"><span class="sw" data-sw="yea"></span>Yea <span class="sw" data-sw="nay"></span>Nay <span class="sw" data-sw="absent"></span>Absent</div>
       <div class="cards" data-draw="cards" data-source="p_member"></div>
     </div>
@@ -104,12 +104,12 @@
     <div class="grid2">
       <div class="card" id="network">
         <h3>Who votes together</h3>
-        <p class="note">Lines join members who voted the same way on split votes. Thicker, darker lines mean they agreed more often. Hover a line for the count.</p>
+        <p class="note">Thicker line = voted alike more often on split votes.</p>
         <div class="chart tall" data-draw="network" data-source="p_agree"></div>
       </div>
       <div class="card" id="focusmap">
         <h3>What each member takes the lead on</h3>
-        <p class="note">Motions and remarks by topic relative to the council's mix. Darker means more than their share (partly reflects which items fall in their ward).</p>
+        <p class="note">Darker = more of their activity than the council average. Often reflects their ward.</p>
         <div class="chart tall" data-draw="focusmap" data-source="p_focus"></div>
       </div>
     </div>
@@ -183,7 +183,7 @@
 
     <div class="card" id="member-positions">
       <h3>Their side on each split vote</h3>
-      <p class="note">Top row: voted yea. Bottom row: voted nay. A filled dot means they were in the majority; a hollow dot means they lost. Hover for the question.</p>
+      <p class="note">Top row yea, bottom row nay. Hollow dot = on the losing side. Hover for the question.</p>
       <div class="chart" data-draw="positions" data-source="m_splits"></div>
     </div>
 

@@ -82,21 +82,21 @@
   <section id="watch">
     <div class="step">Act now</div>
     <h2>Business items on the next agenda</h2>
-    <p class="note">Laid over at the last meeting with minutes and scheduled to return. Second-reading ordinances still face a public hearing before final adoption.</p>
+    <p class="note">Scheduled to return. Second-reading ordinances still get a public hearing.</p>
     <div class="watch" data-draw="watch" data-source="b_watch"></div>
   </section>
 
   <section id="persia">
     <div class="step">PERSIA scan</div>
     <h2>The council's agenda through six lenses</h2>
-    <p class="note">Each tile shows how many 2026 votes touched that lens (an item can touch several), the share that passed with no dissent, how many split the council, and the two members who most often move or speak on it.</p>
+    <p class="note">Votes per lens, share with no dissent, splits, and who leads on it.</p>
     <div class="ptiles" data-draw="persia" data-source="b_persia"></div>
   </section>
 
   <section id="coalition">
     <div class="step">Count the votes</div>
     <h2>Coalition map</h2>
-    <p class="note">The gauge is how often each member sided with the majority on split votes. Bars show how active they are on business-related items (motions and remarks) and how often they push back on them (spoke against, raised concerns, moved to delay or deny), scaled to the most active member. The hexagon is the member's PERSIA profile: how much of their motions and remarks fall in each lens compared with the council as a whole (the dashed ring is the council average). Click a member to filter their record below.</p>
+    <p class="note">Gauge = how often they side with the majority. Bars = business activity and pushback. Hexagon = their PERSIA profile. Click a member to filter.</p>
     <div class="cards" data-draw="cards" data-source="b_members b_persia_member"></div>
   </section>
 
@@ -105,19 +105,19 @@
     <div class="grid2">
       <div class="card">
         <h3>PERSIA lens map</h3>
-        <p class="note">Each member's share of motions and remarks in a lens compared with the council's share (1.0× = average). Darker means that lens is a bigger part of their agenda.</p>
+        <p class="note">Darker = a bigger part of that member's agenda than average.</p>
         <div class="chart" style="min-height:240px" data-draw="lensmap" data-source="b_persia_member"></div>
       </div>
       <div class="card">
         <h3>Economic lens: who leads on each business issue</h3>
-        <p class="note">Motions and remarks per member on each business issue. The outlined cell in a row is the member who most often carries that issue. Members typically move items located in their own ward.</p>
+        <p class="note">Motions and remarks per issue. Outlined = who most often carries it.</p>
         <div class="chart" style="min-height:300px" data-draw="leadmap" data-source="b_issue_member"></div>
       </div>
     </div>
     <div class="grid2">
       <div class="card">
         <h3>Economic lens: how contested each business issue is</h3>
-        <p class="note">Share of votes on the issue that passed with no dissent, and the number of business votes on it. Lower bars are where the council splits and where lobbying can change the outcome.</p>
+        <p class="note">Lower bar = more division, where lobbying can change the outcome.</p>
         <div class="chart" style="min-height:300px" data-draw="contested" data-source="b_issues"></div>
       </div>
     </div>
@@ -126,7 +126,7 @@
   <section id="splits">
     <div class="card">
       <h3>Business-related votes that split the council</h3>
-      <p class="note">How each member voted. An outlined cell means that member was on the losing side. Letters show the PERSIA lenses each vote touched.</p>
+      <p class="note">Outlined = on the losing side. Letters = PERSIA lenses.</p>
       <div class="legend"><span class="sw" data-sw="yea"></span>Yea <span class="sw" data-sw="nay"></span>Nay <span class="sw" data-sw="absent"></span>Absent</div>
       <div class="chart" data-draw="splitgrid" data-source="b_splits"></div>
     </div>

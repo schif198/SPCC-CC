@@ -21,7 +21,8 @@
   const span = META.first && META.last ? `${dfmt(META.first)} – ${dfmt(META.last)}, ${META.last.slice(0, 4)}` : '';
 
   // ---------- building blocks ----------
-  const glance = (items) => { const b = el('div', 'ps-glance'); b.appendChild(el('div', 'ps-gh', 'At a glance')); const ul = el('ul'); for (const t of items.filter(Boolean)) ul.appendChild(el('li', '', t)); b.appendChild(ul); return b; };
+  let lastGlance = [];
+  const glance = (items) => { lastGlance = items.filter(Boolean); const b = el('div', 'ps-glance'); b.appendChild(el('div', 'ps-gh', 'At a glance')); const ul = el('ul'); for (const t of items.filter(Boolean)) ul.appendChild(el('li', '', t)); b.appendChild(ul); return b; };
   const kpis = (items) => { const w = el('div', 'ps-kpis'); for (const [label, value, sub] of items) { const k = el('div', 'ps-kpi'); k.appendChild(el('div', 'ps-kv', value)); k.appendChild(el('div', 'ps-kl', label)); if (sub) k.appendChild(el('div', 'ps-ks', sub)); w.appendChild(k); } return w; };
   const section = (title, ...kids) => { const s = el('section', 'ps-sec'); s.appendChild(el('h3', '', title)); kids.forEach((k) => k && s.appendChild(k)); return s; };
   const cols = (...kids) => { const c = el('div', 'ps-cols'); kids.forEach((k) => c.appendChild(k)); return c; };
@@ -270,7 +271,7 @@
     platforms(S) {
       const c = rows('pv_cells'), t = rows('pv_theme'), p = rows('pv_platforms');
       const MM = ['Noecker', 'Yang', 'Kim', 'Bowie', 'Jost', 'Johnson', 'Coleman'];
-      const FILL = ['#eef2f8', '#a9c1e3', '#5b8bd0', '#1f4e99'], TXT = ['#5b5a56', '#1f2d44', '#fff', '#fff'], LBL = ['None recorded', 'Some', 'Active', 'Leading'];
+      const FILL = ['#f5eee8', '#ebbca6', '#c96442', '#7f3418'], TXT = ['#6b6a66', '#4a1d0c', '#fff', '#fff'], LBL = ['None recorded', 'Some', 'Active', 'Leading'];
       const st = c.filter((r) => r.stated === 'Yes'), act = st.filter((r) => +r.level >= 2);
       const top = t.slice().sort((a, b) => +b.members_stated - +a.members_stated)[0] || {};
       const busy = t.slice().sort((a, b) => +b.lead_share - +a.lead_share)[0] || {};
@@ -298,12 +299,12 @@
         });
       });
       const lg = el('div', 'ps-legend'); const rg = el('span', 'ps-ringsw'); lg.append(rg, el('span', '', 'Campaigned on it'));
-      [0, 1, 2, 3].forEach((i) => { const s2 = el('span', 'ps-sw'); s2.style.background = FILL[i]; s2.style.border = i ? 'none' : '1px solid #c9d3e3'; lg.append(s2, el('span', '', LBL[i])); });
+      [0, 1, 2, 3].forEach((i) => { const s2 = el('span', 'ps-sw'); s2.style.background = FILL[i]; s2.style.border = i ? 'none' : '1px solid #e3d5cb'; lg.append(s2, el('span', '', LBL[i])); });
       lg.append(el('span', '', ' · number = motions and remarks'));
       S.add(section('Campaign priorities and council activity', g, lg));
       S.add(section('By member', grid([
         { h: 'Member', w: '.8fr', cell: (r) => r.m, cls: 'b' },
-        { h: 'Priorities with active record', w: '1.6fr', cell: (r) => bar(r.share, 1, '#1f4e99', `${r.a}/${r.s}`) },
+        { h: 'Priorities with active record', w: '1.6fr', cell: (r) => bar(r.share, 1, ACC, `${r.a}/${r.s}`) },
         { h: 'Most active priority', w: '1.5fr', cell: (r) => r.best ? `${r.best.theme} (${r.best.lead})` : '—' },
         { h: 'Also active on (not in platform)', w: '2fr', cell: (r) => r.extra.slice(0, 3).join(', ') || '—' },
       ], per)));
@@ -311,7 +312,7 @@
       S.add(section('Council-wide: campaigned on vs. worked on', grid([
         { h: 'Theme', w: '1.4fr', cell: (r) => r.theme, cls: 'b' },
         { h: 'Members who campaigned on it', w: '1.4fr', cell: (r) => { const w = el('span', 'ps-pips'); for (let k = 0; k < 7; k++) { const d = el('span', 'ps-pip' + (k < +r.members_stated ? ' on' : '')); w.appendChild(d); } w.append(` ${r.members_stated}/7`); return w; } },
-        { h: 'Share of council motions and remarks', w: '2fr', cell: (r) => bar(+r.lead_share / lmax, 1, '#1f4e99', pct(r.lead_share)) },
+        { h: 'Share of council motions and remarks', w: '2fr', cell: (r) => bar(+r.lead_share / lmax, 1, ACC, pct(r.lead_share)) },
         { h: 'Votes · split', w: '.8fr', cell: (r) => `${r.votes} · ${r.splits}`, cls: 'n' },
       ], t)));
       const src = [...new Set(p.map((r) => r.source_title))];
@@ -346,4 +347,10 @@
   if (btn) btn.addEventListener('click', () => { build(); requestAnimationFrame(() => setTimeout(() => window.print(), 60)); });
   window.addEventListener('afterprint', () => document.getElementById('print-sheet')?.remove());
   window.__buildPrintSheet = build;
+  // the same takeaways, for the "At a glance" box at the top of the page
+  window.__glance = () => {
+    lastGlance = [];
+    try { B[KIND]({ title: '', sub: '', body: el('div'), add() {} }); } catch (e) { console.error(e); }
+    return lastGlance;
+  };
 })();

@@ -3,7 +3,7 @@
 This repository builds a public website with:
 
 - **Minutes library**: every City Council meeting's minutes, with the original PDF, searchable by item, file number or date, and an **Upload new minutes** button.
-- **Four dashboards**: Voting trends, Member by member, the Chamber lobbying playbook and the Chamber course of action. Each has a **Print one-pager** button.
+- **Five dashboards**: Voting trends, Member by member, the Chamber lobbying playbook, the Chamber course of action, and **Platforms vs. votes** (each member’s campaign priorities next to their council record). Each has a **Print one-pager** button.
 - A **Council minutes on Legistar** link at the top of every page.
 
 When a new minutes PDF is added to the `minutes` folder, GitHub re-reads every set of minutes, recalculates all of the figures and republishes the site. This takes about 3 minutes and needs no other steps.
@@ -34,6 +34,17 @@ When a new minutes PDF is added to the `minutes` folder, GitHub re-reads every s
    - After about 3 minutes, a green check appears. Your site is now live at `https://YOUR-USER-NAME.github.io/REPOSITORY-NAME/`. The address is also shown on the **Settings → Pages** screen.
 
 Share that address with anyone. It works on phones and computers, and no login is needed.
+
+## Finding your way around
+
+- **Menu:** grouped into *Council record* (Voting trends, Members, Platforms vs. votes), *Chamber strategy* (Course of action, Chamber playbook) and *Minutes & help* (Minutes library, Add new minutes, Glossary). On phones it folds into a **Menu** button.
+- **Search box** (top bar): type a member, a file number (for example Ord 26-51) or any topic. It suggests the member's profile, the item in the minutes, or a course of action for that topic.
+- **Home page:** task buttons for the common jobs, plus a "since the last meeting" strip.
+- **At a glance:** every dashboard opens with three or four plain-language takeaways, which are the same ones printed on its one-pager.
+- **ⓘ tips:** click the small (i) next to a term for a definition. All terms are on the Glossary page, which is generated from the list in `pipeline/build_site.py` (GLOSSARY).
+- **Links everywhere:** member names in tables open that member's profile, and file numbers open the item in the minutes library.
+- **Member selection carries over:** a member picked on one page stays picked on the others, in that browser.
+- **Colors:** one colorblind-safe palette is used site-wide, with terracotta for activity and "yea", dark oxblood for "nay" and pushback, and navy for campaign platforms. Categories use an Okabe-Ito-based palette. Wherever color carries meaning it is backed by lightness, shape (rings, outlines, dashes) or a text label.
 
 ## Adding new minutes (every week): right on the website
 
@@ -67,6 +78,7 @@ If you prefer, uploading through GitHub still works: in the upload window, use *
 Click the failed run, then the red step, to see the message.
 
 - **"Site files not found"** or **"exit code 2"**: GitHub can't find the site's files. Open the repository's main page. You should see the folders `minutes`, `narrative`, `pipeline` and `web`, either at the top level or inside one folder such as `stpaul-council-site`. If any of them are missing, upload them from the package (**Add file → Upload files**), keeping their subfolders.
+- **"Outdated or missing files"**: some files from the latest update didn't upload, or an older copy is still in the repository. Upload the listed files again. The check compares every program file with `manifest.txt` from the same update, so upload that file too.
 - **"Missing file"**: one subfolder didn't upload, often `web/vendor`. Upload it again.
 - **Deploy step fails with "Get Pages site failed" or a 404**: go to **Settings → Pages** and set **Source** to **GitHub Actions**. Then use **Actions → Update site → Run workflow**.
 - **The upload window says the key wasn’t accepted**: the key is mistyped, expired or revoked. Create a new one (see above).
@@ -85,6 +97,7 @@ These update automatically:
 These are written text and stay as written until you edit them:
 - **Member recommendations** (stance, approach, what to lead with, cautions), in `narrative/c_members_text.csv`. The figures beside them do refresh.
 - **Chamber priorities** and their status, in `narrative/c_priorities.csv`.
+- **Campaign platforms** for Platforms vs. votes, in `narrative/platforms.csv`: one row per stated priority, with a short paraphrase and a source link. Use one of the eight themes listed in the file. Update it after each election, or when a new member is seated.
 - **Short descriptions of the 2026 split votes**, in `pipeline/build_members.py`. New split votes get an automatic description built from the minutes.
 
 To edit a narrative file, open it on GitHub, click the pencil icon, change the text and commit. The site rebuilds itself.

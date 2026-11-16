@@ -22,6 +22,9 @@
 
   const q = $('#lib-q');
   q.addEventListener('input', () => render());
+  const fromHash = () => { const h = new URLSearchParams(location.hash.slice(1)); if (h.has('q')) { q.value = h.get('q'); month = 'all'; chips.querySelectorAll('.lib-chip').forEach((c) => c.setAttribute('aria-pressed', c.dataset.m === 'all' ? 'true' : 'false')); } };
+  fromHash();
+  window.addEventListener('hashchange', () => { fromHash(); render(); });
 
   function render() {
     const words = q.value.toLowerCase().split(/\s+/).filter((w) => w.length > 1);

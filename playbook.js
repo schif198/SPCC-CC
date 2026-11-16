@@ -161,7 +161,7 @@
       const nm = document.createElement('div'); nm.className = 'nm'; nm.textContent = r.full_name;
       const rl = document.createElement('div'); rl.className = 'rl'; rl.textContent = r.role;
       const tag = document.createElement('div'); const t = document.createElement('span'); t.className = 'tag'; t.textContent = r.coalition;
-      t.style.borderColor = r.coalition.startsWith('Usually') ? dash.colors[0] : 'var(--color-bad)'; tag.appendChild(t);
+      t.style.borderColor = r.coalition.startsWith('Usually') ? dash.colors[0] : 'var(--color-bad)'; if (!r.coalition.startsWith('Usually')) t.style.borderStyle = 'dashed'; tag.appendChild(t);
       const g = document.createElement('div'); g.className = 'chart gauge'; g.style.minHeight = '5.5rem';
       const rd = document.createElement('div'); rd.className = 'chart'; rd.style.minHeight = '150px';
       c.append(nm, rl, tag, g, rd);

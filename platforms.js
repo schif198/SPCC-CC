@@ -1,8 +1,8 @@
 (() => {
   const M = ['Noecker', 'Yang', 'Kim', 'Bowie', 'Jost', 'Johnson', 'Coleman'];
-  const FILL = ['#eef2f8', '#a9c1e3', '#5b8bd0', '#1f4e99'];
-  const TEXT = ['#5b5a56', '#1f2d44', '#ffffff', '#ffffff'];
-  const RING = '#c96442';
+  const FILL = ['#f5eee8', '#ebbca6', '#c96442', '#7f3418'];
+  const TEXT = ['#6b6a66', '#4a1d0c', '#ffffff', '#ffffff'];
+  const RING = '#1f3a5f';
   const LBL = ['None recorded', 'Some', 'Active', 'Leading'];
   const ok = (id) => { const d = dash.data(id); return d.status === 'ok' ? d.data : null; };
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
@@ -59,7 +59,7 @@
           .on('pointermove', (ev) => showTip(box, tip, ev, `${m} · ${t}`, [r.stated === 'Yes' ? 'Campaigned on it' : 'Not in campaign platform', `${LBL[lv]}: ${r.lead} motions/remarks`, `${r.votes} votes · ${r.nay} nay · ${r.absent} absent`]))
           .on('pointerleave', () => { tip.hidden = true; });
         const rad = Math.min(s / 2, 17);
-        cg.append('circle').attr('cx', cx).attr('cy', cy).attr('r', rad).attr('fill', FILL[lv]).attr('stroke', lv === 0 ? '#c9d3e3' : 'none');
+        cg.append('circle').attr('cx', cx).attr('cy', cy).attr('r', rad).attr('fill', FILL[lv]).attr('stroke', lv === 0 ? '#e3d5cb' : 'none');
         if (r.stated === 'Yes') cg.append('circle').attr('cx', cx).attr('cy', cy).attr('r', rad + 3.5).attr('fill', 'none').attr('stroke', RING).attr('stroke-width', 3);
         cg.append('text').attr('x', cx).attr('y', cy + 4).attr('text-anchor', 'middle').attr('font-size', 12).attr('font-weight', 600).attr('fill', TEXT[lv]).text(+r.lead || '');
       });
@@ -80,8 +80,8 @@
     const head = el('div'); head.style.cssText = 'display:flex;align-items:center;gap:14px;margin-bottom:8px';
     const g = d3.select(head).append('svg').attr('width', 74).attr('height', 74).attr('viewBox', '0 0 74 74');
     const arc = d3.arc().innerRadius(26).outerRadius(35);
-    g.append('path').attr('transform', 'translate(37,37)').attr('d', arc({ startAngle: 0, endAngle: 2 * Math.PI })).attr('fill', '#e6e9ef');
-    g.append('path').attr('transform', 'translate(37,37)').attr('d', arc({ startAngle: 0, endAngle: 2 * Math.PI * (act.length / (st.length || 1)) })).attr('fill', '#1f4e99');
+    g.append('path').attr('transform', 'translate(37,37)').attr('d', arc({ startAngle: 0, endAngle: 2 * Math.PI })).attr('fill', '#efe6df');
+    g.append('path').attr('transform', 'translate(37,37)').attr('d', arc({ startAngle: 0, endAngle: 2 * Math.PI * (act.length / (st.length || 1)) })).attr('fill', '#c96442');
     g.append('text').attr('x', 37).attr('y', 42).attr('text-anchor', 'middle').attr('font-size', 16).attr('font-family', 'var(--font-anthropic-serif)').attr('fill', 'var(--color-fg)').text(`${act.length}/${st.length}`);
     const ht = el('div'); ht.append(el('div', '', '')); ht.firstChild.style.cssText = 'font-family:var(--font-anthropic-serif);font-size:1.4rem';
     ht.firstChild.textContent = m; const pl = plat[0];
@@ -96,8 +96,8 @@
       const nm = el('div'); nm.appendChild(el('div', '', r.theme)); nm.firstChild.style.fontWeight = '600'; nm.firstChild.style.fontSize = '.9rem';
       const pr = plat.find((x) => x.theme === r.theme); if (pr) { const s = el('div', 'note', `“${pr.statement}”`); s.style.margin = '0'; nm.appendChild(s); }
       const chip = el('span', '', LBL[lv]); chip.style.cssText = `display:inline-block;text-align:center;font-size:.75rem;font-weight:600;padding:3px 8px;border-radius:999px;background:${FILL[lv]};color:${TEXT[lv]};border:${lv ? 'none' : '1px solid #c9d3e3'}`;
-      const barw = el('div'); const tr = el('div'); tr.style.cssText = 'height:8px;border-radius:4px;background:#e6e9ef;overflow:hidden';
-      const f = el('div'); f.style.cssText = `height:100%;width:${(+r.lead / lmax) * 100}%;background:#1f4e99`; tr.appendChild(f);
+      const barw = el('div'); const tr = el('div'); tr.style.cssText = 'height:8px;border-radius:4px;background:#efe6df;overflow:hidden';
+      const f = el('div'); f.style.cssText = `height:100%;width:${(+r.lead / lmax) * 100}%;background:#c96442`; tr.appendChild(f);
       const lab = el('div', 'note', `${r.lead} motions/remarks · ${r.votes} votes, ${r.nay} nay`); lab.style.margin = '2px 0 0';
       barw.append(tr, lab);
       row.append(nm, chip, barw); list.appendChild(row);
@@ -131,8 +131,8 @@
       g.append('rect').attr('x', 0).attr('y', y).attr('width', W).attr('height', rh).attr('fill', 'transparent');
       g.append('text').attr('x', left - 8).attr('y', cy + 4).attr('text-anchor', 'end').attr('font-size', 12.5).attr('font-weight', r.theme === curTheme() ? 700 : 400).attr('fill', 'var(--color-fg)').text(r.theme);
       for (let k = 0; k < 7; k++) g.append('circle').attr('cx', left + k * pipW + 4).attr('cy', cy).attr('r', 3.6).attr('fill', k < +r.members_stated ? RING : 'none').attr('stroke', RING).attr('stroke-width', 1.2);
-      g.append('rect').attr('x', bx).attr('y', cy - 6).attr('width', bw).attr('height', 12).attr('rx', 6).attr('fill', '#e6e9ef');
-      g.append('rect').attr('x', bx).attr('y', cy - 6).attr('width', bw * (+r.lead_share / mx)).attr('height', 12).attr('rx', 6).attr('fill', '#1f4e99');
+      g.append('rect').attr('x', bx).attr('y', cy - 6).attr('width', bw).attr('height', 12).attr('rx', 6).attr('fill', '#efe6df');
+      g.append('rect').attr('x', bx).attr('y', cy - 6).attr('width', bw * (+r.lead_share / mx)).attr('height', 12).attr('rx', 6).attr('fill', '#c96442');
       g.append('text').attr('x', bx + bw + 6).attr('y', cy + 4).attr('font-size', 11.5).attr('fill', 'var(--color-fg)').text(pct(r.lead_share));
     });
   });
