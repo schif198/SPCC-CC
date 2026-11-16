@@ -45,7 +45,7 @@ META = dict(first=FIRST, last=LAST, next=NEXT, built=BUILT)
 
 PRINT_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>'
 PAGES = [('index.html', 'Home'), ('library.html', 'Minutes library'), ('voting-trends.html', 'Voting trends'), ('member-by-member.html', 'Members'),
-         ('playbook.html', 'Playbook'), ('course-of-action.html', 'Course of action')]
+         ('playbook.html', 'Playbook'), ('course-of-action.html', 'Course of action'), ('platforms.html', 'Platforms vs. votes')]
 
 
 def nav(current, printable):
@@ -312,6 +312,7 @@ def home(meetings):
         ('playbook.html', 'Chamber lobbying playbook', 'Business items coming up, the agenda through the PERSIA lenses, the coalition map, split votes and how long ordinances take.'),
         ('member-by-member.html', 'Member by member', 'Each councilmember’s votes, majority alignment, debate activity and allies, with a month slider.'),
         ('voting-trends.html', 'Voting trends', 'Council-wide totals, participation by month, who votes together, and every split vote.'),
+        ('platforms.html', 'Platforms vs. votes', 'What each member campaigned on, next to what they did on the council.'),
     ]
     cg = ''.join(f'<a class="hm-card" href="{h}"><h2>{t}</h2><p>{p}</p></a>' for h, t, p in cards)
     body = f"""{nav('index.html', False)}
@@ -362,6 +363,8 @@ def main():
     dashboard('playbook.html', 'Chamber of Commerce playbook: St. Paul City Council, 2026', 'playbook.html', 'playbook.js', pb, {'member': 'All'}, 'playbook')
     dashboard('course-of-action.html', 'St. Paul Chamber course of action: City Council 2026', 'course-of-action.html', 'course-of-action.js',
               {k: k for k in ['c_members', 'c_priorities', 'c_issues', 'c_items', 'b_kpis', 'b_watch']}, {'tab': 'plan', 'q': ''}, 'coa')
+    dashboard('platforms.html', 'Platforms vs. votes: St. Paul City Council, 2026', 'platforms.html', 'platforms.js',
+              {k: k for k in ['pv_platforms', 'pv_cells', 'pv_theme', 'pv_items']}, {'member': 'Noecker', 'theme': 'Housing & renters'}, 'platforms')
     library(meetings)
     home(meetings)
     os.makedirs(os.path.join(SITE, 'vendor'), exist_ok=True)
