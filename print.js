@@ -243,6 +243,36 @@
       }
       const cm = rows('c_members').slice().sort((a, b) => +a.rank - +b.rank), pri = rows('c_priorities'), watch = rows('b_watch');
       const iss = new Map(rows('c_issues').map((r) => [r.issue, r]));
+      const who = P().member && P().member !== 'All' ? cm.find((r) => r.member === P().member) : null;
+      if (who) {
+        const need = +k.min_winning_yeas || 4, isNA = (v) => !v || /^NOT AVAILABLE/i.test(String(v).trim());
+        S.title = `Course of action: ${who.full_name}`;
+        S.sub = `#${who.rank} of ${cm.length} in outreach order · ${who.role} · council minutes ${span} and Chamber documents`;
+        S.add(glance([
+          `${who.stance}. ${first(who.approach)}`,
+          +who.rank <= need ? `Call #${who.rank}: part of the first ${need} calls that build a winning vote.` : `Call #${who.rank}: beyond the ${need} votes needed, so persuade or keep informed.`,
+          !isNA(who.lead_with) && `Lead with ${who.lead_with}`,
+          `Sides with the majority on ${pct(who.majority_share)} of split votes; votes most like ${who.closest}, least like ${who.farthest}.`,
+        ]));
+        S.add(kpis([['Outreach order', `#${who.rank} of ${cm.length}`], ['With majority on splits', pct(who.majority_share)], ['Votes cast', pct(who.participation)], ['Business-item activity', int(who.biz_lead)]]));
+        const plan = el('div', 'ps-plan');
+        for (const [h, v] of [['Recommended approach', who.approach], ['Engage on', who.engage_on], ['Lead with (Chamber value)', who.lead_with], ['Cautions', who.cautions], ['Chamber relationship', who.chamber_relationship]]) {
+          const d = el('div', 'ps-pl'); d.appendChild(el('b', '', h)); d.appendChild(el('span', '', isNA(v) ? NA : cut(v, 330))); plan.appendChild(d);
+        }
+        S.add(section('Plan', plan));
+        S.add(section('Where they sit in the order of engagement', grid([
+          { h: '#', w: '.25fr', cell: (r) => r.rank, cls: 'n b' },
+          { h: 'Member', w: '1.1fr', cell: (r) => r.member === who.member ? chip(`▶ ${r.full_name}`, true) : r.full_name },
+          { h: 'Stance', w: '1.6fr', cell: (r) => r.stance.split(/[:(]/)[0].trim() },
+          { h: 'With majority', w: '1.2fr', cell: (r) => bar(r.majority_share, 1, r.member === who.member ? DARK : '#c9c3d3') },
+        ], cm)));
+        if (watch.length) S.add(section('Next meeting', grid([
+          { h: 'File', w: '.7fr', cell: (r) => r.file, cls: 'b' },
+          { h: 'Item', w: '2.8fr', cell: (r) => cut(r.item, 80) },
+          { h: 'Stage', w: '1fr', cell: (r) => r.stage },
+        ], watch)));
+        return;
+      }
       S.sub = `Recommended engagement plan · council minutes ${span} and Chamber documents`;
       S.add(glance([
         cm[0] && `Start with ${cm[0].full_name} (${cm[0].stance.toLowerCase()}), then build to ${k.min_winning_yeas || 4} of ${k.seats || 7} votes in the order below.`,

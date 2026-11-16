@@ -57,6 +57,48 @@
 .pb .ptile .big { font-family: var(--font-anthropic-serif); font-size: var(--cds-font-size-title); line-height: 1; }
 .pb .ptile .ln { font-weight: var(--cds-font-weight-medium); }
 .pb .ptile .tx { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.45; }
+.pb .tx b { color: var(--color-fg); font-weight: 700; }
+.pb .tx .use { display: block; margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--color-border-line); }
+.pb .leads { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; line-height: 1.3; }
+.pb .leads .tag { margin: 0; font: inherit; font-size: var(--cds-font-size-caption); background: #fff; cursor: pointer; padding: 2px 9px; }
+.pb .leads .tag:hover { background: #f6f0fb; }
+.pb .mcard { position: relative; }
+.pb .mcard:focus-visible { outline: 3px solid #f15a25; }
+.pb .mcard[aria-pressed=true] { outline: 3px solid #2a0157; box-shadow: 0 8px 24px rgba(42,1,87,.18); }
+.pb .lenspick { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: var(--cds-font-size-caption); }
+.pb .lenspick .lp-l { color: var(--color-fg-muted); margin-right: 2px; }
+.pb .lenspick button { font: inherit; font-size: var(--cds-font-size-caption); border: 1.5px solid var(--color-border-line); background: #fff; color: var(--color-fg); border-radius: 999px; padding: 3px 11px; cursor: pointer; }
+.pb .lenspick button[aria-pressed=true] { background: #2a0157; color: #fff; border-color: #2a0157; }
+.pb .cmp { margin-top: var(--cds-gap-sm); padding-top: var(--cds-gap-sm); border-top: 1px solid var(--color-border-line); display: flex; flex-direction: column; gap: 3px; }
+.pb .cmp-hint { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.pb .cmp-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.pb .cmp-chip { font: inherit; font-size: var(--cds-font-size-caption); border: 1.5px solid; border-radius: 999px; background: #fff; padding: 3px 10px; cursor: pointer; color: var(--color-fg); }
+.pb .cmp-chip:hover { background: #f6f0fb; }
+.pb .cmp-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.pb .cmp-h b { border-left: 4px solid; padding-left: 8px; color: #2a0157; }
+.pb .cmp-x { font: inherit; font-size: var(--cds-font-size-caption); border: 1px solid var(--color-border-line); background: #fff; border-radius: 999px; padding: 2px 10px; cursor: pointer; color: var(--color-fg); }
+.pb .cmp-row { display: grid; grid-template-columns: 5.5rem 1fr 3rem; gap: 8px; align-items: center; font: inherit; font-size: var(--cds-font-size-caption); background: none; border: 0; border-radius: 6px; padding: 3px 6px; cursor: pointer; text-align: left; color: var(--color-fg); }
+.pb .cmp-row:hover { background: #f6f0fb; }
+.pb .cmp-row.sel { background: rgba(42,1,87,.08); outline: 2px solid #2a0157; font-weight: 700; }
+.pb .cmp-row .tr { position: relative; height: 12px; background: var(--color-border-line); border-radius: 6px; }
+.pb .cmp-row .tr > span { display: block; height: 100%; border-radius: 6px; }
+.pb .cmp-row .tr > i { position: absolute; top: -3px; bottom: -3px; width: 2px; background: #2a0157; }
+.pb .cmp-row .v { text-align: right; font-variant-numeric: tabular-nums; }
+.pb .cmp-foot { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-top: 2px; }
+.pb .okey { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: var(--cds-font-size-caption); color: var(--color-fg); margin-bottom: 6px; }
+.pb .okey span { display: inline-flex; align-items: center; gap: 5px; }
+.pb .okey svg { flex: none; }
+.pb .okey-n { color: var(--color-fg-muted); }
+#plays { background: linear-gradient(180deg, #fff, #fdf8f5); }
+#plays h2 { color: #2a0157; }
+.pb .plays { list-style: none; counter-reset: step; padding: 0; margin: var(--cds-gap-sm) 0 0; display: flex; flex-direction: column; gap: 0; }
+.pb .plays li { counter-increment: step; position: relative; padding: 2px 0 22px 62px; line-height: 1.55; color: var(--color-fg-muted); }
+.pb .plays li::before { content: counter(step); position: absolute; left: 0; top: -4px; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, #c9400c, #d31d44); color: #fff; font-weight: 800; font-size: 1.15rem; box-shadow: 0 0 0 5px #fbe3d8; }
+.pb .plays li::after { content: ''; position: absolute; left: 20px; top: 44px; bottom: 2px; width: 2px; background: linear-gradient(#f3c3ad, #e7e3ee); }
+.pb .plays li:last-child { padding-bottom: 4px; }
+.pb .plays li:last-child::after { display: none; }
+.pb .plays li > b:first-child { display: block; font-size: 1.05rem; font-weight: 700; color: #2a0157; margin-bottom: 2px; }
+.pb .plays li b[data-draw] { color: #b9420c; font-weight: 800; }
 [data-dash-source-state=empty] { color: transparent; }
 [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
 </style>
@@ -96,16 +138,19 @@
   <section id="coalition">
     <div class="step">Count the votes</div>
     <h2>Coalition map</h2>
-    <p class="note">Gauge = how often they side with the majority. Bars = business activity and pushback. Hexagon = their PERSIA profile. Click a member to filter.</p>
+    <p class="note">Gauge = how often they side with the majority. Bars = business activity and pushback. Hexagon = their PERSIA profile. <b>Hover or click a letter</b> to focus one lens on every card; <b>click a card</b> to spotlight that member across the page.</p>
+    <div class="lenspick" data-draw="lenspick" data-source="b_persia_member"></div>
     <div class="cards" data-draw="cards" data-source="b_members b_persia_member"></div>
   </section>
 
   <section id="issues">
     <div class="step">Find the right door</div>
+    <h2>Who to talk to, by lens and by issue</h2>
+    <p class="note"><b>Click a member's name</b> to spotlight their column. <b>Click a lens or issue</b> to rank members on it side by side.</p>
     <div class="grid2">
       <div class="card">
         <h3>PERSIA lens map</h3>
-        <p class="note">Darker = a bigger part of that member's agenda than average.</p>
+        <p class="note">Darker = a bigger part of that member's agenda than the council average (1.0×).</p>
         <div class="chart" style="min-height:240px" data-draw="lensmap" data-source="b_persia_member"></div>
       </div>
       <div class="card">
@@ -117,7 +162,8 @@
     <div class="grid2">
       <div class="card">
         <h3>Economic lens: how contested each business issue is</h3>
-        <p class="note">Lower bar = more division, where lobbying can change the outcome.</p>
+        <p class="note">Bar = share of votes passed with no dissent (axis starts at 75%). Shorter bar = more division, where lobbying can change the outcome. Click an issue to see who carries it.</p>
+        <div class="legend"><span style="display:inline-flex;align-items:center;gap:4px"><span class="sw" data-sw="split" style="margin-left:0"></span>Split at least once: room to persuade</span> <span style="display:inline-flex;align-items:center;gap:4px"><span class="sw" data-sw="calm"></span>Always unanimous: shape it early</span></div>
         <div class="chart" style="min-height:300px" data-draw="contested" data-source="b_issues"></div>
       </div>
     </div>
@@ -137,7 +183,7 @@
     <div class="grid2">
       <div class="card">
         <h3>Days from first appearance to adoption, every 2026 ordinance</h3>
-        <p class="note">Each dot is one ordinance. Filled dots were amended along the way. Hover for the title.</p>
+        <p class="note">Each dot is one ordinance, stacked by how many days it took. Hover a dot for the title.</p>
         <div class="chart" data-draw="ordclock" data-source="b_ordinances b_kpis"></div>
       </div>
       <div class="card">
@@ -151,6 +197,8 @@
 
   <section id="plays" class="card">
     <div class="step">The playbook</div>
+    <h2>Seven steps to move a business item</h2>
+    <p class="note">Work through them in order, from before an item is introduced to the day of the vote.</p>
     <ol class="plays">
       <li><b>Start before the first reading.</b> The median ordinance passed <b data-draw="kv" data-source="b_kpis" data-field="ord_median_days" data-fmt="int">—</b> days after it first appeared in the minutes, so there is little time once an item is on the agenda. Talk to the member who leads on the issue (see the lead map) before it is introduced.</li>
       <li><b>Bring amendment language, not only opposition.</b> <b data-draw="kv" data-source="b_kpis" data-field="ord_amended_share" data-fmt="pct">—</b> of ordinances were amended before passage, usually by a substitute version offered by a member.</li>

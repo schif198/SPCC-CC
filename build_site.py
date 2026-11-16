@@ -486,7 +486,7 @@ def main():
     pb['b_watch'] = playbook_watch()
     dashboard('playbook.html', 'Chamber of Commerce playbook: St. Paul City Council, 2026', 'playbook.html', 'playbook.js', pb, {'member': 'All'}, 'playbook')
     dashboard('course-of-action.html', 'St. Paul Chamber course of action: City Council 2026', 'course-of-action.html', 'course-of-action.js',
-              {k: k for k in ['c_members', 'c_priorities', 'c_issues', 'c_items', 'b_kpis', 'b_watch']}, {'tab': 'plan', 'q': ''}, 'coa')
+              {k: k for k in ['c_members', 'c_priorities', 'c_issues', 'c_items', 'b_kpis', 'b_watch']}, {'tab': 'plan', 'q': '', 'member': 'All'}, 'coa')
     dashboard('platforms.html', 'Platforms vs. votes: St. Paul City Council, 2026', 'platforms.html', 'platforms.js',
               {k: k for k in ['pv_platforms', 'pv_cells', 'pv_theme', 'pv_items']}, {'member': 'Noecker', 'theme': 'Housing & renters'}, 'platforms')
     library(meetings)

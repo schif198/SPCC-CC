@@ -93,6 +93,8 @@ a.sa-xl:hover { text-decoration-color: currentColor; }
 #print-sheet .ps-svg { display: block; }
 #print-sheet .ps-note { margin: 0 0 6px; color: #3d3c39; }
 #print-sheet .ps-steps { margin: 0; padding-left: 18px; font-size: 9pt; }
+#print-sheet .ps-plan { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; font-size: 8.6pt; line-height: 1.35; }
+#print-sheet .ps-pl b { display: block; font-size: 7.3pt; text-transform: uppercase; letter-spacing: .06em; color: #b9420c; margin-bottom: 1px; }
 #print-sheet .ps-steps li { margin-bottom: 3px; }
 #print-sheet .ps-steps .na { font-weight: 600; }
 #print-sheet .ps-matrix { display: grid; gap: 3px 4px; align-items: center; font-size: 8.5pt; }

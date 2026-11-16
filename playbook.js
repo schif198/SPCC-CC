@@ -8,7 +8,7 @@
   const ISSUES = ['Labor & wages', 'Housing & tenant rules', 'Economic development & incentives', 'Licensing & enforcement', 'Land use & permitting', 'Utilities, franchises & fees', 'Taxes, levies & assessments', 'Events, festivals & sound permits'];
   const issueColor = (i) => dash.colors[ISSUES.indexOf(i) % dash.colors.length];
   const color = { yea: () => dash.colors[0], nay: () => '#2a0157', absent: () => 'transparent', adopted: () => dash.colors[0], failed: () => 'var(--color-bad)', other: () => 'var(--cds-chart-muted)' };
-  document.querySelectorAll('.pb [data-sw]').forEach((el) => { el.style.background = color[el.dataset.sw](); });
+  document.querySelectorAll('.pb [data-sw]').forEach((el) => { if (color[el.dataset.sw]) el.style.background = color[el.dataset.sw](); });
   document.querySelectorAll('.pb .clear').forEach((b) => b.addEventListener('click', () => dash.setParams({ member: 'All' })));
 
   const tipIn = (box) => { const t = document.createElement('div'); t.className = 'tip'; t.hidden = true; box.appendChild(t); return t; };
@@ -81,6 +81,32 @@
   const lensChips = (parent, str) => {
     for (const l of (str || '').split(' · ').filter(Boolean)) { const s = document.createElement('span'); s.className = 'tag'; s.style.borderColor = lensColor(l); s.textContent = l; parent.appendChild(s); }
   };
+  // ---------- shared focus: one PERSIA lens and/or one business issue at a time ----------
+  const F = { lens: null, issue: null };
+  const refocus = () => dash.setParams({});
+  const dimmed = (m, l, key) => (cur() !== 'All' && m && m !== cur()) || (F[key] && l && l !== F[key]);
+  (() => { // CSS for focusing one lens in the coalition radars
+    const st = document.createElement('style');
+    st.textContent = '#coalition[data-focus] .rad [data-l]{opacity:.18;transition:opacity .15s}#coalition[data-focus] .rad line[data-l]{stroke-dasharray:2 3}#coalition[data-focus] .rad .shape{fill-opacity:.08}.rad .rv{display:none}'
+      + LENSES.map((l) => `#coalition[data-focus="${l}"] .rad [data-l="${l}"]{opacity:1}#coalition[data-focus="${l}"] .rad line[data-l="${l}"]{stroke:${lensColor(l)};stroke-width:2.5;stroke-dasharray:none}#coalition[data-focus="${l}"] .rad .rv[data-l="${l}"]{display:block}#coalition[data-focus="${l}"] .lenspick [data-l="${l}"]{background:${lensColor(l)};color:#fff;border-color:${lensColor(l)}}`).join('');
+    document.head.appendChild(st);
+  })();
+  const setFocusAttr = (l) => { const s = document.getElementById('coalition'); if (s) { if (l) s.dataset.focus = l; else delete s.dataset.focus; } };
+
+  // ---------- PERSIA tiles ----------
+  const noteRich = (note) => {
+    const tx = document.createElement('div'); tx.className = 'tx';
+    const i = note.indexOf('. '); const first = i > 0 ? note.slice(0, i + 1) : note, rest = i > 0 ? note.slice(i + 2) : '';
+    const p = document.createElement('div');
+    for (const part of first.split(/(, such as |, | and | or |^Items involving )/)) {
+      if (!part) continue;
+      if (/^(, such as |, | and | or |Items involving )$/.test(part)) { p.append(part); continue; }
+      const dot = part.endsWith('.'); const b = document.createElement('b'); b.textContent = dot ? part.slice(0, -1) : part; p.appendChild(b); if (dot) p.append('.');
+    }
+    tx.appendChild(p);
+    if (rest) { const it = document.createElement('i'); it.className = 'use'; it.textContent = rest; tx.appendChild(it); }
+    return tx;
+  };
   dash.draw('persia', (box) => {
     const rows = ok('b_persia'); box.replaceChildren(); if (!rows) return;
     for (const l of LENSES) {
@@ -95,52 +121,115 @@
       stats.append(Object.assign(document.createElement('b'), { textContent: fInt(+r.votes) }), ' votes · ', Object.assign(document.createElement('b'), { textContent: fInt(+r.splits) }), ' split');
       const ch = document.createElement('div'); ch.className = 'small';
       ch.append('Leads: ', Object.assign(document.createElement('b'), { textContent: r.champion_1 }), ` (${fInt(+r.champion_1_n)}), `, Object.assign(document.createElement('b'), { textContent: r.champion_2 }), ` (${fInt(+r.champion_2_n)})`);
-      const tx = document.createElement('div'); tx.className = 'tx'; tx.textContent = r.note;
-      c.append(head, g, stats, ch, tx); box.appendChild(c);
+      c.append(head, g, stats, ch, noteRich(r.note)); box.appendChild(c);
       requestAnimationFrame(() => gauge(g, r.unanimous_share === '' ? null : +r.unanimous_share, r.unanimous_share === '' ? '—' : fPct(+r.unanimous_share), 'no dissent'));
     }
   });
+
+  // ---------- comparison bars under a map ----------
+  const compare = (box, o) => {
+    const wrap = document.createElement('div'); wrap.className = 'cmp';
+    if (!o.items) {
+      const h = document.createElement('div'); h.className = 'cmp-hint'; h.textContent = o.hint; wrap.appendChild(h);
+      const chips = document.createElement('div'); chips.className = 'cmp-chips';
+      for (const c of o.choices) { const b = document.createElement('button'); b.type = 'button'; b.className = 'cmp-chip'; b.style.borderColor = c.color; b.textContent = c.label; b.addEventListener('click', c.pick); chips.appendChild(b); }
+      wrap.appendChild(chips); box.appendChild(wrap); return;
+    }
+    const hd = document.createElement('div'); hd.className = 'cmp-h';
+    const t = document.createElement('b'); t.textContent = o.title; t.style.borderLeftColor = o.color; hd.appendChild(t);
+    const x = document.createElement('button'); x.type = 'button'; x.className = 'cmp-x'; x.textContent = 'Clear ×'; x.addEventListener('click', o.clear); hd.appendChild(x);
+    wrap.appendChild(hd);
+    const max = Math.max(o.ref || 0, ...o.items.map((d) => d.v)) || 1;
+    for (const d of o.items) {
+      const row = document.createElement('button'); row.type = 'button'; row.className = 'cmp-row' + (cur() === d.m ? ' sel' : '');
+      row.title = cur() === d.m ? 'Show all members' : `Spotlight ${d.m}`;
+      row.addEventListener('click', () => dash.setParams({ member: cur() === d.m ? 'All' : d.m }));
+      const k = document.createElement('span'); k.className = 'k'; k.textContent = d.m;
+      const tr = document.createElement('span'); tr.className = 'tr';
+      const bar = document.createElement('span'); bar.style.width = (d.v / max * 100) + '%'; bar.style.background = o.color; tr.appendChild(bar);
+      if (o.ref) { const rf = document.createElement('i'); rf.style.left = (o.ref / max * 100) + '%'; tr.appendChild(rf); }
+      const v = document.createElement('span'); v.className = 'v'; v.textContent = d.label;
+      row.append(k, tr, v); wrap.appendChild(row);
+    }
+    if (o.foot) { const f = document.createElement('div'); f.className = 'cmp-foot'; f.textContent = o.foot; wrap.appendChild(f); }
+    box.appendChild(wrap);
+  };
+  // column headers: click a member to spotlight them; the selected one becomes a filled pill
+  const memberHeads = (svg, left, cw, H) => {
+    const sel = cur();
+    if (sel !== 'All') { const j = M.indexOf(sel); svg.append('rect').attr('x', left + j * cw).attr('y', 1).attr('width', cw).attr('height', H - 2).attr('rx', 8).attr('fill', 'rgba(42,1,87,.05)').attr('stroke', '#2a0157').attr('stroke-width', 2); }
+    M.forEach((m, j) => {
+      const g = svg.append('g').style('cursor', 'pointer').on('click', () => dash.setParams({ member: sel === m ? 'All' : m }));
+      g.append('title').text(sel === m ? 'Show all members' : `Spotlight ${m}`);
+      const lab = cw < 52 ? m.slice(0, 3) : m;
+      if (sel === m) g.append('rect').attr('x', left + j * cw + 4).attr('y', 4).attr('width', cw - 8).attr('height', 18).attr('rx', 9).attr('fill', '#2a0157');
+      g.append('rect').attr('x', left + j * cw).attr('y', 2).attr('width', cw).attr('height', 22).attr('fill', 'transparent');
+      g.append('text').attr('x', left + j * cw + cw / 2).attr('y', 17).attr('text-anchor', 'middle').attr('font-size', cw < 38 ? 9 : 11).attr('font-weight', sel === m ? 700 : 500)
+        .attr('fill', sel === m ? '#fff' : (sel !== 'All' ? 'var(--color-fg-muted)' : 'var(--color-fg)')).text(lab);
+    });
+  };
+  // row labels: click to focus one row; the focused one gets a colored marker
+  const rowLabel = (svg, left, y, rh, text, color, on, onClick, tipText) => {
+    const g = svg.append('g').style('cursor', 'pointer').on('click', onClick); g.append('title').text(tipText);
+    g.append('rect').attr('x', 0).attr('y', y).attr('width', left - 2).attr('height', rh).attr('fill', 'transparent');
+    if (on) g.append('rect').attr('x', 0).attr('y', y + 5).attr('width', 4).attr('height', rh - 10).attr('rx', 2).attr('fill', color);
+    g.append('text').attr('x', left - 8).attr('y', y + rh / 2 + 4).attr('text-anchor', 'end').attr('font-size', 11).attr('font-weight', on ? 700 : 400).attr('fill', 'var(--color-fg)').attr('text-decoration', on ? null : 'underline').attr('text-decoration-color', 'var(--color-border-line)').text(text);
+  };
+
+  // ---------- PERSIA lens map ----------
   dash.draw('lensmap', (box) => {
     const rows = ok('b_persia_member'); box.replaceChildren(); if (!rows) return;
     const W = Math.max(300, box.clientWidth);
     const svg = d3.select(box).append('svg').attr('width', '100%');
-    const left = measure(svg, LENSES, 11) + 14;
-    const top = 22, rh = 32, cw = (W - left) / M.length, H = top + LENSES.length * rh + 4;
+    const left = measure(svg, LENSES, 11) + 22;
+    const top = 28, rh = 32, cw = (W - left) / M.length, H = top + LENSES.length * rh + 6;
     svg.attr('viewBox', `0 0 ${W} ${H}`).attr('height', H);
-    const lo = getComputedStyle(box).getPropertyValue('--color-panel').trim() || '#f5f5f5';
+    const lo = '#ffffff';
     const idx = new Map(rows.map((r) => [r.member + '|' + r.lens, r]));
     const tip = tipIn(box);
-    M.forEach((m, j) => svg.append('text').attr('x', left + j * cw + cw / 2).attr('y', 14).attr('text-anchor', 'middle').attr('font-size', 11).attr('font-weight', cur() === m ? 700 : 400).attr('fill', 'var(--color-fg-muted)').text(cw < 52 ? m.slice(0, 3) : m));
+    memberHeads(svg, left, cw, H);
     LENSES.forEach((l, i) => {
       const y = top + i * rh; const ramp = d3.interpolateRgb(lo, lensColor(l));
-      svg.append('text').attr('x', left - 8).attr('y', y + rh / 2 + 4).attr('text-anchor', 'end').attr('font-size', 11).attr('fill', 'var(--color-fg)').text(l);
+      rowLabel(svg, left, y, rh, l, lensColor(l), F.lens === l, () => { F.lens = F.lens === l ? null : l; refocus(); }, F.lens === l ? 'Clear lens focus' : `Compare members on the ${l} lens`);
       M.forEach((m, j) => {
-        const r = idx.get(m + '|' + l); if (!r) return; const v = +r.index, n = +r.lead;
-        svg.append('rect').attr('x', left + j * cw + 2).attr('y', y + 2).attr('width', Math.max(0, cw - 4)).attr('height', rh - 4).attr('rx', 3)
-          .attr('fill', n ? ramp(Math.min(1, 0.1 + v / 2.2)) : 'transparent').attr('stroke', 'var(--color-border-line)').attr('stroke-opacity', n ? 0 : 1)
-          .on('mousemove', (ev) => showTip(box, tip, ev, `${m} · ${l}`, [`${fInt(n)} motions/remarks (${fPct(+r.share)} of theirs vs ${fPct(+r.council_share)} council-wide)`, `${fInt(+r.nay)} nay · ${fInt(+r.absent)} absent of ${fInt(+r.votes)} votes · ${fInt(+r.pushback)} pushback`]))
+        const r = idx.get(m + '|' + l); if (!r) return; const v = +r.index, n = +r.lead; const op = dimmed(m, l, 'lens') ? 0.22 : 1;
+        svg.append('rect').attr('x', left + j * cw + 2).attr('y', y + 2).attr('width', Math.max(0, cw - 4)).attr('height', rh - 4).attr('rx', 3).attr('opacity', op)
+          .attr('fill', n ? ramp(Math.min(1, 0.1 + v / 2.2)) : 'transparent').attr('stroke', 'var(--color-border-line)').attr('stroke-opacity', n ? 0 : 1).style('cursor', 'pointer')
+          .on('click', () => { F.lens = l; dash.setParams({ member: m }); })
+          .on('mousemove', (ev) => showTip(box, tip, ev, `${m} · ${l}`, [`${fInt(n)} motions/remarks (${fPct(+r.share)} of theirs vs ${fPct(+r.council_share)} council-wide)`, `${fInt(+r.nay)} nay · ${fInt(+r.absent)} absent of ${fInt(+r.votes)} votes · ${fInt(+r.pushback)} pushback`, 'Click to spotlight']))
           .on('mouseleave', () => { tip.hidden = true; });
-        if (n && cw > 34) svg.append('text').attr('x', left + j * cw + cw / 2).attr('y', y + rh / 2 + 4).attr('text-anchor', 'middle').attr('font-size', 10.5).attr('pointer-events', 'none').attr('fill', v > 1.4 ? '#fff' : 'var(--color-fg)').text(d3.format('.1f')(v) + '×');
+        if (n && cw > 34) svg.append('text').attr('x', left + j * cw + cw / 2).attr('y', y + rh / 2 + 4).attr('text-anchor', 'middle').attr('font-size', 10.5).attr('opacity', op).attr('pointer-events', 'none').attr('fill', v > 1.4 ? '#fff' : 'var(--color-fg)').text(d3.format('.1f')(v) + '×');
       });
     });
+    if (F.lens) {
+      const l = F.lens;
+      const items = M.map((m) => { const r = idx.get(m + '|' + l); return { m, v: r ? +r.index : 0, label: r ? d3.format('.1f')(+r.index) + '×' : '—' }; }).sort((a, b) => b.v - a.v);
+      compare(box, { title: `${l}: who works this lens most`, color: lensColor(l), items, ref: 1, foot: 'Line = council average (1.0×). Click a name to spotlight that member.', clear: () => { F.lens = null; refocus(); } });
+    } else compare(box, { hint: 'Compare members on one lens:', choices: LENSES.map((l) => ({ label: `${l[0]} · ${l}`, color: lensColor(l), pick: () => { F.lens = l; refocus(); } })) });
   });
-  const radar = (box, rows) => {
+
+  const radar = (box, rows, m) => {
     box.replaceChildren();
-    const W = Math.max(160, box.clientWidth), H = 150, cx = W / 2, cy = H / 2 + 4, R = Math.min(W / 2 - 30, H / 2 - 16);
-    const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('height', H);
+    const W = Math.max(160, box.clientWidth), H = 158, cx = W / 2, cy = H / 2 + 2, R = Math.min(W / 2 - 34, H / 2 - 20);
+    const svg = d3.select(box).append('svg').attr('class', 'rad').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('height', H);
     const maxV = 2.5, ang = (i) => -Math.PI / 2 + (i * 2 * Math.PI) / LENSES.length;
     const pt = (i, v) => [cx + R * Math.min(v, maxV) / maxV * Math.cos(ang(i)), cy + R * Math.min(v, maxV) / maxV * Math.sin(ang(i))];
     for (const ring of [1, 2]) svg.append('polygon').attr('points', LENSES.map((_, i) => pt(i, ring).join(',')).join(' ')).attr('fill', 'none').attr('stroke', ring === 1 ? 'var(--cds-chart-reference)' : 'var(--cds-chart-grid)').attr('stroke-dasharray', ring === 1 ? '3 3' : null);
-    LENSES.forEach((l, i) => {
-      const [x, y] = pt(i, maxV); svg.append('line').attr('x1', cx).attr('y1', cy).attr('x2', x).attr('y2', y).attr('stroke', 'var(--cds-chart-grid)');
-      const [lx, ly] = [cx + (R + 11) * Math.cos(ang(i)), cy + (R + 11) * Math.sin(ang(i))];
-      svg.append('text').attr('x', lx).attr('y', ly + 4).attr('text-anchor', 'middle').attr('font-size', 11).attr('font-weight', 600).attr('fill', lensColor(l)).text(l[0]);
-    });
     const vals = LENSES.map((l) => { const r = rows.find((x) => x.lens === l); return r ? +r.index : 0; });
-    svg.append('polygon').attr('points', vals.map((v, i) => pt(i, v).join(',')).join(' ')).attr('fill', dash.colors[0]).attr('fill-opacity', 0.22).attr('stroke', dash.colors[0]).attr('stroke-width', 2).attr('stroke-linejoin', 'round');
-    const tip = tipIn(box);
-    vals.forEach((v, i) => { const [x, y] = pt(i, v); svg.append('circle').attr('cx', x).attr('cy', y).attr('r', 4).attr('fill', lensColor(LENSES[i]))
-      .on('mousemove', (ev) => showTip(box, tip, ev, LENSES[i], [`${d3.format('.1f')(v)}× the council's share`])).on('mouseleave', () => { tip.hidden = true; }); });
+    LENSES.forEach((l, i) => { const [x, y] = pt(i, maxV); svg.append('line').attr('data-l', l).attr('x1', cx).attr('y1', cy).attr('x2', x).attr('y2', y).attr('stroke', 'var(--cds-chart-grid)'); });
+    svg.append('polygon').attr('class', 'shape').attr('points', vals.map((v, i) => pt(i, v).join(',')).join(' ')).attr('fill', dash.colors[0]).attr('fill-opacity', 0.22).attr('stroke', dash.colors[0]).attr('stroke-width', 2).attr('stroke-linejoin', 'round');
+    LENSES.forEach((l, i) => {
+      const [lx, ly] = [cx + (R + 14) * Math.cos(ang(i)), cy + (R + 14) * Math.sin(ang(i))];
+      const g = svg.append('g').attr('data-l', l).style('cursor', 'pointer');
+      g.append('circle').attr('cx', lx).attr('cy', ly).attr('r', 10).attr('fill', '#fff').attr('stroke', lensColor(l)).attr('stroke-width', 1.2);
+      g.append('text').attr('x', lx).attr('y', ly + 4).attr('text-anchor', 'middle').attr('font-size', 11).attr('font-weight', 700).attr('fill', lensColor(l)).text(l[0]);
+      g.append('title').text(`${l}: ${d3.format('.1f')(vals[i])}× the council's share. Click to focus this lens on every card.`);
+      g.on('mouseenter', () => setFocusAttr(l)).on('mouseleave', () => setFocusAttr(F.lens))
+        .on('click', (ev) => { ev.stopPropagation(); F.lens = F.lens === l ? null : l; refocus(); });
+      const [x, y] = pt(i, vals[i]);
+      svg.append('circle').attr('data-l', l).attr('cx', x).attr('cy', y).attr('r', 4.5).attr('fill', lensColor(l)).attr('stroke', '#fff').attr('stroke-width', 1);
+      svg.append('text').attr('class', 'rv').attr('data-l', l).attr('x', cx).attr('y', H - 2).attr('text-anchor', 'middle').attr('font-size', 11.5).attr('font-weight', 700).attr('fill', '#2a0157').text(`${l}: ${d3.format('.1f')(vals[i])}× council share`);
+    });
   };
 
   // ---------- coalition cards ----------
@@ -152,30 +241,50 @@
     const v = document.createElement('span'); v.className = 'v'; v.textContent = valueText;
     row.append(k, tr, v); parent.appendChild(row);
   };
+  dash.draw('lenspick', (box) => {
+    box.replaceChildren();
+    const lab = document.createElement('span'); lab.className = 'lp-l'; lab.textContent = 'Focus a lens:'; box.appendChild(lab);
+    const all = document.createElement('button'); all.type = 'button'; all.textContent = 'All'; all.setAttribute('aria-pressed', String(!F.lens));
+    all.addEventListener('click', () => { F.lens = null; refocus(); }); box.appendChild(all);
+    for (const l of LENSES) {
+      const b = document.createElement('button'); b.type = 'button'; b.dataset.l = l; b.style.borderColor = lensColor(l); b.setAttribute('aria-pressed', String(F.lens === l));
+      const L = document.createElement('b'); L.textContent = l[0]; b.append(L, ' ' + l);
+      b.addEventListener('mouseenter', () => setFocusAttr(l)); b.addEventListener('mouseleave', () => setFocusAttr(F.lens));
+      b.addEventListener('click', () => { F.lens = F.lens === l ? null : l; refocus(); });
+      box.appendChild(b);
+    }
+    setFocusAttr(F.lens);
+  });
   dash.draw('cards', (box) => {
     const rows = ok('b_members'); box.replaceChildren(); if (!rows) return;
     for (const m of M) {
       const r = rows.find((x) => x.member === m); if (!r) continue;
-      const c = document.createElement('button'); c.type = 'button'; c.className = 'mcard'; c.setAttribute('aria-pressed', String(cur() === m));
-      c.addEventListener('click', () => { dash.setParams({ member: cur() === m ? 'All' : m }); });
+      const c = document.createElement('div'); c.className = 'mcard'; c.setAttribute('role', 'button'); c.tabIndex = 0; c.setAttribute('aria-pressed', String(cur() === m));
+      const pick = () => { dash.setParams({ member: cur() === m ? 'All' : m }); };
+      c.addEventListener('click', pick); c.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
       const nm = document.createElement('div'); nm.className = 'nm'; nm.textContent = r.full_name;
       const rl = document.createElement('div'); rl.className = 'rl'; rl.textContent = r.role;
       const tag = document.createElement('div'); const t = document.createElement('span'); t.className = 'tag'; t.textContent = r.coalition;
       t.style.borderColor = r.coalition.startsWith('Usually') ? dash.colors[0] : 'var(--color-bad)'; if (!r.coalition.startsWith('Usually')) t.style.borderStyle = 'dashed'; tag.appendChild(t);
       const g = document.createElement('div'); g.className = 'chart gauge'; g.style.minHeight = '5.5rem';
-      const rd = document.createElement('div'); rd.className = 'chart'; rd.style.minHeight = '150px';
+      const rd = document.createElement('div'); rd.className = 'chart'; rd.style.minHeight = '158px';
       c.append(nm, rl, tag, g, rd);
       meterRow(c, 'Business engagement', +r.biz_lead / +r.biz_lead_max, dash.colors[2], fInt(+r.biz_lead));
       meterRow(c, 'Pushback on business', +r.biz_pushback / +r.biz_pushback_max, dash.colors[3], fInt(+r.biz_pushback));
       meterRow(c, 'With majority, biz splits', +r.biz_splits_cast ? +r.biz_splits_with_majority / +r.biz_splits_cast : 0, dash.colors[1], `${fInt(+r.biz_splits_with_majority)}/${fInt(+r.biz_splits_cast)}`);
-      const leads = document.createElement('div'); leads.className = 'small';
-      leads.append('Leads on ');
-      for (const i of [r.top_issue_1, r.top_issue_2].filter((x) => x && x !== '—')) { const s = document.createElement('span'); s.className = 'tag'; s.style.borderColor = issueColor(i); s.textContent = shortIssue(i); leads.appendChild(s); }
+      const leads = document.createElement('div'); leads.className = 'small leads';
+      leads.append('Leads on');
+      for (const i of [r.top_issue_1, r.top_issue_2].filter((x) => x && x !== '—')) {
+        const s = document.createElement('button'); s.type = 'button'; s.className = 'tag'; s.style.borderColor = issueColor(i); s.textContent = shortIssue(i); s.title = 'Compare members on this issue';
+        if (F.issue === i) { s.style.background = issueColor(i); s.style.color = '#fff'; }
+        s.addEventListener('click', (ev) => { ev.stopPropagation(); F.issue = F.issue === i ? null : i; refocus(); document.getElementById('issues')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+        leads.appendChild(s);
+      }
       const ally = document.createElement('div'); ally.className = 'small';
       ally.append('Votes most like ', Object.assign(document.createElement('b'), { textContent: r.closest }), ', least like ', Object.assign(document.createElement('b'), { textContent: r.farthest }));
       c.append(leads, ally); box.appendChild(c);
       const pm = (ok('b_persia_member') || []).filter((x) => x.member === m);
-      requestAnimationFrame(() => { gauge(g, +r.majority_share, fPct(+r.majority_share), 'with majority on all splits'); radar(rd, pm); });
+      requestAnimationFrame(() => { gauge(g, +r.majority_share, fPct(+r.majority_share), 'with majority on all splits'); radar(rd, pm, m); });
     }
   });
 
@@ -184,47 +293,61 @@
     const rows = ok('b_issue_member'); box.replaceChildren(); if (!rows) return;
     const W = Math.max(300, box.clientWidth);
     const svg = d3.select(box).append('svg').attr('width', '100%');
-    const left = measure(svg, ISSUES.map(shortIssue), 11) + 10;
-    const top = 22, rh = 30, cw = (W - left) / M.length, H = top + ISSUES.length * rh + 4;
+    const left = measure(svg, ISSUES.map(shortIssue), 11) + 22;
+    const top = 28, rh = 30, cw = (W - left) / M.length, H = top + ISSUES.length * rh + 6;
     svg.attr('viewBox', `0 0 ${W} ${H}`).attr('height', H);
-    const lo = getComputedStyle(box).getPropertyValue('--color-panel').trim() || '#f5f5f5';
+    const lo = '#ffffff';
     const idx = new Map(rows.map((r) => [r.member + '|' + r.issue, r]));
     const tip = tipIn(box);
-    M.forEach((m, j) => svg.append('text').attr('x', left + j * cw + cw / 2).attr('y', 14).attr('text-anchor', 'middle').attr('font-size', 11).attr('font-weight', cur() === m ? 700 : 400).attr('fill', 'var(--color-fg-muted)').text(cw < 52 ? m.slice(0, 3) : m));
+    memberHeads(svg, left, cw, H);
     ISSUES.forEach((iss, i) => {
       const y = top + i * rh;
       const rowMax = d3.max(M, (m) => +(idx.get(m + '|' + iss) || {}).lead || 0) || 1;
       const ramp = d3.interpolateRgb(lo, issueColor(iss));
-      svg.append('text').attr('x', left - 8).attr('y', y + rh / 2 + 4).attr('text-anchor', 'end').attr('font-size', 11).attr('fill', 'var(--color-fg)').text(shortIssue(iss));
+      rowLabel(svg, left, y, rh, shortIssue(iss), issueColor(iss), F.issue === iss, () => { F.issue = F.issue === iss ? null : iss; refocus(); }, F.issue === iss ? 'Clear issue focus' : `Compare members on ${shortIssue(iss)}`);
       M.forEach((m, j) => {
-        const r = idx.get(m + '|' + iss); if (!r) return; const n = +r.lead;
-        svg.append('rect').attr('x', left + j * cw + 2).attr('y', y + 2).attr('width', Math.max(0, cw - 4)).attr('height', rh - 4).attr('rx', 3)
-          .attr('fill', n ? ramp(0.15 + 0.85 * (n / rowMax)) : 'transparent').attr('stroke', n === rowMax && n ? 'var(--color-fg)' : 'var(--color-border-line)').attr('stroke-width', n === rowMax && n ? 1.5 : 1).attr('stroke-opacity', n && n !== rowMax ? 0 : 1)
-          .on('mousemove', (ev) => showTip(box, tip, ev, `${m} · ${iss}`, [`${fInt(n)} motions/remarks`, `${fInt(+r.motions)} motions · ${fInt(+r.spoke_for)} spoke for · ${fInt(+r.pushback)} pushback`]))
+        const r = idx.get(m + '|' + iss); if (!r) return; const n = +r.lead; const op = dimmed(m, iss, 'issue') ? 0.22 : 1;
+        svg.append('rect').attr('x', left + j * cw + 2).attr('y', y + 2).attr('width', Math.max(0, cw - 4)).attr('height', rh - 4).attr('rx', 3).attr('opacity', op)
+          .attr('fill', n ? ramp(0.15 + 0.85 * (n / rowMax)) : 'transparent').attr('stroke', n === rowMax && n ? 'var(--color-fg)' : 'var(--color-border-line)').attr('stroke-width', n === rowMax && n ? 1.5 : 1).attr('stroke-opacity', n && n !== rowMax ? 0 : 1).style('cursor', 'pointer')
+          .on('click', () => { F.issue = iss; dash.setParams({ member: m }); })
+          .on('mousemove', (ev) => showTip(box, tip, ev, `${m} · ${iss}`, [`${fInt(n)} motions/remarks`, `${fInt(+r.motions)} motions · ${fInt(+r.spoke_for)} spoke for · ${fInt(+r.pushback)} pushback`, 'Click to spotlight']))
           .on('mouseleave', () => { tip.hidden = true; });
-        if (n && cw > 30) svg.append('text').attr('x', left + j * cw + cw / 2).attr('y', y + rh / 2 + 4).attr('text-anchor', 'middle').attr('font-size', 10.5).attr('pointer-events', 'none').attr('fill', n / rowMax > 0.6 ? '#fff' : 'var(--color-fg)').text(fInt(n));
+        if (n && cw > 30) svg.append('text').attr('x', left + j * cw + cw / 2).attr('y', y + rh / 2 + 4).attr('text-anchor', 'middle').attr('font-size', 10.5).attr('opacity', op).attr('pointer-events', 'none').attr('fill', n / rowMax > 0.6 ? '#fff' : 'var(--color-fg)').text(fInt(n));
       });
     });
+    if (F.issue) {
+      const iss = F.issue;
+      const items = M.map((m) => { const r = idx.get(m + '|' + iss); const n = r ? +r.lead : 0; return { m, v: n, label: fInt(n) }; }).sort((a, b) => b.v - a.v);
+      compare(box, { title: `${shortIssue(iss)}: who carries it`, color: issueColor(iss), items, foot: 'Motions and remarks on this issue. Click a name to spotlight that member.', clear: () => { F.issue = null; refocus(); } });
+    } else compare(box, { hint: 'Compare members on one issue:', choices: ISSUES.map((i) => ({ label: shortIssue(i), color: issueColor(i), pick: () => { F.issue = i; refocus(); } })) });
   });
 
   // ---------- contested bars ----------
+  const SPLIT_C = '#2a0157', CALM_C = '#f3b496';
+  document.querySelectorAll('.pb [data-sw=split]').forEach((e) => { e.style.background = SPLIT_C; });
+  document.querySelectorAll('.pb [data-sw=calm]').forEach((e) => { e.style.background = CALM_C; });
   dash.draw('contested', (box) => {
     const rows = ok('b_issues'); box.replaceChildren(); if (!rows) return;
     const data = rows.map((r) => ({ ...r, u: r.unanimous_share === '' ? null : +r.unanimous_share })).sort((a, b) => (a.u ?? 2) - (b.u ?? 2));
     const W = Math.max(300, box.clientWidth), rh = 30;
     const svg = d3.select(box).append('svg').attr('width', '100%');
-    const left = measure(svg, data.map((r) => shortIssue(r.issue)), 11) + 10;
+    const left = measure(svg, data.map((r) => shortIssue(r.issue)), 11) + 22;
+    const narrow = W < 560, right = narrow ? 78 : 150;
     const H = data.length * rh + 22; svg.attr('viewBox', `0 0 ${W} ${H}`).attr('height', H);
-    const x = d3.scaleLinear([0.75, 1], [left, W - 70]).clamp(true);
+    const x = d3.scaleLinear([0.75, 1], [left, W - right]).clamp(true);
     const tip = tipIn(box);
     data.forEach((r, i) => {
-      const y = i * rh;
-      svg.append('text').attr('x', left - 8).attr('y', y + rh / 2 + 4).attr('text-anchor', 'end').attr('font-size', 11).attr('fill', 'var(--color-fg)').text(shortIssue(r.issue));
-      svg.append('rect').attr('x', left).attr('y', y + 8).attr('width', W - 70 - left).attr('height', rh - 16).attr('rx', 3).attr('fill', 'var(--color-border-line)').attr('opacity', 0.5);
-      if (r.u != null) svg.append('rect').attr('x', left).attr('y', y + 8).attr('width', Math.max(2, x(r.u) - left)).attr('height', rh - 16).attr('rx', 3).attr('fill', r.u < 1 ? 'var(--color-bad)' : issueColor(r.issue));
-      svg.append('text').attr('x', W - 64).attr('y', y + rh / 2 + 4).attr('font-size', 10.5).attr('fill', 'var(--color-fg-muted)').text(r.u == null ? '—' : `${fPct(r.u)} · ${fInt(+r.votes)}`);
-      svg.append('rect').attr('x', 0).attr('y', y).attr('width', W).attr('height', rh).attr('fill', 'transparent')
-        .on('mousemove', (ev) => showTip(box, tip, ev, r.issue, [`${fInt(+r.votes)} votes · ${fInt(+r.splits)} split`, `Leads: ${r.champion_1} (${fInt(+r.champion_1_n)}), ${r.champion_2} (${fInt(+r.champion_2_n)})`]))
+      const y = i * rh; const on = F.issue === r.issue, op = F.issue && !on ? 0.3 : 1;
+      const g = svg.append('g').style('cursor', 'pointer').attr('opacity', op);
+      if (on) g.append('rect').attr('x', 0).attr('y', y + 1).attr('width', W).attr('height', rh - 2).attr('rx', 6).attr('fill', 'rgba(42,1,87,.05)').attr('stroke', '#2a0157');
+      g.append('text').attr('x', left - 8).attr('y', y + rh / 2 + 4).attr('text-anchor', 'end').attr('font-size', 11).attr('font-weight', on ? 700 : 400).attr('fill', 'var(--color-fg)').text(shortIssue(r.issue));
+      g.append('rect').attr('x', left).attr('y', y + 8).attr('width', W - right - left).attr('height', rh - 16).attr('rx', 3).attr('fill', 'var(--color-border-line)').attr('opacity', 0.5);
+      if (r.u != null) g.append('rect').attr('x', left).attr('y', y + 8).attr('width', Math.max(2, x(r.u) - left)).attr('height', rh - 16).attr('rx', 3).attr('fill', r.u < 1 ? SPLIT_C : CALM_C);
+      g.append('text').attr('x', W - right + 8).attr('y', y + rh / 2 + 4).attr('font-size', 10.5).attr('fill', 'var(--color-fg-muted)')
+        .text(r.u == null ? '—' : narrow ? `${fPct(r.u)} · ${fInt(+r.splits)} split` : `${fPct(r.u)} no dissent · ${fInt(+r.splits)} split`);
+      g.append('rect').attr('x', 0).attr('y', y).attr('width', W).attr('height', rh).attr('fill', 'transparent')
+        .on('click', () => { F.issue = on ? null : r.issue; refocus(); })
+        .on('mousemove', (ev) => showTip(box, tip, ev, r.issue, [`${fInt(+r.votes)} votes · ${fInt(+r.splits)} split`, `Leads: ${r.champion_1} (${fInt(+r.champion_1_n)}), ${r.champion_2} (${fInt(+r.champion_2_n)})`, on ? 'Click to clear' : 'Click to compare who carries it']))
         .on('mouseleave', () => { tip.hidden = true; });
     });
     const ax = svg.append('g').attr('transform', `translate(0,${data.length * rh + 2})`).call(d3.axisBottom(x).ticks(3).tickFormat(fPct).tickSize(0));
@@ -268,24 +391,37 @@
   // ---------- ordinance clock ----------
   dash.draw('ordclock', (box) => {
     const rows = ok('b_ordinances'); const k = kp(); box.replaceChildren(); if (!rows) return;
-    const data = rows.map((r) => ({ ...r, d: +r.days })).sort((a, b) => a.d - b.d);
-    const W = Math.max(300, box.clientWidth), H = 190, mg = { l: 12, r: 12, t: 24, b: 30 };
+    const data = rows.map((r) => ({ ...r, d: +r.days })).sort((a, b) => a.d - b.d || (a.changed === 'Yes' ? -1 : 1));
+    // key
+    const key = document.createElement('div'); key.className = 'okey';
+    const sw = (fill, dash_) => `<svg width="16" height="16" aria-hidden="true">${dash_ ? '<line x1="8" y1="1" x2="8" y2="15" stroke="#8c8577" stroke-dasharray="3 2" stroke-width="1.5"/>' : `<circle cx="8" cy="8" r="5.5" fill="${fill}" stroke="${dash.colors[0]}" stroke-width="1.6"/>`}</svg>`;
+    key.innerHTML = `<span>${sw(dash.colors[0])}Amended before adoption</span><span>${sw('#fff')}Adopted as introduced</span><span>${sw(null, true)}Median${k ? ` (${fInt(+k.ord_median_days)} days)` : ''}</span><span class="okey-n">Number above a column = ordinances in it</span>`;
+    box.appendChild(key);
+    const W = Math.max(300, box.clientWidth), r0 = 5.5, gap = 13.5, mg = { l: 14, r: 14, t: 26, b: 30 };
+    const x = d3.scaleLinear([0, Math.max(30, d3.max(data, (r) => r.d))], [mg.l + 6, W - mg.r - 6]).nice();
+    const cols = [];
+    for (const r of data) { const px = x(r.d); let c = cols.find((c) => Math.abs(c.x - px) < gap); if (!c) { c = { x: px, items: [] }; cols.push(c); } c.items.push(r); }
+    const maxStack = d3.max(cols, (c) => c.items.length) || 1;
+    const H = mg.t + 14 + maxStack * gap + mg.b;
     const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('height', H);
-    const x = d3.scaleLinear([0, Math.max(30, d3.max(data, (r) => r.d))], [mg.l, W - mg.r]).nice();
-    const ax = svg.append('g').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(x).ticks(6).tickFormat((d) => d + 'd'));
+    const base = H - mg.b - 10;
+    for (let d = 7; d <= x.domain()[1]; d += 7) svg.append('line').attr('x1', x(d)).attr('x2', x(d)).attr('y1', mg.t).attr('y2', H - mg.b).attr('stroke', 'var(--cds-chart-grid)').attr('stroke-opacity', 0.6);
+    const ax = svg.append('g').attr('transform', `translate(0,${H - mg.b})`).call(d3.axisBottom(x).ticks(Math.min(10, Math.round(x.domain()[1] / 7))).tickFormat((d) => d + 'd'));
     ax.attr('font-size', null).attr('font-family', null); ax.select('.domain').attr('stroke', 'var(--cds-chart-axis)'); ax.selectAll('line').attr('stroke', 'var(--cds-chart-axis)'); ax.selectAll('text').attr('fill', 'var(--color-fg-muted)').attr('font-size', 10.5);
-    const stack = {}; const tip = tipIn(box);
-    for (const r of data) {
-      const b = Math.round(r.d / 3) * 3; stack[b] = (stack[b] || 0) + 1;
-      const cy = H - mg.b - 8 - (stack[b] - 1) * 14;
-      svg.append('circle').attr('cx', x(r.d)).attr('cy', cy).attr('r', 6).attr('fill', r.changed === 'Yes' ? dash.colors[0] : 'var(--color-panel)').attr('stroke', dash.colors[0]).attr('stroke-width', 1.5)
-        .on('mousemove', (ev) => showTip(box, tip, ev, `${r.file} · ${fInt(r.d)} days`, [r.title, `${date(r.first_seen)} → ${date(r.adopted)}`, r.changed === 'Yes' ? 'Amended before adoption' : 'Adopted as introduced']))
-        .on('mouseleave', () => { tip.hidden = true; });
-    }
     if (k) {
       const mx = x(+k.ord_median_days);
-      svg.append('line').attr('x1', mx).attr('x2', mx).attr('y1', mg.t - 6).attr('y2', H - mg.b).attr('stroke', 'var(--cds-chart-reference)').attr('stroke-dasharray', '3 3');
-      svg.append('text').attr('x', mx + 4).attr('y', mg.t - 8).attr('font-size', 10.5).attr('fill', 'var(--color-fg-muted)').text(`median ${fInt(+k.ord_median_days)} days`);
+      svg.append('line').attr('x1', mx).attr('x2', mx).attr('y1', 14).attr('y2', H - mg.b).attr('stroke', '#8c8577').attr('stroke-width', 1.5).attr('stroke-dasharray', '3 2');
+      svg.append('text').attr('x', mx).attr('y', 10).attr('text-anchor', 'middle').attr('font-size', 10.5).attr('font-weight', 600).attr('fill', 'var(--color-fg-muted)').text(`median ${fInt(+k.ord_median_days)} days`);
+    }
+    const tip = tipIn(box);
+    for (const c of cols) {
+      c.items.forEach((r, i) => {
+        svg.append('circle').attr('cx', c.x).attr('cy', base - i * gap).attr('r', r0).attr('fill', r.changed === 'Yes' ? dash.colors[0] : '#fff').attr('stroke', dash.colors[0]).attr('stroke-width', 1.6).style('cursor', 'pointer')
+          .on('mousemove', (ev) => showTip(box, tip, ev, `${r.file} · ${fInt(r.d)} days`, [r.title, `${date(r.first_seen)} → ${date(r.adopted)}`, r.changed === 'Yes' ? 'Amended before adoption' : 'Adopted as introduced']))
+          .on('mouseleave', () => { tip.hidden = true; });
+      });
+      svg.append('text').attr('x', c.x + (k && Math.abs(c.x - x(+k.ord_median_days)) < 4 ? 0 : 0)).attr('y', base - (c.items.length - 1) * gap - 10).attr('text-anchor', 'middle').attr('font-size', 10.5).attr('font-weight', 700).attr('fill', 'var(--color-fg)')
+        .attr('paint-order', 'stroke').attr('stroke', '#fff').attr('stroke-width', 3).text(c.items.length);
     }
   });
 

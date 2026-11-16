@@ -5,8 +5,45 @@
   const date = (s, f = '%b %-d') => d3.utcFormat(f)(new Date(s + 'T00:00:00Z'));
   const isNA = (v) => !v || String(v).trim() === '' || String(v).toUpperCase().startsWith(NA);
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+
+  // ---------- at-a-glance emphasis for member cards ----------
+  // first: bold the lead sentence; heads: bold each topic before its examples; quotes: bold the Chamber values.
+  // Everywhere: bold council members, counts ("15 of the 16") and file numbers ("Ord 26-56"); NOT AVAILABLE stays flagged.
+  const KEY = /(\b(?:Coleman|Jost|Noecker|Johnson|Yang|Kim|Bowie)\b|\b\d+ of (?:the )?\d+\b|\bOrd \d{2}-\d+\b|\bNOT AVAILABLE\b|\bfourth vote\b|\breach four\b|\bbefore first reading\b)/g;
+  const addKeys = (parent, text, strong) => {
+    let last = 0;
+    for (const m of text.matchAll(KEY)) {
+      if (m.index > last) parent.append(text.slice(last, m.index));
+      const b = document.createElement('b'); b.textContent = m[0]; if (m[0] === 'NOT AVAILABLE') b.className = 'na'; parent.appendChild(b); last = m.index + m[0].length;
+    }
+    if (last < text.length) parent.append(text.slice(last));
+  };
+  const rich = (text, mode) => {
+    const s = document.createElement('span'); s.className = 'rt'; text = String(text);
+    if (mode === 'first') {
+      const i = text.search(/[.;](\s|$)/); const head = i > 0 ? text.slice(0, i + 1) : text;
+      const b = document.createElement('b'); b.textContent = head; s.appendChild(b); addKeys(s, text.slice(head.length), true);
+    } else if (mode === 'heads') {
+      // split top-level comma items (ignoring commas inside parentheses); bold the part before "(" or the whole short item
+      let depth = 0, cur = '', items = [];
+      for (const ch of text) { if (ch === '(') depth++; if (ch === ')') depth--; if (ch === ',' && depth === 0) { items.push(cur); cur = ''; } else cur += ch; }
+      items.push(cur);
+      items.forEach((it, k) => {
+        if (k) s.append(',');
+        const m = it.match(/^(\s*)([^(;]*?)(\s*(?:\(|;|$))([\s\S]*)$/);
+        if (m) { s.append(m[1]); const b = document.createElement('b'); b.textContent = m[2]; s.appendChild(b); addKeys(s, m[3] + m[4]); } else addKeys(s, it);
+      });
+    } else if (mode === 'quotes') {
+      let last = 0;
+      for (const m of text.matchAll(/"[^"]+"/g)) { if (m.index > last) s.append(text.slice(last, m.index)); const q = document.createElement('span'); q.className = 'q'; q.textContent = m[0]; s.appendChild(q); last = m.index + m[0].length; }
+      if (last < text.length) s.append(text.slice(last));
+    } else addKeys(s, text);
+    return s;
+  };
   const naSpan = (v) => { const s = el('span', isNA(v) ? 'na' : '', isNA(v) ? (v && String(v).length > NA.length ? v : NA) : v); return s; };
   const rankColor = (r) => dash.colors[(+r - 1) % dash.colors.length];
+  const sel = () => { const m = dash.params().member; return m && m !== 'All' ? m : null; };
+  const pickM = (m) => dash.setParams({ member: sel() === m ? 'All' : m });
   const members = () => { const m = ok('c_members'); return m ? m.slice().sort((a, b) => +a.rank - +b.rank) : null; };
 
   // ---------- tabs ----------
@@ -75,24 +112,49 @@
     const arc = d3.arc().innerRadius(rr - 6).outerRadius(rr);
     m.forEach((d, i) => {
       const cx = pad + step * i + step / 2, cy = 82;
-      const g = svg.append('g').attr('transform', `translate(${cx},${cy})`).attr('data-row', d.member).style('cursor', 'default');
+      const on = sel() === d.member, faded = sel() && !on;
+      const g = svg.append('g').attr('transform', `translate(${cx},${cy})`).attr('data-row', d.member).style('cursor', 'pointer').attr('opacity', faded ? 0.3 : 1)
+        .on('click', () => pickM(d.member));
+      if (on) { g.append('rect').attr('x', -step / 2 + 4).attr('y', -rr - 16).attr('width', step - 8).attr('height', rr * 2 + 86).attr('rx', 14).attr('fill', 'rgba(42,1,87,.06)').attr('stroke', '#2a0157').attr('stroke-width', 2); }
       g.append('path').attr('d', arc({ startAngle: 0, endAngle: 2 * Math.PI })).attr('fill', 'var(--color-border-line)');
       g.append('path').attr('d', arc({ startAngle: 0, endAngle: 2 * Math.PI * +d.majority_share })).attr('fill', rankColor(d.rank));
       g.append('text').attr('text-anchor', 'middle').attr('y', 5).attr('font-size', 14).attr('font-family', 'var(--font-anthropic-serif)').attr('fill', 'var(--color-fg)').text(d.rank);
-      g.append('text').attr('text-anchor', 'middle').attr('y', rr + 18).attr('font-size', 13).attr('font-weight', 500).attr('fill', 'var(--color-fg)').text(d.member);
+      if (on) g.append('rect').attr('x', -d.member.length * 4.6 - 10).attr('y', rr + 5).attr('width', d.member.length * 9.2 + 20).attr('height', 19).attr('rx', 9.5).attr('fill', '#2a0157');
+      g.append('text').attr('text-anchor', 'middle').attr('y', rr + 18).attr('font-size', 13).attr('font-weight', on ? 700 : 500).attr('fill', on ? '#fff' : 'var(--color-fg)').text(d.member);
       const bw = step * 0.7, bv = +d.biz_lead_max > 0 ? +d.biz_lead / +d.biz_lead_max : 0;
       g.append('rect').attr('x', -bw / 2).attr('y', rr + 30).attr('width', bw).attr('height', 7).attr('rx', 3).attr('fill', 'var(--color-border-line)');
       g.append('rect').attr('x', -bw / 2).attr('y', rr + 30).attr('width', bw * bv).attr('height', 7).attr('rx', 3).attr('fill', rankColor(d.rank));
       g.append('text').attr('text-anchor', 'middle').attr('y', rr + 52).attr('font-size', 11).attr('fill', 'var(--color-fg-muted)').text(d.biz_lead);
       g.append('circle').attr('r', rr + 4).attr('fill', 'transparent')
-        .on('pointermove', (ev) => showTip(box, tip, ev, d.full_name, [d.stance, `With majority on split votes: ${fPct(+d.majority_share)}`, `Business-item motions/remarks: ${d.biz_lead}`, `Votes most with: ${d.closest} (${fPct(+d.closest_share)})`]))
+        .on('pointermove', (ev) => showTip(box, tip, ev, d.full_name, [d.stance, `With majority on split votes: ${fPct(+d.majority_share)}`, `Business-item motions/remarks: ${d.biz_lead}`, `Votes most with: ${d.closest} (${fPct(+d.closest_share)})`, on ? 'Click to show all members' : 'Click to select']))
         .on('pointerleave', () => { tip.hidden = true; });
     });
   });
 
+
+  // ---------- member picker (drives the cards, the order of engagement and the one-pager) ----------
+  dash.draw('mpick', (box) => {
+    const m = members(); box.replaceChildren(); if (!m) return;
+    box.appendChild(el('span', 'lp', 'Show:'));
+    const all = el('button', 'all', 'All members'); all.type = 'button'; all.setAttribute('aria-pressed', String(!sel())); all.addEventListener('click', () => dash.setParams({ member: 'All' })); box.appendChild(all);
+    for (const d of m) {
+      const b = el('button'); b.type = 'button'; b.setAttribute('aria-pressed', String(sel() === d.member)); b.title = d.full_name;
+      const n = el('span', 'n', d.rank); n.style.background = rankColor(d.rank); b.append(n, d.member);
+      b.addEventListener('click', () => pickM(d.member)); box.appendChild(b);
+    }
+  });
+  dash.draw('ordsel', (box) => {
+    const m = members(), k = (ok('b_kpis') || [])[0]; box.replaceChildren(); if (!m) return;
+    const d = m.find((x) => x.member === sel());
+    if (!d) { box.textContent = 'Click a member to select them here, in the member plans below and on the one-pager.'; return; }
+    const need = k ? +k.min_winning_yeas : 4;
+    box.append(el('b', '', `${d.full_name}: #${d.rank} of ${m.length}`), +d.rank <= need ? ` · part of the first ${need} calls that build a winning vote` : ` · beyond the ${need} votes needed: persuade or keep informed`);
+  });
   // ---------- member plans ----------
   dash.draw('plans', (box) => {
-    const m = members(); box.replaceChildren(); if (!m) return;
+    const all = members(); box.replaceChildren(); if (!all) return;
+    const m = sel() ? all.filter((x) => x.member === sel()) : all;
+    box.classList.toggle('one', !!sel());
     for (const d of m) {
       const c = el('article', 'plan'); c.dataset.row = d.member; c.style.borderTopColor = rankColor(d.rank);
       const top = el('div', 'top'); const t = el('div');
@@ -106,13 +168,15 @@
       meterRow(ms, 'Business lead', +d.biz_lead, +d.biz_lead_max, d.biz_lead, rankColor(d.rank));
       meterRow(ms, 'Pushback', +d.biz_pushback, +d.biz_pushback_max, d.biz_pushback, 'var(--color-bad)');
       c.appendChild(ms);
-      const sec = (h, v) => { const s = el('div', 'sec'); s.appendChild(el('b', '', h)); s.appendChild(naSpan(v)); c.appendChild(s); };
-      sec('Recommended approach', d.approach);
-      sec('Engage on', d.engage_on);
-      sec('Lead with (Chamber value)', d.lead_with);
-      sec('Cautions', d.cautions);
+      const pk = el('button', 'pick', sel() ? '← Show all members' : `Focus on ${d.member}`); pk.type = 'button'; pk.addEventListener('click', () => { pickM(d.member); document.getElementById('plan-members')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }); c.appendChild(pk);
+      const secs = el('div', 'secs'); c.appendChild(secs);
+      const sec = (h, v, mode) => { const s = el('div', 'sec'); s.appendChild(el('b', '', h)); s.appendChild(mode && !isNA(v) ? rich(v, mode) : naSpan(v)); secs.appendChild(s); };
+      sec('Recommended approach', d.approach, 'first');
+      sec('Engage on', d.engage_on, 'heads');
+      sec('Lead with (Chamber value)', d.lead_with, 'quotes');
+      sec('Cautions', d.cautions, 'first');
       sec('Chamber relationship', d.chamber_relationship);
-      const det = el('details'); det.appendChild(el('summary', '', 'On the record'));
+      const det = el('details'); if (sel()) det.open = true; det.appendChild(el('summary', '', 'On the record'));
       det.appendChild(el('p', '', d.record));
       det.appendChild(el('p', '', `Votes most often with ${d.closest} (${fPct(+d.closest_share)} on split votes); least with ${d.farthest} (${fPct(+d.farthest_share)}). ${d.coalition}.`));
       c.appendChild(det); box.appendChild(c);
