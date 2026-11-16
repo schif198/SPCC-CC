@@ -108,8 +108,8 @@ def nav(current, printable):
             if len(it) > 3:
                 here = h == current
                 sub = ''.join(f'<a class="sa-sub-a" href="{sh}" data-tab="{sh.split("tab=")[-1]}"><b>{st}</b><span>{sd}</span></a>' for sh, st, sd in it[3])
-                links += (f'<div class="sa-subg{" open" if here else ""}"><div class="sa-subh"><a href="{h}"{cur if here else ""}><b>{t}</b><span>{desc}</span></a>'
-                          f'<button class="sa-sub-b" type="button" aria-expanded="{"true" if here else "false"}" aria-label="Show the {t} sections"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></div>'
+                links += (f'<div class="sa-subg open"><div class="sa-subh"><a href="{h}"{cur if here else ""}><b>{t}</b><span>{desc}</span></a>'
+                          f'<button class="sa-sub-b" type="button" aria-expanded="true" aria-label="Show or hide the {t} sections"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></div>'
                           f'<div class="sa-sub">{sub}</div></div>')
             else:
                 links += f'<a href="{h}"{cur if h == current else ""}><b>{t}</b><span>{desc}</span></a>'
