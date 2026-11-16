@@ -271,7 +271,7 @@
     platforms(S) {
       const c = rows('pv_cells'), t = rows('pv_theme'), p = rows('pv_platforms');
       const MM = ['Noecker', 'Yang', 'Kim', 'Bowie', 'Jost', 'Johnson', 'Coleman'];
-      const FILL = ['#fbefe8', '#f8c1a4', '#f15a25', '#a33a0a'], TXT = ['#6b6478', '#5a2306', '#fff', '#fff'], LBL = ['None recorded', 'Some', 'Active', 'Leading'];
+      const FILL = ['#fbefe8', '#f8c1a4', '#f15a25', '#a33a0a'], TXT = ['#6b6478', '#5a2306', '#22182c', '#fff'], LBL = ['None recorded', 'Some', 'Active', 'Leading'];
       const st = c.filter((r) => r.stated === 'Yes'), act = st.filter((r) => +r.level >= 2);
       const top = t.slice().sort((a, b) => +b.members_stated - +a.members_stated)[0] || {};
       const busy = t.slice().sort((a, b) => +b.lead_share - +a.lead_share)[0] || {};

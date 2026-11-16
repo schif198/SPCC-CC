@@ -1,7 +1,7 @@
 (() => {
   const M = ['Noecker', 'Yang', 'Kim', 'Bowie', 'Jost', 'Johnson', 'Coleman'];
   const FILL = ['#fbefe8', '#f8c1a4', '#f15a25', '#a33a0a'];
-  const TEXT = ['#6b6478', '#5a2306', '#ffffff', '#ffffff'];
+  const TEXT = ['#6b6478', '#5a2306', '#22182c', '#ffffff'];
   const RING = '#2a0157';
   const LBL = ['None recorded', 'Some', 'Active', 'Leading'];
   const ok = (id) => { const d = dash.data(id); return d.status === 'ok' ? d.data : null; };
@@ -82,7 +82,7 @@
     const arc = d3.arc().innerRadius(26).outerRadius(35);
     g.append('path').attr('transform', 'translate(37,37)').attr('d', arc({ startAngle: 0, endAngle: 2 * Math.PI })).attr('fill', '#f1e8f0');
     g.append('path').attr('transform', 'translate(37,37)').attr('d', arc({ startAngle: 0, endAngle: 2 * Math.PI * (act.length / (st.length || 1)) })).attr('fill', '#f15a25');
-    g.append('text').attr('x', 37).attr('y', 42).attr('text-anchor', 'middle').attr('font-size', 16).attr('font-family', 'var(--font-anthropic-serif)').attr('fill', 'var(--color-fg)').text(`${act.length}/${st.length}`);
+    g.append('text').attr('x', 37).attr('y', 42).attr('text-anchor', 'middle').attr('font-size', 16).attr('font-weight', 600).attr('data-fit', 46).attr('font-family', 'var(--font-anthropic-serif)').attr('fill', 'var(--color-fg)').text(`${act.length}/${st.length}`);
     const ht = el('div'); ht.append(el('div', '', '')); ht.firstChild.style.cssText = 'font-family:var(--font-anthropic-serif);font-size:1.4rem';
     ht.firstChild.textContent = m; const pl = plat[0];
     ht.appendChild(el('div', 'note', `${pl ? pl.ward + ' · elected ' + pl.election : ''} · ${act.length} of ${st.length} priorities with an active record`));

@@ -32,15 +32,15 @@
     const g = svg.append('g').attr('transform', `translate(${cx},${cy})`);
     g.append('path').attr('d', arc({ startAngle: -Math.PI / 2, endAngle: Math.PI / 2 })).attr('fill', 'var(--color-border-line)');
     if (value != null && !isNaN(value)) g.append('path').attr('d', arc({ startAngle: -Math.PI / 2, endAngle: -Math.PI / 2 + Math.PI * Math.max(0, Math.min(1, value)) })).attr('fill', dash.colors[0]);
-    g.append('text').attr('y', -r * 0.18).attr('text-anchor', 'middle').attr('font-family', 'var(--font-anthropic-serif)').attr('font-size', Math.max(18, r * 0.42)).attr('fill', 'var(--color-fg)').text(label);
-    if (sub) g.append('text').attr('y', 0).attr('text-anchor', 'middle').attr('font-size', 10.5).attr('fill', 'var(--color-fg-muted)').text(sub);
+    g.append('text').attr('y', -r * 0.18).attr('text-anchor', 'middle').attr('font-family', 'var(--font-anthropic-serif)').attr('font-size', Math.max(18, r * 0.40)).attr('font-weight', 600).attr('data-fit', r * 0.74 * 1.7).attr('fill', 'var(--color-fg)').text(label);
+    if (sub) g.append('text').attr('y', 0).attr('text-anchor', 'middle').attr('font-size', 10).attr('data-fit', r * 0.74 * 1.9).attr('fill', 'var(--color-fg-muted)').text(sub);
   };
   const bigNum = (box, label, sub) => {
     box.replaceChildren();
     const W = Math.max(140, box.clientWidth), H = 100;
     const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('height', H);
-    svg.append('text').attr('x', W / 2).attr('y', 60).attr('text-anchor', 'middle').attr('font-family', 'var(--font-anthropic-serif)').attr('font-size', 44).attr('fill', 'var(--color-fg)').text(label);
-    if (sub) svg.append('text').attr('x', W / 2).attr('y', 86).attr('text-anchor', 'middle').attr('font-size', 10.5).attr('fill', 'var(--color-fg-muted)').text(sub);
+    svg.append('text').attr('x', W / 2).attr('y', 60).attr('text-anchor', 'middle').attr('font-family', 'var(--font-anthropic-serif)').attr('font-size', 44).attr('font-weight', 600).attr('data-fit', W - 16).attr('fill', 'var(--color-fg)').text(label);
+    if (sub) svg.append('text').attr('x', W / 2).attr('y', 86).attr('text-anchor', 'middle').attr('font-size', 10.5).attr('data-fit', W - 16).attr('fill', 'var(--color-fg-muted)').text(sub);
   };
 
   // ---------- KPI meters ----------

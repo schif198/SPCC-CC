@@ -50,8 +50,8 @@
     const g = svg.append('g').attr('transform', `translate(${cx},${cy})`);
     g.append('path').attr('d', arc({ startAngle: -Math.PI / 2, endAngle: Math.PI / 2 })).attr('fill', 'var(--color-border-line)');
     if (value != null && !isNaN(value)) g.append('path').attr('d', arc({ startAngle: -Math.PI / 2, endAngle: -Math.PI / 2 + Math.PI * Math.max(0, Math.min(1, value)) })).attr('fill', dash.colors[0]);
-    g.append('text').attr('y', -r * 0.12).attr('text-anchor', 'middle').attr('font-family', 'var(--font-anthropic-serif)').attr('font-size', Math.round(r * 0.42)).attr('fill', 'var(--color-fg)').text(label);
-    svg.append('text').attr('x', cx).attr('y', H + 11).attr('text-anchor', 'middle').attr('font-size', 11).attr('fill', 'var(--color-fg-muted)').text(sub);
+    g.append('text').attr('y', -r * 0.12).attr('text-anchor', 'middle').attr('font-family', 'var(--font-anthropic-serif)').attr('font-size', Math.round(r * 0.40)).attr('font-weight', 600).attr('data-fit', r * 0.72 * 1.75).attr('fill', 'var(--color-fg)').text(label);
+    svg.append('text').attr('x', cx).attr('y', H + 11).attr('text-anchor', 'middle').attr('font-size', 11).attr('data-fit', W - 6).attr('fill', 'var(--color-fg-muted)').text(sub);
   };
   const meterRow = (parent, k, v, max, txt, color) => {
     const row = el('div', 'mrow'); row.appendChild(el('span', 'k', k));

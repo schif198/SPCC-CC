@@ -49,7 +49,7 @@
       acts.append(open, dl, lg); top.appendChild(acts); card.appendChild(top);
       const facts = el('div', 'lib-facts');
       const fact = (k, v) => { const f = el('span', 'lib-fact'); f.appendChild(el('b', '', v)); f.append(' ' + k); facts.appendChild(f); };
-      fact('roll-call votes', String(m.votes)); fact(m.splits === 1 ? 'split vote' : 'split votes', String(m.splits)); fact('agenda items', String(m.item_count));
+      fact(+m.votes === 1 ? 'roll-call vote' : 'roll-call votes', String(m.votes)); fact(m.splits === 1 ? 'split vote' : 'split votes', String(m.splits)); fact(+m.item_count === 1 ? 'agenda item' : 'agenda items', String(m.item_count));
       const ab = el('span', 'lib-fact'); ab.append(m.absent ? `Absent: ${m.absent}` : 'All members present'); facts.appendChild(ab);
       card.appendChild(facts);
       if (m.items.length) {

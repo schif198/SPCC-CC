@@ -381,7 +381,7 @@ def home(meetings):
     if latest:
         ab = f'Absent: {esc(latest["absent"])}' if latest['absent'] else 'All members present'
         last = (f'<div class="hm-s"><div class="hm-sl">Latest minutes</div><div class="hm-sv">{d(latest["date"], "%a, %b %d")}</div>'
-                f'<div class="hm-ss">{latest["votes"]} votes · {latest["splits"]} split · {ab}</div></div>')
+                f'<div class="hm-ss">{latest["votes"]} vote{'' if int(latest["votes"]) == 1 else 's'} · {latest["splits"]} split · {ab}</div></div>')
     else:
         last = ''
     nxt = (f'<div class="hm-s"><div class="hm-sl">Next meeting</div><div class="hm-sv">{d(NEXT, "%a, %b %d") if NEXT else "Not yet set"}</div>'

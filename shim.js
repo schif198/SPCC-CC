@@ -21,7 +21,33 @@ window.dash = (() => {
       try { fn(el); } catch (e) { console.error(name, e); }
     });
     for (const f of after) { try { f(); } catch (e) { console.error(e); } }
+    fitText(); autoContrast();
   };
+  // white labels on bright fills (e.g. Chamber orange) switch to dark text when white would be hard to read
+  const lum = (c) => { const m = c.match(/\d+(\.\d+)?/g); if (!m || m.length < 3) return null; const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * f(+m[0]) + 0.7152 * f(+m[1]) + 0.0722 * f(+m[2]); };
+  const autoContrast = () => document.querySelectorAll('svg').forEach((svg) => {
+    const texts = [...svg.querySelectorAll('text')].filter((t) => { const f = getComputedStyle(t).fill; return /255, 255, 255/.test(f) || t.dataset.ac; });
+    if (!texts.length) return;
+    const shapes = [...svg.querySelectorAll('rect, circle, path')];
+    for (const t of texts) {
+      if (!t.dataset.ac) t.dataset.ac = '1';
+      const b = t.getBoundingClientRect(); if (!b.width) continue; const cx = b.x + b.width / 2, cy = b.y + b.height / 2;
+      let under = null;
+      for (const sh of shapes) { if (!(sh.compareDocumentPosition(t) & Node.DOCUMENT_POSITION_FOLLOWING)) continue; const r = sh.getBoundingClientRect(); if (cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom) { const f = getComputedStyle(sh).fill; if (f && f !== 'none' && !/rgba\(.*, 0\)/.test(f)) under = f; } }
+      const L = under && lum(under); if (L == null) continue;
+      const white = 1.05 / (L + 0.05), dark = (L + 0.05) / 0.0617;
+      t.style.fill = white < 4.5 && dark > white ? '#22182c' : '';
+    }
+  });
+  // shrink any SVG label marked data-fit="<max width>" so it never spills past its gauge
+  const fitText = () => document.querySelectorAll('svg text[data-fit]').forEach((t) => {
+    const max = +t.getAttribute('data-fit'); if (!max) return;
+    const fs0 = +(t.getAttribute('data-fs') || t.getAttribute('font-size')); t.setAttribute('data-fs', fs0);
+    let fs = fs0; t.setAttribute('font-size', fs);
+    let w = t.getComputedTextLength(); if (!w) return;
+    if (w > max) { fs = Math.max(7, Math.floor(fs * max / w * 10) / 10); t.setAttribute('font-size', fs); }
+  });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => setTimeout(fitText, 0));
   const schedule = () => { if (!pending) { pending = true; requestAnimationFrame(run); } };
   let lw = window.innerWidth;
   window.addEventListener('resize', () => { if (window.innerWidth !== lw) { lw = window.innerWidth; schedule(); } });
