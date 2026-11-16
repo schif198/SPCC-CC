@@ -109,12 +109,32 @@
       n.parentNode.replaceChild(frag, n);
     }
   }
+  // sub-menus (e.g. Course of action → its three sections)
+  $$('.sa-subg').forEach((g) => {
+    const b = $('.sa-sub-b', g);
+    b.addEventListener('click', (e) => { e.stopPropagation(); const open = !g.classList.contains('open'); g.classList.toggle('open', open); b.setAttribute('aria-expanded', String(open)); });
+  });
+  const markSub = () => {
+    const here = location.pathname.split('/').pop() || 'index.html';
+    const tab = window.dash && dash.params().tab;
+    $$('.sa-sub-a').forEach((a) => { const on = a.getAttribute('href').split('#')[0] === here && a.dataset.tab === tab; if (on) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current'); });
+  };
+  $$('.sa-sub-a').forEach((a) => a.addEventListener('click', () => {
+    $$('.sa-grp').forEach((g) => { g.classList.remove('open'); const gb = $('.sa-grp-b', g); if (gb) gb.setAttribute('aria-expanded', 'false'); });
+    document.querySelector('.sa-nav')?.classList.remove('menu-open');
+  }));
+  if (window.dash) dash.afterDraw(markSub); markSub();
   // links that only change the #part of this page update the view
   window.addEventListener('hashchange', () => {
     if (!window.dash) return;
     const h = new URLSearchParams(location.hash.slice(1)), cur = dash.params(), upd = {};
     h.forEach((v, k) => { if (k in cur && cur[k] !== v) upd[k] = v; });
-    if (Object.keys(upd).length) { dash.setParams(upd); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    if (Object.keys(upd).length) {
+      dash.setParams(upd);
+      const tabs = 'tab' in upd && document.querySelector('.tabs');
+      if (tabs) window.scrollTo({ top: Math.max(0, tabs.getBoundingClientRect().top + window.scrollY - (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 64) - 8), behavior: 'smooth' });
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   });
   let lt = null;
   const linkAll = () => { clearTimeout(lt); lt = setTimeout(() => $$('#dash-root tbody, #dash-root .tbl-wrap td, main .lib-items').forEach((r) => linkify(r)), 50); };

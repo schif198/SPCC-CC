@@ -152,3 +152,16 @@ h1, h2 { letter-spacing: -.01em; }
 @media (max-width: 980px) { .sa-nav { padding-top: 10px; } .sa-nav .brand { width: 100px; height: 34px; } }
 .hm > * { position: relative; z-index: 1; }
 @media (max-width: 700px) { .hm::before { height: 236px; } .hm > .hm-lede { margin-bottom: 40px !important; } }
+
+/* sub-menu under a menu item (Course of action → its sections) */
+.sa-subh { display: flex; align-items: stretch; gap: 2px; }
+.sa-subh > a { flex: 1; }
+.sa-sub-b { flex: none; width: 34px; border: 0; border-radius: 8px; background: none; color: #2a0157; cursor: pointer; display: grid; place-items: center; }
+.sa-sub-b:hover { background: var(--color-bg); }
+.sa-sub-b svg { transition: transform .15s; }
+.sa-subg.open .sa-sub-b svg { transform: rotate(180deg); }
+.sa-sub { display: none; margin: 2px 0 6px 14px; padding-left: 8px; border-left: 2px solid #f3c3ad; }
+.sa-subg.open .sa-sub { display: block; }
+.sa-grp-p .sa-sub a { padding: 6px 10px; }
+.sa-grp-p .sa-sub a b { font-weight: 600; font-size: .92rem; }
+.sa-grp-p .sa-sub a[aria-current] { background: #fdf3ee; box-shadow: inset 3px 0 0 #f15a25; }

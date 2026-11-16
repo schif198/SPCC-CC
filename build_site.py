@@ -54,7 +54,10 @@ GROUPS = [
     ('Council record', [('voting-trends.html', 'Voting trends', 'Totals, months and every split vote'),
                         ('member-by-member.html', 'Members', 'One member’s votes, allies and focus'),
                         ('platforms.html', 'Platforms vs. votes', 'Campaign priorities next to the record')]),
-    ('Chamber strategy', [('course-of-action.html', 'Course of action', 'Who to talk to, and how, on any issue'),
+    ('Chamber strategy', [('course-of-action.html', 'Course of action', 'Who to talk to, and how, on any issue',
+                           [('course-of-action.html#tab=plan', 'Course of action', 'Outreach order and a plan for each member'),
+                            ('course-of-action.html#tab=search', 'Topic search', 'A plan for any issue you type in'),
+                            ('course-of-action.html#tab=priorities', 'Chamber priorities', 'Where each Chamber priority stands')]),
                           ('playbook.html', 'Chamber playbook', 'Business items, coalitions and timing')]),
     ('Minutes & help', [('library.html', 'Minutes library', 'Every meeting, with the original PDFs'),
                         ('library.html#upload', 'Add new minutes', 'Upload the latest minutes PDF'),
@@ -85,7 +88,8 @@ GLOSSARY = [
 ]
 GLOSSARY_JS = [dict(id=i, term=t, rx=rx, df=d) for i, t, rx, d in GLOSSARY]
 for g in GLOSSARY_JS: g['def'] = g.pop('df')
-SEARCH_PAGES = [dict(href=h, title=t, desc=desc) for _, items in GROUPS for h, t, desc in items]
+SEARCH_PAGES = [dict(href=it[0], title=it[1], desc=it[2]) for _, items in GROUPS for it in items] + \
+    [dict(href=h, title=t, desc=desc) for _, items in GROUPS for it in items if len(it) > 3 for h, t, desc in it[3] if t != it[1]]
 
 
 def site_data():
@@ -97,8 +101,18 @@ def nav(current, printable):
     cur = ' aria-current="page"'
     grp = ''
     for name, items in GROUPS:
-        on = any(h == current for h, _, _ in items)
-        links = ''.join(f'<a href="{h}"{cur if h == current else ""}><b>{t}</b><span>{desc}</span></a>' for h, t, desc in items)
+        on = any(it[0] == current for it in items)
+        links = ''
+        for it in items:
+            h, t, desc = it[:3]
+            if len(it) > 3:
+                here = h == current
+                sub = ''.join(f'<a class="sa-sub-a" href="{sh}" data-tab="{sh.split("tab=")[-1]}"><b>{st}</b><span>{sd}</span></a>' for sh, st, sd in it[3])
+                links += (f'<div class="sa-subg{" open" if here else ""}"><div class="sa-subh"><a href="{h}"{cur if here else ""}><b>{t}</b><span>{desc}</span></a>'
+                          f'<button class="sa-sub-b" type="button" aria-expanded="{"true" if here else "false"}" aria-label="Show the {t} sections"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></div>'
+                          f'<div class="sa-sub">{sub}</div></div>')
+            else:
+                links += f'<a href="{h}"{cur if h == current else ""}><b>{t}</b><span>{desc}</span></a>'
         grp += f'<div class="sa-grp{" cur" if on else ""}"><button class="sa-grp-b" type="button" aria-expanded="false">{name}</button><div class="sa-grp-p">{links}</div></div>'
     pr = f'<button id="sa-print" class="sa-btn" type="button" title="Print a one-page summary of what this page shows">{PRINT_ICON}Print one-pager</button>' if printable else ''
     return (f'<nav class="sa-nav" aria-label="Site"><a class="brand" href="index.html" aria-label="St. Paul Area Chamber: council dashboards home">St. Paul Area Chamber</a>'
