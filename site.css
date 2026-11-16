@@ -48,6 +48,17 @@
 #print-sheet .ps-steps { margin: 0; padding-left: 18px; font-size: 9pt; }
 #print-sheet .ps-steps li { margin-bottom: 3px; }
 #print-sheet .ps-steps .na { font-weight: 600; }
+#print-sheet .ps-matrix { display: grid; gap: 3px 4px; align-items: center; font-size: 8.5pt; }
+#print-sheet .ps-mh { font-weight: 600; font-size: 8pt; color: #3d3c39; padding-bottom: 2px; }
+#print-sheet .ps-mh.c { text-align: center; }
+#print-sheet .ps-mt { font-size: 8.5pt; }
+#print-sheet .ps-mc { display: flex; justify-content: center; }
+#print-sheet .ps-sq { display: inline-grid; place-items: center; width: 24px; height: 18px; border-radius: 5px; font-size: 7.5pt; font-weight: 700; }
+#print-sheet .ps-sq.ring { outline: 2.5px solid #c96442; outline-offset: 1.5px; }
+#print-sheet .ps-ringsw { display: inline-block; width: 9px; height: 9px; border-radius: 50%; border: 2px solid #c96442; margin-left: 6px; }
+#print-sheet .ps-pips { display: inline-flex; align-items: center; gap: 2px; font-size: 8pt; }
+#print-sheet .ps-pip { width: 7px; height: 7px; border-radius: 50%; border: 1.2px solid #c96442; }
+#print-sheet .ps-pip.on { background: #c96442; }
 #print-sheet .ps-foot { margin-top: 6px; border-top: 1px solid #ddd9cf; padding-top: 4px; font-size: 7.5pt; color: #5b5a56; }
 @page { size: letter; margin: 0.4in; }
 @media print {

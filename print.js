@@ -267,6 +267,56 @@
         { h: 'Call first', w: '1.6fr', cell: (r) => { const i = iss.get(r.issue); return i ? [...new Set(['Coleman', i.lead_1, i.lead_2].filter((x) => x && x !== NA))].join(', ') : NA; } },
       ], watch)));
     },
+    platforms(S) {
+      const c = rows('pv_cells'), t = rows('pv_theme'), p = rows('pv_platforms');
+      const MM = ['Noecker', 'Yang', 'Kim', 'Bowie', 'Jost', 'Johnson', 'Coleman'];
+      const FILL = ['#eef2f8', '#a9c1e3', '#5b8bd0', '#1f4e99'], TXT = ['#5b5a56', '#1f2d44', '#fff', '#fff'], LBL = ['None recorded', 'Some', 'Active', 'Leading'];
+      const st = c.filter((r) => r.stated === 'Yes'), act = st.filter((r) => +r.level >= 2);
+      const top = t.slice().sort((a, b) => +b.members_stated - +a.members_stated)[0] || {};
+      const busy = t.slice().sort((a, b) => +b.lead_share - +a.lead_share)[0] || {};
+      const per = MM.map((m) => { const s = st.filter((r) => r.member === m); const a = s.filter((r) => +r.level >= 2); return { m, s: s.length, a: a.length, share: s.length ? a.length / s.length : 0,
+        best: s.slice().sort((x, y) => +y.lead - +x.lead)[0], extra: c.filter((r) => r.member === m && r.stated === 'No' && +r.level >= 2).sort((x, y) => +y.lead - +x.lead).map((r) => r.theme) }; });
+      const hi = per.slice().sort((a, b) => b.share - a.share)[0], lo = per.slice().sort((a, b) => a.share - b.share)[0];
+      S.title = 'Platforms vs. votes'; S.sub = `Campaign priorities compared with council activity · ${span}`;
+      S.add(glance([
+        `${act.length} of ${st.length} campaign priorities (${pct(act.length / (st.length || 1))}) show an active council record.`,
+        `Most promised: ${top.theme} (${top.members_stated} of 7), ${pct(top.lead_share)} of council activity.`,
+        `Most debated: ${busy.theme}, ${pct(busy.lead_share)} of all motions and remarks; promised by ${busy.members_stated} of 7.`,
+        hi && lo && hi.m !== lo.m ? `Highest share of priorities with an active record: ${hi.m} (${hi.a} of ${hi.s}); lowest: ${lo.m} (${lo.a} of ${lo.s}).` : null,
+      ]));
+      S.add(kpis([['Campaign priorities', String(st.length)], ['With active record', pct(act.length / (st.length || 1))], ['Most promised', String(top.theme || '—')], ['Most debated', String(busy.theme || '—')]]));
+      // matrix
+      const g = el('div', 'ps-matrix'); g.style.gridTemplateColumns = `1.6fr repeat(${MM.length}, 1fr)`;
+      g.appendChild(el('div', 'ps-mh', ''));
+      MM.forEach((m) => g.appendChild(el('div', 'ps-mh c', m)));
+      t.forEach((th) => {
+        g.appendChild(el('div', 'ps-mt', th.theme));
+        MM.forEach((m) => {
+          const r = c.find((x) => x.member === m && x.theme === th.theme) || {}; const lv = +r.level || 0;
+          const cell = el('div', 'ps-mc'); const sq = el('span', 'ps-sq' + (r.stated === 'Yes' ? ' ring' : ''), +r.lead ? String(r.lead) : '');
+          sq.style.background = FILL[lv]; sq.style.color = TXT[lv]; cell.appendChild(sq); g.appendChild(cell);
+        });
+      });
+      const lg = el('div', 'ps-legend'); const rg = el('span', 'ps-ringsw'); lg.append(rg, el('span', '', 'Campaigned on it'));
+      [0, 1, 2, 3].forEach((i) => { const s2 = el('span', 'ps-sw'); s2.style.background = FILL[i]; s2.style.border = i ? 'none' : '1px solid #c9d3e3'; lg.append(s2, el('span', '', LBL[i])); });
+      lg.append(el('span', '', ' · number = motions and remarks'));
+      S.add(section('Campaign priorities and council activity', g, lg));
+      S.add(section('By member', grid([
+        { h: 'Member', w: '.8fr', cell: (r) => r.m, cls: 'b' },
+        { h: 'Priorities with active record', w: '1.6fr', cell: (r) => bar(r.share, 1, '#1f4e99', `${r.a}/${r.s}`) },
+        { h: 'Most active priority', w: '1.5fr', cell: (r) => r.best ? `${r.best.theme} (${r.best.lead})` : '—' },
+        { h: 'Also active on (not in platform)', w: '2fr', cell: (r) => r.extra.slice(0, 3).join(', ') || '—' },
+      ], per)));
+      const lmax = d3.max(t, (r) => +r.lead_share) || 1;
+      S.add(section('Council-wide: campaigned on vs. worked on', grid([
+        { h: 'Theme', w: '1.4fr', cell: (r) => r.theme, cls: 'b' },
+        { h: 'Members who campaigned on it', w: '1.4fr', cell: (r) => { const w = el('span', 'ps-pips'); for (let k = 0; k < 7; k++) { const d = el('span', 'ps-pip' + (k < +r.members_stated ? ' on' : '')); w.appendChild(d); } w.append(` ${r.members_stated}/7`); return w; } },
+        { h: 'Share of council motions and remarks', w: '2fr', cell: (r) => bar(+r.lead_share / lmax, 1, '#1f4e99', pct(r.lead_share)) },
+        { h: 'Votes · split', w: '.8fr', cell: (r) => `${r.votes} · ${r.splits}`, cls: 'n' },
+      ], t)));
+      const src = [...new Set(p.map((r) => r.source_title))];
+      S.add(note(`Platforms: ${src.slice(0, 6).join('; ')}${src.length > 6 ? '; and others' : ''}. Activity = motions, amendments and remarks in the minutes; this compares emphasis and does not judge promises kept.`));
+    },
   };
 
   // ---------- assemble, fit to one page, print ----------

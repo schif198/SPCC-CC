@@ -7,7 +7,7 @@ import glob, hashlib, json, os, re, shutil, subprocess, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BUILD = os.path.join(ROOT, 'build')
-STEPS = ['parse_pdf', 'merge', 'analyze', 'export', 'actions', 'build_members', 'build_periods', 'biz', 'biz_build', 'persia', 'coa', 'c_members']
+STEPS = ['parse_pdf', 'merge', 'analyze', 'export', 'actions', 'build_members', 'build_periods', 'biz', 'biz_build', 'persia', 'coa', 'c_members', 'platforms']
 MON = {m: i for i, m in enumerate(['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'], 1)}
 
 
