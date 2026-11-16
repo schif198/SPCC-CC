@@ -7,7 +7,7 @@
   const date = (s, f = '%b %-d') => d3.utcFormat(f)(new Date(s + 'T00:00:00Z'));
   const ISSUES = ['Labor & wages', 'Housing & tenant rules', 'Economic development & incentives', 'Licensing & enforcement', 'Land use & permitting', 'Utilities, franchises & fees', 'Taxes, levies & assessments', 'Events, festivals & sound permits'];
   const issueColor = (i) => dash.colors[ISSUES.indexOf(i) % dash.colors.length];
-  const color = { yea: () => dash.colors[0], nay: () => '#6e1f14', absent: () => 'transparent', adopted: () => dash.colors[0], failed: () => 'var(--color-bad)', other: () => 'var(--cds-chart-muted)' };
+  const color = { yea: () => dash.colors[0], nay: () => '#2a0157', absent: () => 'transparent', adopted: () => dash.colors[0], failed: () => 'var(--color-bad)', other: () => 'var(--cds-chart-muted)' };
   document.querySelectorAll('.pb [data-sw]').forEach((el) => { el.style.background = color[el.dataset.sw](); });
   document.querySelectorAll('.pb .clear').forEach((b) => b.addEventListener('click', () => dash.setParams({ member: 'All' })));
 

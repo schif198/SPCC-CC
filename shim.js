@@ -28,7 +28,7 @@ window.dash = (() => {
   const syncHash = () => { try { const u = new URLSearchParams(); for (const k in params) if (params[k] !== '' && params[k] != null) u.set(k, params[k]); history.replaceState(null, '', '#' + u.toString()); } catch (e) {} };
   return {
     // colorblind-safe categorical palette (Okabe-Ito family, tuned to the site's terracotta)
-    colors: ['#c96442', '#2f6eb5', '#e0a030', '#1f8a78', '#6aaed6', '#b5658f', '#8c8577', '#3b3a37'],
+    colors: ['#f15a25', '#2f6eb5', '#e0a030', '#1f8a78', '#6aaed6', '#b5658f', '#8c8577', '#3b3a37'],
     data: (id) => DATA[id] ? { status: 'ok', data: DATA[id], rows: DATA[id], columns: DATA[id].columns, meta: [] } : { status: 'missing', data: [], columns: [], meta: [] },
     draw: (name, fn) => {
       if (fn === undefined) { for (const [n, f] of draws) if (n === name) document.querySelectorAll('[data-draw="' + name + '"]').forEach((el) => { if (!el.closest('[hidden]')) { try { f(el); } catch (e) { console.error(name, e); } } }); return; }

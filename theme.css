@@ -1,22 +1,15 @@
 :root {
-  color-scheme: light dark;
-  --font-anthropic-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-anthropic-serif: Georgia, "Times New Roman", serif;
-  --color-fg: #1f1e1d; --color-fg-muted: #6b6a66; --color-bg: #faf9f5; --color-panel: #ffffff;
-  --color-border-line: #e3e1d9; --color-ok: #1f8a78; --color-warn: #b7791f; --color-bad: #7a2617;
+  color-scheme: light;
+  --font-anthropic-sans: "Montserrat", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-anthropic-serif: "Montserrat", system-ui, sans-serif;
+  --color-fg: #22182c; --color-fg-muted: #6b6478; --color-bg: #f7f6fa; --color-panel: #ffffff;
+  --color-border-line: #e7e3ee; --color-ok: #1f8a78; --color-warn: #b7791f; --color-bad: #2a0157;
   --cds-pad-xs: 4px; --cds-pad-sm: 8px; --cds-pad-md: 12px; --cds-pad-lg: 20px;
   --cds-gap-xs: 4px; --cds-gap-sm: 8px; --cds-gap-md: 16px; --cds-gap-lg: 24px;
   --cds-font-size-title: 2rem; --cds-font-size-heading: 1.25rem; --cds-font-size-body: 0.95rem; --cds-font-size-caption: 0.8rem;
   --cds-font-weight-medium: 600; --cds-radius: 10px;
   --cds-surface-popover: #ffffff; --cds-border: #d9d6cc; --cds-shadow-popover: 0 4px 16px rgba(0,0,0,.12);
-  --cds-text-secondary: #6b6a66; --cds-chart-muted: #b9b6ad; --cds-chart-status-critical: #6e1f14; --cds-dur-slow: .3s;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-fg: #f2f0ea; --color-fg-muted: #a8a59c; --color-bg: #1f1e1c; --color-panel: #2a2926;
-    --color-border-line: #3c3a36; --color-bad: #e08f7f; --color-ok: #4fb8a6; --color-warn: #e0a647; --cds-chart-status-critical: #e08f7f;
-    --cds-surface-popover: #2f2e2b; --cds-border: #45433e; --cds-text-secondary: #a8a59c; --cds-chart-muted: #6d6a63;
-  }
+  --cds-text-secondary: #6b6478; --cds-chart-muted: #b9b6ad; --cds-chart-status-critical: #2a0157; --cds-dur-slow: .3s;
 }
 [hidden] { display: none !important; }
 html, body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-family: var(--font-anthropic-sans); }

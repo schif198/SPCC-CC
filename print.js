@@ -5,7 +5,7 @@
   const KIND = window.__PRINT_KIND__;
   const META = window.__META__ || {};
   const NA = 'NOT AVAILABLE';
-  const ACC = '#c96442', DARK = '#6e1f14', MUTE = '#d9d5cb';
+  const ACC = '#f15a25', DARK = '#2a0157', MUTE = '#d9d5cb';
   const rows = (id) => { const d = dash.data(id); return d.status === 'ok' ? d.data : []; };
   const P = () => dash.params();
   const num = (v) => (v === '' || v == null || isNaN(+v)) ? null : +v;
@@ -52,7 +52,7 @@
     const y = d3.scaleLinear().domain([0, d3.max(data, val) || 1]).range([h - 16, 12]);
     data.forEach((d) => {
       svg.append('rect').attr('x', x(label(d))).attr('y', y(val(d))).attr('width', x.bandwidth()).attr('height', h - 16 - y(val(d))).attr('fill', ACC).attr('rx', 1.5);
-      svg.append('text').attr('x', x(label(d)) + x.bandwidth() / 2).attr('y', y(val(d)) - 2).attr('text-anchor', 'middle').attr('font-size', 7.5).attr('fill', '#1f1e1d').text(val(d));
+      svg.append('text').attr('x', x(label(d)) + x.bandwidth() / 2).attr('y', y(val(d)) - 2).attr('text-anchor', 'middle').attr('font-size', 7.5).attr('fill', '#22182c').text(val(d));
       svg.append('text').attr('x', x(label(d)) + x.bandwidth() / 2).attr('y', h - 5).attr('text-anchor', 'middle').attr('font-size', 7.5).attr('fill', '#5b5a56').text(label(d));
       if (mark && mark(d)) svg.append('circle').attr('cx', x(label(d)) + x.bandwidth() / 2).attr('cy', h - 21).attr('r', 3.2).attr('fill', DARK);
     });
@@ -271,7 +271,7 @@
     platforms(S) {
       const c = rows('pv_cells'), t = rows('pv_theme'), p = rows('pv_platforms');
       const MM = ['Noecker', 'Yang', 'Kim', 'Bowie', 'Jost', 'Johnson', 'Coleman'];
-      const FILL = ['#f5eee8', '#ebbca6', '#c96442', '#7f3418'], TXT = ['#6b6a66', '#4a1d0c', '#fff', '#fff'], LBL = ['None recorded', 'Some', 'Active', 'Leading'];
+      const FILL = ['#fbefe8', '#f8c1a4', '#f15a25', '#a33a0a'], TXT = ['#6b6478', '#5a2306', '#fff', '#fff'], LBL = ['None recorded', 'Some', 'Active', 'Leading'];
       const st = c.filter((r) => r.stated === 'Yes'), act = st.filter((r) => +r.level >= 2);
       const top = t.slice().sort((a, b) => +b.members_stated - +a.members_stated)[0] || {};
       const busy = t.slice().sort((a, b) => +b.lead_share - +a.lead_share)[0] || {};
@@ -299,7 +299,7 @@
         });
       });
       const lg = el('div', 'ps-legend'); const rg = el('span', 'ps-ringsw'); lg.append(rg, el('span', '', 'Campaigned on it'));
-      [0, 1, 2, 3].forEach((i) => { const s2 = el('span', 'ps-sw'); s2.style.background = FILL[i]; s2.style.border = i ? 'none' : '1px solid #e3d5cb'; lg.append(s2, el('span', '', LBL[i])); });
+      [0, 1, 2, 3].forEach((i) => { const s2 = el('span', 'ps-sw'); s2.style.background = FILL[i]; s2.style.border = i ? 'none' : '1px solid #f0d9cc'; lg.append(s2, el('span', '', LBL[i])); });
       lg.append(el('span', '', ' · number = motions and remarks'));
       S.add(section('Campaign priorities and council activity', g, lg));
       S.add(section('By member', grid([
@@ -330,7 +330,10 @@
     const head = el('header', 'ps-head'); const hl = el('div');
     hl.appendChild(el('h1', '', S.title)); if (S.sub) hl.appendChild(el('div', 'ps-sub', S.sub));
     head.appendChild(hl);
-    head.appendChild(el('div', 'ps-stamp', `Printed ${d3.timeFormat('%b %-d, %Y')(new Date())}`));
+    const rt = el('div', 'ps-stamp'); rt.style.cssText = 'display:flex;align-items:center;gap:8px';
+    rt.appendChild(el('span', '', `Printed ${d3.timeFormat('%b %-d, %Y')(new Date())}`));
+    if (window.__LOGO__) { const lg = document.createElement('img'); lg.src = window.__LOGO__; lg.className = 'ps-logo'; lg.alt = 'St. Paul Area Chamber'; rt.appendChild(lg); }
+    head.appendChild(rt);
     root.appendChild(head); root.appendChild(S.body);
     root.appendChild(el('footer', 'ps-foot', `Source: St. Paul City Council meeting minutes (stpaul.legistar.com)${span ? ', ' + span : ''}. Counts are roll-call votes; “split” means at least one yea and one nay.`));
     document.body.appendChild(root);

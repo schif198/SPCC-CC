@@ -12,7 +12,7 @@
   const where = (extra) => { const { from, to } = range(); return Object.assign({ from, to }, extra); };
   const pick = (rows, crit) => rows && rows.find((r) => Object.entries(crit).every(([k, v]) => r[k] === v));
   const enc = (o) => Object.entries(o).map(([k, v]) => k + '=' + encodeURIComponent(v)).join('&');
-  const color = { yea: () => dash.colors[0], nay: () => '#6e1f14', absent: () => 'var(--color-border-line)' };
+  const color = { yea: () => dash.colors[0], nay: () => '#2a0157', absent: () => 'var(--color-border-line)' };
   document.querySelectorAll('.cg [data-sw]').forEach((el) => { el.style.background = color[el.dataset.sw](); });
 
   // ---------- member chips & views ----------

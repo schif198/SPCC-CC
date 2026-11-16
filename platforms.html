@@ -11,7 +11,7 @@
 .pv .legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; font-size: .82rem; color: var(--color-fg-muted); }
 .pv .legend .it { display: inline-flex; align-items: center; gap: 6px; }
 .pv .sw { width: 16px; height: 16px; border-radius: 4px; display: inline-block; }
-.pv .ring { width: 16px; height: 16px; border-radius: 50%; border: 3px solid #1f3a5f; box-sizing: border-box; display: inline-block; }
+.pv .ring { width: 16px; height: 16px; border-radius: 50%; border: 3px solid #2a0157; box-sizing: border-box; display: inline-block; }
 .pv .grid2 { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 18px; }
 @media (max-width: 900px) { .pv .grid2 { grid-template-columns: 1fr; } }
 .pv .chart { position: relative; min-height: 200px; }
@@ -44,10 +44,10 @@
     <p class="note">Ring = campaigned on it. Shade = how much they moved, argued or pushed on it in the minutes. Click a name or theme.</p>
     <div class="legend" aria-label="Legend">
       <span class="it"><span class="ring"></span>Campaigned on it</span>
-      <span class="it"><span class="sw" style="border-radius:50%;background:#f5eee8;border:1px solid #e3d5cb"></span>None recorded</span>
-      <span class="it"><span class="sw" style="border-radius:50%;background:#ebbca6"></span>Some</span>
-      <span class="it"><span class="sw" style="border-radius:50%;background:#c96442"></span>Active</span>
-      <span class="it"><span class="sw" style="border-radius:50%;background:#7f3418"></span>Leading</span>
+      <span class="it"><span class="sw" style="border-radius:50%;background:#fbefe8;border:1px solid #f0d9cc"></span>None recorded</span>
+      <span class="it"><span class="sw" style="border-radius:50%;background:#f8c1a4"></span>Some</span>
+      <span class="it"><span class="sw" style="border-radius:50%;background:#f15a25"></span>Active</span>
+      <span class="it"><span class="sw" style="border-radius:50%;background:#a33a0a"></span>Leading</span>
       <span class="it">Number = motions and remarks</span>
     </div>
     <div class="chart" style="min-height:380px" data-draw="matrix" data-source="pv_cells"></div>

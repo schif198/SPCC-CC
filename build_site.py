@@ -29,6 +29,12 @@ def csvtext(n): return open(os.path.join(OUT, n + '.csv'), encoding='utf-8').rea
 
 
 D3, SHIM, PRINTJS, THEME, SITECSS, SITEJS = rd('vendor/d3.min.js'), rd('shim.js'), rd('print.js'), rd('theme.css'), rd('site.css'), rd('site.js')
+import base64
+def b64(p): return base64.b64encode(open(os.path.join(WEB, p), 'rb').read()).decode()
+FONTS = ''.join(f"@font-face{{font-family:'Montserrat';font-weight:{w};font-style:normal;font-display:swap;src:url(data:font/woff2;base64,{b64(f'vendor/montserrat-latin-{w}-normal.woff2')}) format('woff2');}}" for w in (400, 500, 600, 700, 800))
+LOGO_URI = 'data:image/png;base64,' + b64('vendor/chamber-logo.png')
+FAVICON = '<link rel="icon" type="image/png" href="data:image/png;base64,' + b64('vendor/favicon.png') + '">'
+THEME = FONTS + '\n:root { --brand-logo: url(' + LOGO_URI + '); }\n' + THEME
 totals = list(csv.DictReader(open(os.path.join(OUT, 'totals.csv'))))[0]
 kp = list(csv.DictReader(open(os.path.join(OUT, 'b_kpis.csv'))))[0]
 FIRST, LAST, NEXT = totals['first_meeting'], totals['last_meeting'], kp.get('next_meeting', '')
@@ -95,7 +101,7 @@ def nav(current, printable):
         links = ''.join(f'<a href="{h}"{cur if h == current else ""}><b>{t}</b><span>{desc}</span></a>' for h, t, desc in items)
         grp += f'<div class="sa-grp{" cur" if on else ""}"><button class="sa-grp-b" type="button" aria-expanded="false">{name}</button><div class="sa-grp-p">{links}</div></div>'
     pr = f'<button id="sa-print" class="sa-btn" type="button" title="Print a one-page summary of what this page shows">{PRINT_ICON}Print one-pager</button>' if printable else ''
-    return (f'<nav class="sa-nav" aria-label="Site"><a class="brand" href="index.html">St. Paul Council 2026</a>'
+    return (f'<nav class="sa-nav" aria-label="Site"><a class="brand" href="index.html" aria-label="St. Paul Area Chamber: council dashboards home">St. Paul Area Chamber</a>'
             f'<button class="sa-toggle" type="button" aria-expanded="false">Menu</button>'
             f'<div class="sa-menu"><a class="sa-home" href="index.html"{cur if current == "index.html" else ""}>Home</a>{grp}</div>'
             f'<form class="sa-search" role="search" autocomplete="off"><input type="search" placeholder="Search members, items, topics" aria-label="Search the site"><div class="sa-sugg" role="listbox" hidden></div></form>'
@@ -124,6 +130,7 @@ def shell(title, body, head_extra='', scripts=''):
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{esc(title)}</title>
+{FAVICON}
 <style>{THEME}
 {SITECSS}</style>
 {head_extra}
@@ -143,7 +150,7 @@ def dashboard(out, title, page_file, app_file, data, params, kind):
     app = rd('pages/' + app_file) if app_file else ''
     raw = {k: (v if isinstance(v, str) and '\n' in v else csvtext(v)) for k, v in data.items()}
     head = (f'<script>{js(D3)}</script>\n<script>window.__DASH_DATA__ = {js(json.dumps(raw))}; window.__DASH_PARAMS__ = {json.dumps(params)}; '
-            f'window.__META__ = {json.dumps(META)};</script>\n<script>{js(SHIM)}</script>')
+            f'window.__META__ = {json.dumps(META)}; window.__LOGO__ = {json.dumps(LOGO_URI)};</script>\n<script>{js(SHIM)}</script>')
     body = (f'{nav(out, True)}\n<div id="dash-root">\n{page}\n<p class="sa-foot">Data: St. Paul City Council meeting minutes, {SPAN_LONG}. '
             f'Updates automatically when new minutes are added to the <a href="library.html">minutes library</a>.</p>\n</div>')
     scripts = (f'<script>{js(app)}</script>\n<script>window.__PRINT_KIND__ = {json.dumps(kind)};</script>\n<script>{js(PRINTJS)}</script>\n'
@@ -260,7 +267,7 @@ def library(meetings):
 .lib-chip[aria-pressed=true] { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
 .lib-shown { font-size: .8rem; color: var(--color-fg-muted); }
 .lib-month { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: 1.3rem; margin: 22px 0 8px; }
-.lib-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-left: 4px solid #c96442; border-radius: 10px; padding: 12px 16px; margin-bottom: 10px; }
+.lib-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-left: 4px solid #f15a25; border-radius: 10px; padding: 12px 16px; margin-bottom: 10px; }
 .lib-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; align-items: center; }
 .lib-date { font-weight: 600; font-size: 1rem; }
 .lib-kind { font-size: .8rem; color: var(--color-fg-muted); margin-top: 2px; }
@@ -284,7 +291,7 @@ def library(meetings):
 .lib-status { margin: 14px 0 0; padding: 10px 14px; border-radius: 10px; font-size: .9rem; border: 1px solid var(--color-border-line); }
 .lib-status.busy { background: #fff6e0; border-color: #e3c37a; color: #5a4300; }
 .lib-status.ok { background: #e9f5ee; border-color: #9ccbb0; color: #1d4d33; }
-.lib-status.fail { background: #fbecea; border-color: #e3a49b; color: #6e1f14; }
+.lib-status.fail { background: #fbecea; border-color: #e3a49b; color: #2a0157; }
 .lib-status a { color: inherit; font-weight: 600; }
 .up { width: min(640px, 94vw); max-height: 90vh; border: 1px solid var(--color-border-line); border-radius: 16px; padding: 0; background: var(--color-panel); color: var(--color-fg); font-family: var(--font-anthropic-sans); }
 .up::backdrop { background: rgba(20,18,15,.45); }
@@ -293,8 +300,8 @@ def library(meetings):
 .up-x { font: inherit; font-size: 1.5rem; line-height: 1; border: 0; background: none; color: var(--color-fg-muted); cursor: pointer; padding: 4px 8px; border-radius: 8px; }
 .up-x:hover { background: var(--color-bg); color: var(--color-fg); }
 #up-form, #up-progress { padding: 6px 22px 20px; }
-.up-drop { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; padding: 26px 16px; border: 2px dashed #d8b4a6; border-radius: 14px; background: #fbf4f0; color: #8a2617; cursor: pointer; transition: background .15s, border-color .15s; }
-.up-drop:hover, .up-drop.over { background: #f6e4dc; border-color: #c96442; }
+.up-drop { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; padding: 26px 16px; border: 2px dashed #f3c3ad; border-radius: 14px; background: #fdf3ee; color: #5b2a86; cursor: pointer; transition: background .15s, border-color .15s; }
+.up-drop:hover, .up-drop.over { background: #fbe3d8; border-color: #f15a25; }
 .up-drop.compact { flex-direction: row; justify-content: center; gap: 10px; padding: 12px 16px; }
 .up-drop.compact svg { width: 22px; height: 22px; }
 .up-drop.compact .up-dd { display: none; }
@@ -306,15 +313,15 @@ def library(meetings):
 .up-ic { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: .85rem; background: var(--color-border-line); color: var(--color-fg); }
 .s-ok .up-ic, .s-unknown .up-ic { background: #2f7d4f; color: #fff; }
 .s-dup .up-ic { background: #b9b6ad; color: #fff; }
-.s-bad .up-ic { background: #6e1f14; color: #fff; }
+.s-bad .up-ic { background: #2a0157; color: #fff; }
 .s-checking .up-ic { animation: upPulse 1s infinite alternate; }
 @keyframes upPulse { from { opacity: .4 } to { opacity: 1 } }
 .up-name { font-weight: 600; font-size: .92rem; overflow-wrap: anywhere; }
 .up-sub { font-size: .82rem; color: var(--color-fg-muted); margin-top: 1px; }
-.s-bad .up-sub { color: #8a2617; }
+.s-bad .up-sub { color: #5b2a86; }
 .up-chip { font-size: .75rem; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--color-border-line); white-space: nowrap; }
 .s-ok .up-chip, .s-unknown .up-chip { border-color: #2f7d4f; color: #2f7d4f; }
-.s-bad .up-chip { border-color: #6e1f14; color: #6e1f14; }
+.s-bad .up-chip { border-color: #2a0157; color: #2a0157; }
 .up-rm { font: inherit; font-size: 1.1rem; border: 0; background: none; color: var(--color-fg-muted); cursor: pointer; border-radius: 6px; }
 .up-rm:hover { background: var(--color-border-line); }
 .up-key { border-top: 1px solid var(--color-border-line); padding-top: 12px; font-size: .9rem; }
@@ -327,14 +334,14 @@ def library(meetings):
 .up-help ol { padding-left: 20px; line-height: 1.5; }
 .up-help a { color: inherit; }
 .up-link { font: inherit; border: 0; background: none; color: var(--color-fg); text-decoration: underline; cursor: pointer; padding: 0; }
-.up-msg { color: #8a2617; font-size: .85rem; min-height: 1em; margin: 8px 0 0; }
+.up-msg { color: #5b2a86; font-size: .85rem; min-height: 1em; margin: 8px 0 0; }
 .up-foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin-top: 10px; }
 .up-foot .sa-btn { font-size: .95rem; padding: 9px 20px; }
 .up-foot .sa-btn:disabled { opacity: .35; cursor: not-allowed; }
 .up-fn { font-size: .8rem; color: var(--color-fg-muted); margin: 0; }
 .up-fn a, .up-alt a { color: inherit; }
 .up-alt { font-size: .78rem; color: var(--color-fg-muted); margin: 10px 0 0; text-align: right; }
-.up-warn { background: #fbecea; color: #6e1f14; padding: 8px 12px; border-radius: 8px; font-size: .85rem; }
+.up-warn { background: #fbecea; color: #2a0157; padding: 8px 12px; border-radius: 8px; font-size: .85rem; }
 .up-steps { list-style: none; margin: 8px 0 14px; padding: 0; display: flex; flex-direction: column; gap: 4px; }
 .up-step { position: relative; padding: 8px 0 8px 40px; min-height: 28px; color: var(--color-fg-muted); }
 .up-step::before { content: ''; position: absolute; left: 4px; top: 8px; width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--color-border-line); box-sizing: border-box; background: var(--color-panel); }
@@ -342,13 +349,13 @@ def library(meetings):
 .up-step b { display: block; font-weight: 600; }
 .up-sd { display: block; font-size: .85rem; margin-top: 2px; }
 .up-step.active { color: var(--color-fg); }
-.up-step.active::before { border-color: #c96442; border-top-color: transparent; animation: upSpin .9s linear infinite; }
+.up-step.active::before { border-color: #f15a25; border-top-color: transparent; animation: upSpin .9s linear infinite; }
 .up-step.active .up-sd[data-elapsed]::after { content: ' · ' attr(data-elapsed); font-variant-numeric: tabular-nums; color: var(--color-fg-muted); }
 @keyframes upSpin { to { transform: rotate(360deg); } }
 .up-step.done { color: var(--color-fg); }
 .up-step.done::before { content: '✓'; display: grid; place-items: center; color: #fff; font-size: 13px; font-weight: 700; background: #2f7d4f; border-color: #2f7d4f; }
-.up-step.fail { color: #6e1f14; }
-.up-step.fail::before { content: '!'; display: grid; place-items: center; color: #fff; font-size: 13px; font-weight: 700; background: #6e1f14; border-color: #6e1f14; }
+.up-step.fail { color: #2a0157; }
+.up-step.fail::before { content: '!'; display: grid; place-items: center; color: #fff; font-size: 13px; font-weight: 700; background: #2a0157; border-color: #2a0157; }
 </style>"""
     data = dict(meetings=meetings, built=BUILT, legistar=LEGISTAR)
     up = dict(repo=REPO, branch=BRANCH, path=MINUTES_PATH, api=os.environ.get('UPLOAD_API', 'https://api.github.com'))
@@ -412,20 +419,20 @@ def home(meetings):
 .hm-lede { color: var(--color-fg-muted); margin: 4px 0 18px; }
 .hm-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 10px; margin-bottom: 22px; }
 .hm-s { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: 12px; padding: 12px 16px; }
-.hm-sl { font-size: .74rem; text-transform: uppercase; letter-spacing: .06em; color: #8a2617; font-weight: 700; }
+.hm-sl { font-size: .74rem; text-transform: uppercase; letter-spacing: .06em; color: #5b2a86; font-weight: 700; }
 .hm-sv { font-family: var(--font-anthropic-serif); font-size: 1.5rem; margin-top: 2px; }
 .hm-ss { font-size: .85rem; color: var(--color-fg-muted); margin-top: 2px; }
 .hm-tasks { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 12px; }
 .hm-task { display: flex; flex-direction: column; gap: 6px; padding: 16px 18px; background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: 14px; color: var(--color-fg); text-decoration: none; transition: border-color .15s, transform .15s; }
-a.hm-task:hover { border-color: #c96442; transform: translateY(-1px); }
-.hm-task svg { color: #c96442; }
+a.hm-task:hover { border-color: #f15a25; transform: translateY(-1px); }
+.hm-task svg { color: #f15a25; }
 .hm-task b { font-size: 1.08rem; }
 .hm-task > span { color: var(--color-fg-muted); font-size: .88rem; }
-.hm-task.primary { background: #c96442; border-color: #c96442; color: #fff; }
+.hm-task.primary { background: #f15a25; border-color: #f15a25; color: #fff; }
 .hm-task.primary svg, .hm-task.primary > span { color: #fff; opacity: .95; }
 .hm-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
 .hm-chip { font-size: .85rem; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--color-border-line); color: var(--color-fg); text-decoration: none; background: var(--color-bg); }
-.hm-chip:hover { border-color: #c96442; }
+.hm-chip:hover { border-color: #f15a25; }
 .hm-in { display: flex; gap: 6px; margin-top: 2px; }
 .hm-in input { flex: 1; min-width: 0; font: inherit; font-size: .9rem; padding: 8px 12px; border: 1px solid var(--color-border-line); border-radius: 999px; background: var(--color-bg); color: var(--color-fg); }
 .hm-more h2 { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--color-fg-muted); margin: 28px 0 8px; }
@@ -454,7 +461,7 @@ def glossary():
 .gl h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: 2.1rem; margin: 0; }
 .gl dl { margin: 20px 0 0; }
 .gl-row { padding: 12px 0; border-bottom: 1px solid var(--color-border-line); scroll-margin-top: 80px; }
-.gl-row:target { background: color-mix(in srgb, #c96442 10%, transparent); border-radius: 8px; padding-left: 10px; }
+.gl-row:target { background: color-mix(in srgb, #f15a25 10%, transparent); border-radius: 8px; padding-left: 10px; }
 .gl dt { font-weight: 700; }
 .gl dd { margin: 3px 0 0; color: var(--color-fg-muted); line-height: 1.5; }
 </style>"""
