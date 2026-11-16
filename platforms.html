@@ -1,0 +1,89 @@
+<style>
+.pv { font-family: var(--font-anthropic-sans); color: var(--color-fg); display: flex; flex-direction: column; gap: 18px; max-width: 1240px; margin-inline: auto; }
+.pv h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: 2.1rem; margin: 0; }
+.pv h2 { font-size: 1.05rem; font-weight: 600; margin: 0; }
+.pv .sub { color: var(--color-fg-muted); margin: 4px 0 0; }
+.pv .card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: 12px; padding: 16px 18px; position: relative; }
+.pv .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 10px; }
+.pv .kpi { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: 12px; padding: 10px 14px; }
+.pv .kv { font-family: var(--font-anthropic-serif); font-size: 2rem; line-height: 1.1; }
+.pv .kl { font-size: .75rem; color: var(--color-fg-muted); text-transform: uppercase; letter-spacing: .04em; }
+.pv .legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; font-size: .82rem; color: var(--color-fg-muted); }
+.pv .legend .it { display: inline-flex; align-items: center; gap: 6px; }
+.pv .sw { width: 16px; height: 16px; border-radius: 4px; display: inline-block; }
+.pv .ring { width: 16px; height: 16px; border-radius: 50%; border: 3px solid #c96442; box-sizing: border-box; display: inline-block; }
+.pv .grid2 { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 18px; }
+@media (max-width: 900px) { .pv .grid2 { grid-template-columns: 1fr; } }
+.pv .chart { position: relative; min-height: 200px; }
+.pv .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.pv .chip { font: inherit; font-size: .85rem; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--color-border-line); background: var(--color-panel); color: var(--color-fg); cursor: pointer; }
+.pv .chip[aria-pressed=true] { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
+.pv .note { font-size: .8rem; color: var(--color-fg-muted); margin: 2px 0 10px; }
+.pv .tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: 10px; box-shadow: var(--cds-shadow-popover); padding: 6px 10px; font-size: .8rem; z-index: 5; max-width: 260px; }
+.pv .tip b { display: block; }
+.pv details { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: 12px; padding: 12px 18px; font-size: .85rem; color: var(--color-fg-muted); }
+.pv summary { cursor: pointer; font-weight: 600; color: var(--color-fg); }
+.pv .tbl-wrap { overflow: auto; max-height: 22rem; }
+.pv table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+.pv th { text-align: left; font-weight: 600; color: var(--color-fg-muted); border-bottom: 1px solid var(--color-border-line); padding: 4px 8px; position: sticky; top: 0; background: var(--color-panel); }
+.pv td { padding: 4px 8px; border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
+.pv .src li { margin-bottom: 4px; }
+.pv .src a { color: inherit; }
+</style>
+
+<div class="pv">
+  <header>
+    <h1>Platforms vs. votes</h1>
+    <p class="sub">What each member campaigned on, next to what they did on the council.</p>
+  </header>
+
+  <div class="kpis" id="pv-kpis" data-draw="kpis" data-source="pv_cells pv_platforms pv_theme"></div>
+
+  <div class="card" id="pv-matrix-card">
+    <h2>Campaign priorities and council activity</h2>
+    <p class="note">Ring = campaigned on it. Shade = how much they moved, argued or pushed on it in the minutes. Click a name or theme.</p>
+    <div class="legend" aria-label="Legend">
+      <span class="it"><span class="ring"></span>Campaigned on it</span>
+      <span class="it"><span class="sw" style="border-radius:50%;background:#eef2f8;border:1px solid #c9d3e3"></span>None recorded</span>
+      <span class="it"><span class="sw" style="border-radius:50%;background:#a9c1e3"></span>Some</span>
+      <span class="it"><span class="sw" style="border-radius:50%;background:#5b8bd0"></span>Active</span>
+      <span class="it"><span class="sw" style="border-radius:50%;background:#1f4e99"></span>Leading</span>
+      <span class="it">Number = motions and remarks</span>
+    </div>
+    <div class="chart" style="min-height:380px" data-draw="matrix" data-source="pv_cells"></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card" id="pv-member">
+      <div class="chips" data-draw="memberchips" data-source="pv_cells"></div>
+      <div class="chart" style="min-height:300px;margin-top:12px" data-draw="member" data-source="pv_cells pv_platforms"></div>
+    </div>
+    <div class="card" id="pv-council">
+      <h2>Council-wide: talked about vs. worked on</h2>
+      <p class="note">Dots = members who campaigned on it. Bar = share of all motions and remarks.</p>
+      <div class="chart" style="min-height:300px" data-draw="council" data-source="pv_theme"></div>
+    </div>
+  </div>
+
+  <div class="card" id="pv-items">
+    <h2 data-draw="itemstitle" data-source="pv_items">Related votes</h2>
+    <div class="tbl-wrap"><table data-source="pv_items" data-row-key="id">
+      <thead><tr><th data-field="date">Date</th><th data-field="file">File</th><th data-field="title">Item</th><th data-field="tally">Vote</th><th data-field="movers">Moved or spoke</th></tr></thead>
+      <tbody data-draw="itemrows"></tbody></table></div>
+  </div>
+
+  <details id="pv-sources">
+    <summary>Platform sources</summary>
+    <ul class="src" data-draw="sources" data-source="pv_platforms"></ul>
+  </details>
+  <details id="pv-method">
+    <summary>How this is measured</summary>
+    <ul>
+      <li>Platforms: each member's stated campaign priorities from news coverage, candidate questionnaires and endorsement profiles (Coleman: 2025 special election; others: 2023). Links above. Wording is paraphrased.</li>
+      <li>Record: City Council minutes, January 7 – October 28, 2026. Items are sorted into themes by their titles; one item can fit several themes.</li>
+      <li>Shade: motions, amendments and remarks for or against items in the theme. “Leading” = 4 or more and a bigger share of the member’s activity than the council average; “Active” = 4 or more, or at least 2 above average; “Some” = 1–3.</li>
+      <li>Most items pass unanimously, so votes show little difference between members; activity in debate shows more. Members often move items in their own ward.</li>
+      <li>This compares stated priorities with recorded activity. It does not judge whether a promise was kept: much council work happens in committees, budgets and outside meetings.</li>
+    </ul>
+  </details>
+</div>
