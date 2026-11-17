@@ -183,7 +183,7 @@
     const topics = [...new Set(sel.map((r) => r.topic))];
     const W = Math.max(300, box.clientWidth);
     const svg = d3.select(box).append('svg').attr('width', '100%');
-    const left = measure(svg, topics.map(short), 11) + 10;
+    const left = measure(svg, topics.map(short), 11) + 18;
     const top = 22, rh = 26, cw = (W - left) / M.length, H = top + topics.length * rh + 4;
     svg.attr('viewBox', `0 0 ${W} ${H}`).attr('height', H);
     const lo = getComputedStyle(box).getPropertyValue('--color-panel').trim() || '#f5f5f5';
@@ -225,6 +225,7 @@
       const y = top + i * rh;
       const t = svg.append('text').attr('x', left - 10).attr('y', y + rh / 2 + 4).attr('text-anchor', 'end').attr('font-size', 11).attr('fill', 'var(--color-fg)').text(lab(q));
       while (t.node().getComputedTextLength() > left - 14 && t.text().length > 8) t.text(t.text().slice(0, -2) + '…');
+      t.attr('data-full', lab(q)).attr('data-ell', left - 14);
       M.forEach((m, j) => {
         const r = idx.get(q.date + '|' + q.issue + '|' + m); if (!r) return;
         const k = r.vote === 'Yea' ? 'yea' : r.vote === 'Nay' ? 'nay' : 'absent';
@@ -356,8 +357,41 @@
     const rows = all.filter((r) => r.from === range().from && r.to === range().to && (r.a === m || r.b === m) && r.share !== '')
       .map((r) => ({ ...r, other: r.a === m ? r.b : r.a })).sort((a, b) => +b.share - +a.share);
     if (!rows.length) { box.replaceChildren(); const p = document.createElement('p'); p.className = 'note'; p.textContent = '—'; box.appendChild(p); return; }
-    hbars(box, rows, (r) => +r.share, (r) => r.other, (r) => (+r.share >= 0.75 ? dash.colors[0] : +r.share >= 0.5 ? dash.colors[1] : 'var(--color-bad)'),
-      (r) => [`Voted alike ${fPct(+r.share)}`, `${fInt(+r.agree)} of ${fInt(+r.n)} split votes`], false);
+    // three agreement bands, each with its own color, explained in a key and marked by guide lines
+    const BANDS = [
+      { min: 0.75, label: 'Close ally', range: '75% or more', color: dash.colors[0] },
+      { min: 0.5, label: 'Mixed', range: '50–74%', color: dash.colors[1] },
+      { min: 0, label: 'Usually opposed', range: 'under 50%', color: 'var(--color-bad)' },
+    ];
+    const band = (v) => BANDS.find((b) => v >= b.min);
+    box.replaceChildren();
+    const key = document.createElement('div'); key.className = 'ally-key';
+    for (const b of BANDS) {
+      const k = document.createElement('span'); const sw = document.createElement('i'); sw.style.background = b.color;
+      const t = document.createElement('b'); t.textContent = b.label; k.append(sw, t, ` ${b.range}`); key.appendChild(k);
+    }
+    box.appendChild(key);
+    const W = Math.max(300, box.clientWidth), rh = 26, top = 16;
+    const svg = d3.select(box).append('svg').attr('width', '100%');
+    const left = measure(svg, rows.map((r) => r.other), 11) + 18;
+    const H = top + rows.length * rh + 4; svg.attr('viewBox', `0 0 ${W} ${H}`).attr('height', H);
+    const x = d3.scaleLinear([0, 1], [left, W - 46]);
+    const tip = tipIn(box);
+    rows.forEach((r, i) => {
+      const y = top + i * rh, v = +r.share, b = band(v);
+      svg.append('text').attr('x', left - 8).attr('y', y + rh / 2 + 4).attr('text-anchor', 'end').attr('font-size', 11).attr('fill', 'var(--color-fg)').text(r.other);
+      svg.append('rect').attr('x', left).attr('y', y + 6).attr('width', W - 46 - left).attr('height', rh - 12).attr('rx', 3).attr('fill', 'var(--color-border-line)').attr('opacity', 0.5);
+      svg.append('rect').attr('x', left).attr('y', y + 6).attr('width', Math.max(0, x(v) - left)).attr('height', rh - 12).attr('rx', 3).attr('fill', b.color);
+      svg.append('text').attr('x', W - 40).attr('y', y + rh / 2 + 4).attr('font-size', 10.5).attr('fill', 'var(--color-fg-muted)').attr('pointer-events', 'none').text(fPct(v));
+      svg.append('rect').attr('x', 0).attr('y', y).attr('width', W).attr('height', rh).attr('fill', 'transparent')
+        .on('mousemove', (ev) => showTip(box, tip, ev, r.other, [`${b.label}: voted alike ${fPct(v)}`, `${fInt(+r.agree)} of ${fInt(+r.n)} split votes`]))
+        .on('mouseleave', () => { tip.hidden = true; });
+    });
+    // guide lines at the band cut-offs, drawn over the bars
+    for (const [v, t] of [[0.5, '50%'], [0.75, '75%']]) {
+      svg.append('line').attr('x1', x(v)).attr('x2', x(v)).attr('y1', top - 2).attr('y2', H - 2).attr('stroke', 'var(--color-fg-muted)').attr('stroke-dasharray', '2 3').attr('opacity', 0.7).attr('pointer-events', 'none');
+      svg.append('text').attr('x', x(v)).attr('y', top - 5).attr('text-anchor', 'middle').attr('font-size', 10).attr('fill', 'var(--color-fg-muted)').text(t);
+    }
   });
   dash.draw('monthbars', (box) => {
     const all = ok('member_monthly'); box.replaceChildren(); if (!all) return;
@@ -379,7 +413,7 @@
   dash.draw('positions', (box) => {
     const all = ok('m_splits'); box.replaceChildren(); if (!all) return;
     const rows = all.filter((r) => r.member === cur() && inRange(r)).sort((a, b) => a.date.localeCompare(b.date));
-    const W = Math.max(300, box.clientWidth), H = 150, mg = { l: 44, r: 16, t: 20, b: 26 };
+    const W = Math.max(300, box.clientWidth), H = 150, mg = { l: 52, r: 16, t: 20, b: 26 };
     const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('height', H);
     if (!rows.length) { svg.append('text').attr('x', W / 2).attr('y', H / 2).attr('text-anchor', 'middle').attr('font-size', 12).attr('fill', 'var(--color-fg-muted)').text('No split votes in these months'); return; }
     const { from, to } = range();

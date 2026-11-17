@@ -294,7 +294,9 @@
     card.appendChild(ol);
 
     // member grid
-    const gc = el('div', 'card'); gc.appendChild(el('h3', '', 'Role of each member on this topic')); const grid = el('div', 'grid'); gc.appendChild(grid); box.appendChild(gc);
+    const gc = el('div', 'card'); gc.appendChild(el('h3', '', 'Role of each member on this topic'));
+    if (dash.key) { const ms = members() || []; gc.appendChild(dash.key([{ k: 'txt', ex: '', l: 'Card edge color = place in the outreach order:' }, ...ms.map((d) => ({ k: 'num', c: rankColor(d.rank), n: d.rank, l: d.member }))])); }
+    const grid = el('div', 'grid'); gc.appendChild(grid); box.appendChild(gc);
     for (const x of m) {
       const role = first.includes(x.member) ? 'Lead / first call' : toFour.some((y) => y.member === x.member) ? 'Fourth-vote target' : watch.includes(x.member) ? 'Persuade: has pushed back' : 'Keep informed';
       const w = el('div', 'who'); w.dataset.row = x.member; w.style.borderLeftColor = rankColor(x.rank);

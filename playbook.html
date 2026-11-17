@@ -201,6 +201,7 @@ dialog.wd::backdrop { background: rgba(34,24,44,.45); }
     <div class="step">Act now</div>
     <h2>Business items on the next agenda</h2>
     <p class="note">Scheduled to return. Second-reading ordinances still get a public hearing. <b>Click an item</b> for a full summary, its history and where to read more.</p>
+    <div class="dkey" data-key='[{"k":"edge","c":"c3","l":"Card edge and issue tag = the item’s business issue"},{"k":"chip","text":"Economic","c":"c1","l":"Thin outlined tag = PERSIA lens"}]'></div>
     <div class="watch" data-draw="watch" data-source="b_watch"></div>
   </section>
 
@@ -208,15 +209,16 @@ dialog.wd::backdrop { background: rgba(34,24,44,.45); }
     <div class="step">PERSIA scan</div>
     <h2>The council's agenda through six lenses</h2>
     <p class="note">Votes per lens, share with no dissent, splits, and who leads on it. <b>Click a lens</b> to focus it on the coalition map and the PERSIA lens map below.</p>
+    <div class="dkey" data-key='[{"k":"ring","c":"c0","pct":0.96,"l":"Share passed with no dissent"},{"k":"let","items":[["P","c0"],["E","c1"],["R","c2"],["S","c3"],["I","c4"],["A","c5"]],"l":"Each lens keeps its color on every chart"}]'></div>
     <div class="ptiles" data-draw="persia" data-source="b_persia"></div>
   </section>
 
   <section id="coalition">
     <div class="step">Count the votes</div>
     <h2>Coalition map</h2>
-    <p class="note">Gauge = how often they side with the majority. Bars = business activity and pushback. Hexagon = their PERSIA profile. <b>Hover or click a letter</b> to focus one lens on every card; <b>click a card</b> to spotlight that member across the page.</p>
+    <p class="note"><b>Hover or click a letter</b> to focus one lens on every card; <b>click a card</b> to spotlight that member across the page.</p>
     <div class="lenspick" data-draw="lenspick" data-source="b_persia_member"></div>
-    <div class="ghost-key"><svg width="26" height="18" viewBox="0 0 26 18" aria-hidden="true"><polygon points="13,1 24,5.5 24,12.5 13,17 2,12.5 2,5.5" fill="#8c8577" fill-opacity=".16" stroke="#8c8577" stroke-width="1.2" stroke-dasharray="4 3"/></svg><span><b>Gray dashed hexagon</b> = an even spread (the council's average share on every lens). Points <b>outside</b> it get more of that member's attention than average; points <b>inside</b> get less.</span></div>
+    <div class="dkey" data-key='[{"k":"ring","c":"c0","pct":0.8,"l":"With the majority on split votes"},{"k":"shape","c":"c0","l":"Member’s PERSIA profile"},{"k":"ghost","l":"Even spread (council average): outside = more focus, inside = less"},{"k":"chip","text":"Usually in the majority","c":"c0"},{"k":"chip","text":"Often in the minority","c":"nay","dashed":true}]'></div>
     <div class="cards" data-draw="cards" data-source="b_members b_persia_member"></div>
   </section>
 
@@ -227,12 +229,14 @@ dialog.wd::backdrop { background: rgba(34,24,44,.45); }
     <div class="grid2">
       <div class="card">
         <h3>PERSIA lens map</h3>
-        <p class="note">Darker = a bigger part of that member's agenda than the council average (1.0×).</p>
+        <p class="note">How big a part of each member’s agenda each lens is, compared with the council average.</p>
+        <div class="dkey" data-key='[{"k":"cell","c":"c0","op":0.33,"text":"0.5×"},{"k":"cell","c":"c0","op":0.55,"text":"1.0×","l":"average"},{"k":"cell","c":"c0","text":"2.0×","tc":"#fff","l":"twice average"},{"k":"cell","empty":true,"l":"No motions"},{"k":"txt","ex":"<svg width=\"30\" height=\"18\" aria-hidden=\"true\"><rect x=\"1\" y=\"1\" width=\"28\" height=\"16\" rx=\"4\" fill=\"rgba(42,1,87,.05)\" stroke=\"#2a0157\" stroke-width=\"2\"/></svg>","l":"Spotlighted member"}]'></div>
         <div class="chart" style="min-height:240px" data-draw="lensmap" data-source="b_persia_member"></div>
       </div>
       <div class="card">
         <h3>Economic lens: who leads on each business issue</h3>
-        <p class="note">Motions and remarks per issue. Outlined = who most often carries it.</p>
+        <p class="note">Motions and remarks per issue; each row uses its issue’s color.</p>
+        <div class="dkey" data-key='[{"k":"cell","c":"c2","op":0.3,"text":"1","l":"Few"},{"k":"cell","c":"c2","text":"6","l":"Most in that row"},{"k":"cell","c":"c2","outline":true,"text":"6","l":"Carries it most"},{"k":"cell","empty":true,"l":"None"}]'></div>
         <div class="chart" style="min-height:300px" data-draw="leadmap" data-source="b_issue_member"></div>
       </div>
     </div>
@@ -240,7 +244,7 @@ dialog.wd::backdrop { background: rgba(34,24,44,.45); }
       <div class="card">
         <h3>Economic lens: how contested each business issue is</h3>
         <p class="note">Bar = share of votes passed with no dissent (axis starts at 75%). Shorter bar = more division, where lobbying can change the outcome. Click an issue to see who carries it.</p>
-        <div class="legend"><span style="display:inline-flex;align-items:center;gap:4px"><span class="sw" data-sw="split" style="margin-left:0"></span>Split at least once: room to persuade</span> <span style="display:inline-flex;align-items:center;gap:4px"><span class="sw" data-sw="calm"></span>Always unanimous: shape it early</span></div>
+        <div class="dkey" data-key='[{"k":"bar","c":"#2a0157","pct":0.6,"l":"Split at least once: room to persuade"},{"k":"bar","c":"#f3b496","pct":1,"l":"Always unanimous: shape it early"}]'></div>
         <div class="chart" style="min-height:300px" data-draw="contested" data-source="b_issues"></div>
       </div>
     </div>
@@ -249,8 +253,8 @@ dialog.wd::backdrop { background: rgba(34,24,44,.45); }
   <section id="splits">
     <div class="card">
       <h3>Business-related votes that split the council</h3>
-      <p class="note">Outlined = on the losing side. Letters = PERSIA lenses.</p>
-      <div class="legend"><span class="sw" data-sw="yea"></span>Yea <span class="sw" data-sw="nay"></span>Nay <span class="sw" data-sw="absent"></span>Absent</div>
+      <p class="note">One row per business vote that split the council.</p>
+      <div class="dkey" data-key='[{"k":"cell","c":"yea","l":"Yea"},{"k":"cell","c":"nay","l":"Nay"},{"k":"cell","empty":true,"l":"Absent"},{"k":"cell","c":"yea","outline":true,"l":"On the losing side"},{"k":"cell","c":"yea","op":0.35,"l":"Other members, when one is spotlighted"},{"k":"edge","c":"c3","l":"Left bar = business issue"},{"k":"let","items":[["P","c0"],["E","c1"]],"l":"PERSIA lenses"}]'></div>
       <div class="chart" data-draw="splitgrid" data-source="b_splits"></div>
     </div>
   </section>
@@ -266,7 +270,7 @@ dialog.wd::backdrop { background: rgba(34,24,44,.45); }
       <div class="card">
         <h3>Who moves to delay, and what happened next</h3>
         <p class="note">Motions to lay over, continue or refer, by member, colored by the item's later outcome.</p>
-        <div class="legend"><span class="sw" data-sw="adopted"></span>Later adopted <span class="sw" data-sw="failed"></span>Failed or denied <span class="sw" data-sw="other"></span>No separate vote recorded later</div>
+        <div class="dkey" data-key='[{"k":"sw","c":"c0","l":"Later adopted"},{"k":"sw","c":"#2a0157","l":"Failed or denied"},{"k":"sw","c":"muted","l":"No separate vote recorded later"}]'></div>
         <div class="chart" data-draw="delays" data-source="b_delays"></div>
       </div>
     </div>

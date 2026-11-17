@@ -118,7 +118,8 @@
 
     <div class="card" id="ladder">
       <h3>Order of engagement: building to a winning vote</h3>
-      <p class="note">Call in this order. Dashed line = votes needed to win. Ring = how often they side with the majority; bar = activity on business items.</p>
+      <p class="note">Call in this order. Click a member to select them.</p>
+      <div class="dkey" data-key='[{"k":"num","c":"c0","n":1,"l":"Place in the call order (its color marks this member on the page)"},{"k":"ring","c":"c1","pct":0.85,"l":"How often they side with the majority"},{"k":"bar","c":"c2","pct":0.6,"l":"Activity on business items"},{"k":"vline","c":"ref","l":"Votes needed to win"}]'></div>
       <div class="chart" style="min-height:230px" data-draw="ladder" data-source="c_members b_kpis"></div>
       <div class="ord-sel" data-draw="ordsel" data-source="c_members b_kpis"></div>
     </div>

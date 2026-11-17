@@ -159,7 +159,7 @@
       const head = h('div', 'whead', r.short || r.item);
       const what = document.createElement('div'); what.className = 'what'; what.textContent = r.item.replace(/\s+\S*$/, '') + '…';
       const meta = document.createElement('div'); meta.className = 'wmeta';
-      const t1 = document.createElement('span'); t1.className = 'tag'; t1.textContent = r.issue;
+      const t1 = document.createElement('span'); t1.className = 'tag'; t1.textContent = r.issue; t1.style.borderColor = issueColor(r.issue); t1.style.borderWidth = '2px';
       const t2 = document.createElement('span'); t2.className = 'tag'; t2.textContent = r.file;
       meta.append(t1, t2); lensChips(meta, r.persia);
       const last = document.createElement('div'); last.className = 'small';
@@ -487,6 +487,7 @@
       svg.append('rect').attr('x', 0).attr('y', y + 6).attr('width', 6).attr('height', rh - 12).attr('rx', 2).attr('fill', issueColor(q.issue));
       const t = svg.append('text').attr('x', left - 10).attr('y', y + rh / 2 + 4).attr('text-anchor', 'end').attr('font-size', 11).attr('fill', 'var(--color-fg)').text(lab(q));
       while (t.node().getComputedTextLength() > left - 52 && t.text().length > 8) t.text(t.text().slice(0, -2) + '…');
+      t.attr('data-full', lab(q)).attr('data-ell', left - 52);
       M.forEach((m, j) => {
         const r = idx.get(q.date + '|' + q.question + '|' + m); if (!r) return;
         const k = r.vote === 'Yea' ? 'yea' : r.vote === 'Nay' ? 'nay' : 'absent';

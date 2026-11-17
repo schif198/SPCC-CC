@@ -116,20 +116,21 @@
   // ---------- council chart ----------
   dash.draw('council', (box) => {
     const t = ok('pv_theme'); box.replaceChildren(); if (!t) return;
-    const W = Math.max(300, box.clientWidth), rh = 34, left = Math.min(170, W * 0.42), H = rh * t.length + 26;
+    const W = Math.max(300, box.clientWidth), rh = 34, H = rh * t.length + 26, fs = W < 420 ? 11 : 12.5;
     const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('height', H);
+    let lw = 0; for (const r of t) { const n = svg.append('text').attr('font-size', fs).attr('font-weight', 700).text(r.theme); lw = Math.max(lw, n.node().getComputedTextLength()); n.remove(); }
+    const left = Math.min(W * 0.5, lw + 14);
     const tip = tipIn(box);
     const pipW = 9, pipsW = 7 * pipW + 6, bx = left + pipsW + 14, bw = W - bx - 40;
     const mx = d3.max(t, (r) => +r.lead_share) || 1;
-    svg.append('text').attr('x', left).attr('y', 12).attr('font-size', 10.5).attr('fill', 'var(--color-fg-muted)').text('Campaigned on');
-    svg.append('text').attr('x', bx).attr('y', 12).attr('font-size', 10.5).attr('fill', 'var(--color-fg-muted)').text('Share of council activity');
+    // column meaning is shown in the key above the chart
     t.forEach((r, i) => {
       const y = 22 + i * rh, cy = y + rh / 2;
       const g = svg.append('g').style('cursor', 'pointer').on('click', () => dash.setParams({ theme: r.theme }))
         .on('pointermove', (ev) => showTip(box, tip, r.theme, [`${r.members_stated} of 7 campaigned on it`, `${pct(r.lead_share)} of motions and remarks`, `${r.votes} votes · ${r.splits} split`]))
         .on('pointerleave', () => { tip.hidden = true; });
       g.append('rect').attr('x', 0).attr('y', y).attr('width', W).attr('height', rh).attr('fill', 'transparent');
-      g.append('text').attr('x', left - 8).attr('y', cy + 4).attr('text-anchor', 'end').attr('font-size', 12.5).attr('font-weight', r.theme === curTheme() ? 700 : 400).attr('fill', 'var(--color-fg)').text(r.theme);
+      g.append('text').attr('x', left - 8).attr('y', cy + 4).attr('text-anchor', 'end').attr('font-size', fs).attr('font-weight', r.theme === curTheme() ? 700 : 400).attr('fill', 'var(--color-fg)').text(r.theme);
       for (let k = 0; k < 7; k++) g.append('circle').attr('cx', left + k * pipW + 4).attr('cy', cy).attr('r', 3.6).attr('fill', k < +r.members_stated ? RING : 'none').attr('stroke', RING).attr('stroke-width', 1.2);
       g.append('rect').attr('x', bx).attr('y', cy - 6).attr('width', bw).attr('height', 12).attr('rx', 6).attr('fill', '#f1e8f0');
       g.append('rect').attr('x', bx).attr('y', cy - 6).attr('width', bw * (+r.lead_share / mx)).attr('height', 12).attr('rx', 6).attr('fill', '#f15a25');

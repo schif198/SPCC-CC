@@ -60,6 +60,10 @@
 .cg .method li { margin-bottom: var(--cds-gap-xs); }
 [data-dash-source-state=empty] { color: transparent; }
 [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+#member-allies .ally-key { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 2px 0 6px; }
+#member-allies .ally-key span { display: inline-flex; align-items: center; gap: 5px; }
+#member-allies .ally-key i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+#member-allies .ally-key b { color: var(--color-fg); font-weight: 600; }
 </style>
 
 <div class="cg">
@@ -96,28 +100,30 @@
 
     <div class="card" id="cards-card">
       <h3>Every member at a glance</h3>
-      <p class="note">Gauge = participation. Bars compare members; longest = most active. Click a card for the full profile.</p>
-      <div class="legend"><span class="sw" data-sw="yea"></span>Yea <span class="sw" data-sw="nay"></span>Nay <span class="sw" data-sw="absent"></span>Absent</div>
+      <p class="note">Bars compare members; longest = most active. Click a card for the full profile.</p>
+      <div class="dkey" data-key='[{"k":"ring","c":"c0","pct":0.9,"l":"Participation"},{"k":"sw","c":"yea","l":"Yea"},{"k":"sw","c":"nay","l":"Nay"},{"k":"sw","c":"#fff","stroke":"line","l":"Absent"},{"k":"bar","c":"c1","pct":0.7,"l":"With majority"},{"k":"bar","c":"c2","pct":0.8,"l":"Motions made"},{"k":"bar","c":"c3","pct":0.6,"l":"Pushback"}]'></div>
       <div class="cards" data-draw="cards" data-source="p_member"></div>
     </div>
 
     <div class="grid2">
       <div class="card" id="network">
         <h3>Who votes together</h3>
-        <p class="note">Thicker line = voted alike more often on split votes.</p>
+        <p class="note">Each line joins two members; its weight shows how often they voted alike on split votes.</p>
+        <div class="dkey" data-key='[{"k":"line","c":"c0","w":3.75,"op":0.3,"l":"25%"},{"k":"line","c":"c0","w":6.5,"op":0.52,"l":"50%"},{"k":"line","c":"c0","w":9.25,"op":0.73,"l":"75%"},{"k":"line","c":"c0","w":12,"op":0.95,"l":"100% voted alike"}]'></div>
         <div class="chart tall" data-draw="network" data-source="p_agree"></div>
       </div>
       <div class="card" id="focusmap">
         <h3>What each member takes the lead on</h3>
-        <p class="note">Darker = more of their activity than the council average. Often reflects their ward.</p>
+        <p class="note">Each member's share of motions and remarks on a topic, compared with the council average. Often reflects their ward.</p>
+        <div class="dkey" data-key='[{"k":"ramp","c":"c0","a":"0×","b":"2.5× or more","title":"Share vs. average"},{"k":"cell","c":"c0","op":0.4,"text":"1×","l":"About average"},{"k":"cell","empty":true,"l":"No motions"}]'></div>
         <div class="chart tall" data-draw="focusmap" data-source="p_focus"></div>
       </div>
     </div>
 
     <div class="card" id="splitgrid">
       <h3>Every split vote in the selected months</h3>
-      <p class="note">Each row is a vote where members disagreed. An outlined cell means that member was on the losing side.</p>
-      <div class="legend"><span class="sw" data-sw="yea"></span>Yea <span class="sw" data-sw="nay"></span>Nay <span class="sw" data-sw="absent"></span>Absent</div>
+      <p class="note">Each row is a vote where members disagreed.</p>
+      <div class="dkey" data-key='[{"k":"cell","c":"yea","l":"Yea"},{"k":"cell","c":"nay","l":"Nay"},{"k":"cell","empty":true,"l":"Absent"},{"k":"cell","c":"yea","outline":true,"l":"Outlined = on the losing side"}]'></div>
       <div class="chart" data-draw="splitgrid" data-source="m_splits"></div>
     </div>
 
@@ -151,19 +157,21 @@
 
     <div class="card" id="member-ballot">
       <h3>How their votes split</h3>
-      <div class="legend"><span class="sw" data-sw="yea"></span>Yea <span class="sw" data-sw="nay"></span>Nay <span class="sw" data-sw="absent"></span>Absent</div>
+      <div class="dkey" data-key='[{"k":"sw","c":"yea","l":"Yea"},{"k":"sw","c":"nay","l":"Nay"},{"k":"sw","c":"#fff","stroke":"line","l":"Absent"}]'></div>
       <div class="chart" style="min-height:64px" data-draw="ballot" data-source="p_member"></div>
     </div>
 
     <div class="grid2">
       <div class="card" id="member-topics">
         <h3>Votes by topic</h3>
-        <p class="note">Each bar is every vote on that topic; color shows how they voted.</p>
+        <p class="note">Each bar is every vote on that topic.</p>
+        <div class="dkey" data-key='[{"k":"sw","c":"yea","l":"Yea"},{"k":"sw","c":"nay","l":"Nay"},{"k":"sw","c":"#fff","stroke":"line","l":"Absent"}]'></div>
         <div class="chart tall" data-draw="topicvotes" data-source="p_topic"></div>
       </div>
       <div class="card" id="member-focus">
         <h3>Where they take the lead</h3>
-        <p class="note">Their motions and remarks by topic, against the council average (dashed line).</p>
+        <p class="note">Their motions and remarks by topic, compared with the council average.</p>
+        <div class="dkey" data-key='[{"k":"sw","c":"c0","l":"More than average"},{"k":"sw","c":"muted","l":"Less than average"},{"k":"vline","c":"ref","l":"Council average (1.0×)"}]'></div>
         <div class="chart tall" data-draw="focusbars" data-source="p_focus"></div>
       </div>
     </div>
@@ -171,19 +179,21 @@
     <div class="grid2">
       <div class="card" id="member-allies">
         <h3>Agreement with each colleague</h3>
-        <p class="note">Share of split votes on which they voted the same way, when both were present.</p>
+        <p class="note">Share of split votes on which they voted the same way, when both were present. <b>Bar color shows the band</b>; dashed lines mark the 50% and 75% cut-offs.</p>
         <div class="chart" data-draw="allies" data-source="p_agree"></div>
       </div>
       <div class="card" id="member-month">
         <h3>Participation by month</h3>
-        <p class="note">Selected months are highlighted.</p>
+        <p class="note">Share of each month's votes they cast.</p>
+        <div class="dkey" data-key='[{"k":"sw","c":"c0","l":"75% or more"},{"k":"sw","c":"crit","l":"Under 75%"},{"k":"sw","c":"c0","op":0.25,"l":"Outside the selected months"}]'></div>
         <div class="chart" data-draw="monthbars" data-source="member_monthly"></div>
       </div>
     </div>
 
     <div class="card" id="member-positions">
       <h3>Their side on each split vote</h3>
-      <p class="note">Top row yea, bottom row nay. Hollow dot = on the losing side. Hover for the question.</p>
+      <p class="note">One dot per split vote, placed by date. Hover a dot for the question.</p>
+      <div class="dkey" data-key='[{"k":"dot","c":"yea","l":"Yea, with the majority"},{"k":"dot","c":"yea","hollow":true,"l":"Yea, on the losing side"},{"k":"dot","c":"nay","l":"Nay, with the majority"},{"k":"dot","c":"nay","hollow":true,"l":"Nay, on the losing side"},{"k":"dot","c":"ref","hollow":true,"l":"Absent"}]'></div>
       <div class="chart" data-draw="positions" data-source="m_splits"></div>
     </div>
 

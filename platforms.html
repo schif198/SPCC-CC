@@ -41,14 +41,14 @@
 
   <div class="card" id="pv-matrix-card">
     <h2>Campaign priorities and council activity</h2>
-    <p class="note">Ring = campaigned on it. Shade = how much they moved, argued or pushed on it in the minutes. Click a name or theme.</p>
+    <p class="note">How much each member moved, argued or pushed on each campaign theme in the minutes. Click a name or theme.</p>
     <div class="legend" aria-label="Legend">
       <span class="it"><span class="ring"></span>Campaigned on it</span>
       <span class="it"><span class="sw" style="border-radius:50%;background:#fbefe8;border:1px solid #f0d9cc"></span>None recorded</span>
       <span class="it"><span class="sw" style="border-radius:50%;background:#f8c1a4"></span>Some</span>
       <span class="it"><span class="sw" style="border-radius:50%;background:#f15a25"></span>Active</span>
       <span class="it"><span class="sw" style="border-radius:50%;background:#a33a0a"></span>Leading</span>
-      <span class="it">Number = motions and remarks</span>
+      <span class="it"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="#f15a25"/><text x="10" y="13.5" text-anchor="middle" font-size="10" font-weight="700" fill="#22182c">6</text></svg>Number = motions and remarks</span>
     </div>
     <div class="chart" style="min-height:380px" data-draw="matrix" data-source="pv_cells"></div>
   </div>
@@ -56,11 +56,13 @@
   <div class="grid2">
     <div class="card" id="pv-member">
       <div class="chips" data-draw="memberchips" data-source="pv_cells"></div>
+      <div class="dkey" data-key='[{"k":"chip","text":"None recorded","fill":"#fbefe8","tc":"#6b6478","c":"#f0d9cc"},{"k":"chip","text":"Some","fill":"#f8c1a4","tc":"#5a2306","c":"#f8c1a4"},{"k":"chip","text":"Active","fill":"#f15a25","tc":"#22182c","c":"#f15a25"},{"k":"chip","text":"Leading","fill":"#a33a0a","c":"#a33a0a","l":"= council activity on that priority"},{"k":"bar","c":"c0","pct":0.45,"l":"Motions and remarks"}]'></div>
       <div class="chart" style="min-height:300px;margin-top:12px" data-draw="member" data-source="pv_cells pv_platforms"></div>
     </div>
     <div class="card" id="pv-council">
       <h2>Council-wide: talked about vs. worked on</h2>
-      <p class="note">Navy dots = members who campaigned on it. Bar = share of all motions and remarks.</p>
+      <p class="note">What members promised, next to where the council spends its time.</p>
+      <div class="dkey" data-key='[{"k":"dots","c":"#2a0157","n":4,"of":7,"l":"Members who campaigned on it (4 of 7)"},{"k":"bar","c":"c0","pct":0.55,"l":"Share of all motions and remarks"}]'></div>
       <div class="chart" style="min-height:300px" data-draw="council" data-source="pv_theme"></div>
     </div>
   </div>

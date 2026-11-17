@@ -73,12 +73,14 @@
   <section class="grid">
     <div class="card" id="attendance">
       <h3>Participation by month</h3>
-      <p class="note">Share of that month's recorded votes each member cast. Darker is fuller participation; hover for absences.</p>
+      <p class="note">Share of that month's recorded votes each member cast. Hover a cell for absences.</p>
+      <div class="dkey" data-key='[{"k":"ramp","c":"c0","a":"50% or less","b":"100%","title":"Votes cast"},{"k":"cell","empty":true,"l":"No votes that month"}]'></div>
       <div class="chart heat" data-source="member_monthly" data-draw="heat"></div>
     </div>
     <div class="card" id="agreement">
       <h3>Who votes together on split votes</h3>
-      <p class="note">Share of split votes on which each pair voted the same way (both present). Darker means more alike.</p>
+      <p class="note">Share of split votes on which each pair voted the same way (both present).</p>
+      <div class="dkey" data-key='[{"k":"ramp","c":"c0","a":"0%","b":"100%","title":"Voted alike"},{"k":"cell","empty":true,"l":"Same member"}]'></div>
       <div class="chart heat" data-source="agreement" data-draw="agree"></div>
     </div>
   </section>
@@ -87,12 +89,13 @@
     <div class="card" id="volume">
       <h3>Agenda items decided per month</h3>
       <p class="note">Every item the council acted on, including those inside consent and legislative-hearing blocks.</p>
+      <div class="dkey" data-key='[{"k":"sw","c":"c0","l":"Agenda items decided that month"}]'></div>
       <div class="chart" data-source="monthly" data-draw="items"></div>
     </div>
     <div class="card" id="friction">
       <h3>Split votes and votes taken short-handed</h3>
       <p class="note">Per month: votes with a dissent, and votes where at least one member was absent.</p>
-      <div class="legend"><span class="sw" data-sw="1"></span>Split votes <span class="sw" data-sw="2"></span>Votes with an absence</div>
+      <div class="dkey" data-key='[{"k":"sw","c":"c1","l":"Split votes"},{"k":"sw","c":"c2","l":"Votes with an absence"}]'></div>
       <div class="chart" data-source="monthly" data-draw="friction"></div>
     </div>
   </section>
@@ -100,6 +103,7 @@
   <section id="contested">
     <h2>Every split vote</h2>
     <p class="note">Votes where at least one member voted yea and another nay, newest first.</p>
+    <div class="dkey" data-key='[{"k":"txt","ex":"<b class=\"bad\" style=\"color:#5b2a86\">Jost</b>","l":"Bold purple name = voted nay"}]'></div>
     <div class="card">
       <div class="tbl-wrap">
         <table data-source="contested" data-row-key="date,file,action">
