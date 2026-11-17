@@ -58,7 +58,7 @@
 .pb .ptile .ln { font-weight: var(--cds-font-weight-medium); }
 .pb .ptile .tx { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.45; }
 .pb .tx b { color: var(--color-fg); font-weight: 700; }
-.pb .tx .use { display: block; margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--color-border-line); }
+.pb .tx.use { padding-top: 6px; border-top: 1px dashed var(--color-border-line); }
 .pb .leads { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; line-height: 1.3; }
 .pb .leads .tag { margin: 0; font: inherit; font-size: var(--cds-font-size-caption); background: #fff; cursor: pointer; padding: 2px 9px; }
 .pb .leads .tag:hover { background: #f6f0fb; }
@@ -151,6 +151,23 @@ dialog.wd::backdrop { background: rgba(34,24,44,.45); }
 .pb .whead { font-size: 1.02rem; font-weight: 800; color: #2a0157; line-height: 1.3; }
 .pb .wcard .what { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .wd .wd-full { margin: 0 0 10px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.45; }
+.pb .ptile .leads-l { margin-top: -2px; }
+.pb .tx .inc { color: var(--color-fg); font-weight: 400; }
+.pb .tx .inc-l { font-weight: 700; color: #2a0157; }
+.pb .ptile .leads-l { min-height: 2.9em; }
+/* line up every part of the six lens cards on shared rows */
+@supports (grid-template-rows: subgrid) {
+  .pb .ptiles { grid-auto-rows: auto; row-gap: 0; }
+  .pb .ptile { display: grid; grid-row: span 7; grid-template-rows: subgrid; row-gap: var(--cds-gap-xs); margin-bottom: var(--cds-gap-md); }
+  .pb .ptile .leads-l { min-height: 0; }
+  .pb .ptile .pact { margin-top: 0; align-self: end; }
+  .pb .watch { grid-auto-rows: auto; row-gap: 0; }
+  .pb .wcard { display: grid; grid-row: span 6; grid-template-rows: subgrid; row-gap: var(--cds-gap-xs); margin-bottom: var(--cds-gap-md); align-content: start; }
+  .pb .wcard .wmore { margin-top: 0; align-self: end; }
+  .pb .cards { grid-auto-rows: auto; row-gap: 0; }
+  .pb .mcard { display: grid; grid-row: span 10; grid-template-rows: subgrid; row-gap: var(--cds-gap-xs); margin-bottom: var(--cds-gap-md); }
+  .pb .mcard > .small:last-child { align-self: end; }
+}
 [data-dash-source-state=empty] { color: transparent; }
 [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
 </style>

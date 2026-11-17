@@ -182,15 +182,13 @@
   const noteRich = (note) => {
     const tx = document.createElement('div'); tx.className = 'tx';
     const i = note.indexOf('. '); const first = i > 0 ? note.slice(0, i + 1) : note, rest = i > 0 ? note.slice(i + 2) : '';
-    const p = document.createElement('div');
-    for (const part of first.split(/(, such as |, | and | or |^Items involving )/)) {
-      if (!part) continue;
-      if (/^(, such as |, | and | or |Items involving )$/.test(part)) { p.append(part); continue; }
-      const dot = part.endsWith('.'); const b = document.createElement('b'); b.textContent = dot ? part.slice(0, -1) : part; p.appendChild(b); if (dot) p.append('.');
-    }
-    tx.appendChild(p);
-    if (rest) { const it = document.createElement('i'); it.className = 'use'; it.textContent = rest; tx.appendChild(it); }
-    return tx;
+    const items = first.replace(/\.$/, '').split(/, such as |, | and | or |^Items involving /).map((x) => x.trim()).filter(Boolean);
+    const inc = document.createElement('div'); inc.className = 'inc';
+    inc.append(Object.assign(document.createElement('span'), { className: 'inc-l', textContent: 'Includes: ' }), items.map((x, k) => k ? x : x[0].toUpperCase() + x.slice(1)).join(', '));
+    const use = document.createElement('div'); use.className = 'tx use';
+    if (rest) { const it = document.createElement('i'); it.textContent = rest; use.appendChild(it); }
+    tx.appendChild(inc);
+    return [tx, use];
   };
   dash.draw('persia', (box) => {
     const rows = ok('b_persia'); box.replaceChildren(); if (!rows) return;
@@ -218,7 +216,8 @@
         act.append(h('span', 'pon', 'Focused ✓'));
         for (const [href, txt] of [['#coalition', 'Coalition map'], ['#issues', 'Lens map']]) { const a = h('a', '', txt + ' ↓'); a.href = href; a.addEventListener('click', (e) => { e.preventDefault(); document.querySelector(href)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }); act.appendChild(a); }
       } else act.append(h('span', 'poff', 'Click to focus this lens'));
-      c.append(head, g, stats, ch, noteRich(r.note), act); box.appendChild(c);
+      ch.classList.add('leads-l');
+      c.append(head, ch, g, stats, ...noteRich(r.note), act); box.appendChild(c);
       requestAnimationFrame(() => gauge(g, r.unanimous_share === '' ? null : +r.unanimous_share, r.unanimous_share === '' ? '—' : fPct(+r.unanimous_share), 'no dissent'));
     }
   });
