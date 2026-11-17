@@ -110,6 +110,15 @@ a.sa-xl:hover { text-decoration-color: currentColor; }
 #print-sheet .ps-pip.on { background: #2a0157; }
 #print-sheet .ps-foot { margin-top: 6px; border-top: 1px solid #ddd9cf; padding-top: 4px; font-size: 7.5pt; color: #5b5a56; }
 @page { size: letter; margin: 0.4in; }
+#print-sheet .ps-links { margin: 0; padding-left: 16px; font-size: 8.4pt; line-height: 1.5; word-break: break-all; }
+#print-sheet .ps-cap { margin: -6px 0 9px; font-size: 7.5pt; color: #6b6478; }
+#print-sheet.ps-themed .ps-head { border-bottom-color: var(--ps-acc); }
+#print-sheet.ps-themed h1, #print-sheet.ps-themed h3, #print-sheet.ps-themed .ps-gh { color: var(--ps-acc-text); }
+#print-sheet.ps-themed h3 { border-bottom: 2px solid var(--ps-acc); }
+#print-sheet.ps-themed .ps-glance { border-left-color: var(--ps-acc); background: var(--ps-acc-tint); }
+#print-sheet.ps-themed .ps-kpi { border-top: 3px solid var(--ps-acc); }
+#print-sheet.ps-themed .ps-chip { border-color: var(--ps-acc); color: var(--ps-acc-text); }
+#print-sheet.ps-themed .ps-chip.strong { background: var(--ps-acc-text); border-color: var(--ps-acc-text); color: #fff; }
 @media print {
   html, body { background: #fff !important; }
   body > *:not(#print-sheet) { display: none !important; }

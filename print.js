@@ -27,6 +27,7 @@
   const section = (title, ...kids) => { const s = el('section', 'ps-sec'); s.appendChild(el('h3', '', title)); kids.forEach((k) => k && s.appendChild(k)); return s; };
   const cols = (...kids) => { const c = el('div', 'ps-cols'); kids.forEach((k) => c.appendChild(k)); return c; };
   const note = (t) => el('p', 'ps-note', t);
+  const note2 = (t) => el('p', 'ps-cap', t);
   const chip = (t, strong) => el('span', 'ps-chip' + (strong ? ' strong' : ''), t);
   const bar = (v, max = 1, color = ACC, label) => {
     const w = el('div', 'ps-bar'); const t = el('div', 'ps-track'); const f = el('div', 'ps-fill');
@@ -69,6 +70,54 @@
 
   // ---------- one builder per dashboard ----------
   const B = {
+    // one business item from "Business items on the next agenda" (set by the pop-up's print button)
+    item(S) {
+      const r = window.__PRINT_ITEM__; if (!r) return;
+      const hist = rows('b_watch_hist').filter((x) => x.file === r.file).sort((a, b) => a.date.localeCompare(b.date));
+      const iss = rows('b_issues').find((x) => x.issue === r.issue);
+      const im = rows('b_issue_member').filter((x) => x.issue === r.issue && +x.lead > 0).sort((a, b) => +b.lead - +a.lead);
+      const full = hist.length ? hist[hist.length - 1].title : r.item;
+      const prev = (s) => { const d = new Date(s + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() - 1); return d3.utcFormat('%A, %B %-d')(d); };
+      const u = iss && iss.unanimous_share !== '' ? +iss.unanimous_share : null;
+      const PB = window.__PB__; if (PB) S.accent = PB.issueColor(r.issue);
+      S.title = r.short || cut(full, 80);
+      S.sub = `${r.file} · ${r.stage} on ${dlong(r.next_meeting)} · ${r.issue}`;
+      S.add(glance([
+        `${r.stage} on ${dlong(r.next_meeting)}. Written comments are due by noon ${prev(r.next_meeting)}.`,
+        r.last_tally === 'no roll call yet' ? 'No roll-call vote yet.' : `Last roll call ${r.last_tally} on ${dfmt(r.last_action_date)}.`,
+        u != null && (u < 1 ? `${r.issue} items have split the council ${int(iss.splits)} time${+iss.splits === 1 ? '' : 's'} this year, so early outreach can change the outcome.` : `${r.issue} items have passed unanimously all year, so shape the details before the final vote.`),
+        im.length && `Call first: ${im.slice(0, 2).map((x) => x.member).join(' and ')}, who carry the most ${r.issue.toLowerCase()} items.`,
+        r.persia && `Frame the ask through the ${r.persia.replace(' · ', ' and ')} lens${r.persia.includes('·') ? 'es' : ''}.`,
+      ]));
+      S.add(kpis([
+        ['Next step', dfmt(r.next_meeting), r.stage],
+        ['Before the council', hist.length ? `${hist.length}×` : '—', hist.length ? `since ${dfmt(hist[0].date)}` : ''],
+        ['Last roll call', r.last_tally === 'no roll call yet' ? '—' : r.last_tally, r.last_tally === 'no roll call yet' ? 'none yet' : dfmt(r.last_action_date)],
+        ['Issue with no dissent', u == null ? '—' : pct(u), iss ? `${int(iss.splits)} split this year` : ''],
+      ]));
+      S.add(section('Official title', el('p', 'ps-note', full)));
+      if (hist.length) S.add(section('How it got here', grid([
+        { h: 'Date', w: '.6fr', cell: (x) => dfmt(x.date), cls: 'b' },
+        { h: 'Action', w: '1.6fr', cell: (x) => x.action || 'On the agenda' },
+        { h: 'Vote', w: '.45fr', cell: (x) => x.tally || '—', cls: 'n' },
+        { h: 'Remarks and changes', w: '2.4fr', cell: (x) => cut(x.notes, 220) || '—' },
+      ], hist)));
+      if (im.length) {
+        const mx = +im[0].lead || 1;
+        S.add(section(`Who carries ${r.issue.toLowerCase()} items`, grid([
+          { h: 'Member', w: '1fr', cell: (x) => x.member, cls: 'b' },
+          { h: 'Motions and remarks', w: '2.2fr', cell: (x) => bar(x.lead, mx, S.accent || ACC, int(x.lead)) },
+          { h: 'Pushback', w: '.7fr', cell: (x) => int(x.pushback), cls: 'n' },
+        ], im.slice(0, 7))));
+      }
+      const base = location.href.replace(/[#?].*$/, '').replace(/[^/]*$/, '');
+      const links = el('ul', 'ps-links');
+      const last = hist[hist.length - 1];
+      if (last) links.appendChild(el('li', '', `Latest minutes (${dfmt(last.date)}): ${base}minutes/${encodeURI(last.pdf)}`));
+      links.appendChild(el('li', '', `Every mention in the minutes library: ${base}library.html#q=${encodeURIComponent(r.file)}`));
+      links.appendChild(el('li', '', `Full text and attachments: ${window.__LEGISTAR__ || 'https://stpaul.legistar.com/Legislation.aspx'} (search “${r.file}”)`));
+      S.add(section('Read more', links));
+    },
     trends(S) {
       const t = rows('totals')[0] || {}, mem = rows('members'), mon = rows('monthly'), con = rows('contested');
       const ag = rows('agreement').filter((r) => r.a < r.b && +r.n > 0).sort((x, y) => +y.share - +x.share || +y.n - +x.n);
@@ -177,6 +226,58 @@
 
     playbook(S) {
       const k = rows('b_kpis')[0] || {}, watch = rows('b_watch'), bm = rows('b_members'), lens = rows('b_persia'), iss = rows('b_issues');
+      const PB = window.__PB__, L = PB && PB.F.lens;
+      if (L) {
+        const C = PB.lensColor(L); S.accent = C;
+        const lr = lens.find((r) => r.lens === L) || {};
+        const sel = PB.member(), me = sel && sel !== 'All' ? sel : null;
+        const pm = rows('b_persia_member').filter((r) => r.lens === L).sort((a, b) => +b.index - +a.index);
+        const inLens = watch.filter((w) => (w.persia || '').split(' · ').includes(L));
+        const lnote = String(lr.note || ''); const i = lnote.indexOf('. ');
+        const inc = (i > 0 ? lnote.slice(0, i) : lnote).split(/, such as |, | and | or |^Items involving /).map((x) => x.trim()).filter(Boolean);
+        const use = i > 0 ? lnote.slice(i + 2) : '';
+        const u = num(lr.unanimous_share);
+        S.title = `Chamber playbook: the ${L} lens`;
+        S.sub = `PERSIA focus · business decisions, coalitions and timing · ${span}`;
+        S.add(glance([
+          `${int(lr.votes)} votes read through the ${L} lens this year; ${pct(lr.unanimous_share)} passed with no dissent and ${int(lr.splits)} split.`,
+          pm.length && `Works this lens most: ${pm.slice(0, 3).map((r) => `${r.member} (${d3.format('.1f')(+r.index)}×)`).join(', ')} the council's average share.`,
+          lr.champion_1 && `Leads on it: ${lr.champion_1} (${int(lr.champion_1_n)}) and ${lr.champion_2} (${int(lr.champion_2_n)}).`,
+          inLens.length ? `Next meeting ${dlong(k.next_meeting)}: ${inLens.length} of ${watch.length} returning business item${watch.length === 1 ? '' : 's'} read through this lens (${inLens.map((w) => w.file).join(', ')}).` : `None of the ${watch.length} business items returning ${dlong(k.next_meeting)} read through this lens.`,
+          use,
+        ]));
+        S.add(kpis([
+          [`${L} votes`, int(lr.votes)], ['No dissent', pct(lr.unanimous_share)], ['Split', int(lr.splits)],
+          ['Next-agenda items', `${inLens.length}/${watch.length}`, 'in this lens'], ['Top member', pm[0] ? pm[0].member : '—', pm[0] ? d3.format('.1f')(+pm[0].index) + '× council share' : ''],
+        ]));
+        S.add(section(`What the ${L} lens includes`, lnote ? el('p', 'ps-note', inc.map((x, j) => j ? x : x[0].toUpperCase() + x.slice(1)).join(', ') + '.') : null));
+        const imax = Math.max(1.5, d3.max(pm, (r) => +r.index) || 1);
+        const coal = new Map(bm.map((r) => [r.member, r]));
+        S.add(section(`Who works the ${L} lens${me ? ` · ${me} highlighted` : ''}`, grid([
+          { h: 'Member', w: '.9fr', cell: (r) => r.member === me ? chip(`▶ ${r.member}`, true) : r.member, cls: 'b' },
+          { h: 'Share of their agenda vs council', w: '2fr', cell: (r) => bar(r.index, imax, C, d3.format('.1f')(+r.index) + '×') },
+          { h: 'Motions/remarks', w: '.8fr', cell: (r) => int(r.lead), cls: 'n' },
+          { h: 'Nay', w: '.45fr', cell: (r) => int(r.nay), cls: 'n' },
+          { h: 'Absent', w: '.55fr', cell: (r) => int(r.absent), cls: 'n' },
+          { h: 'Pushback', w: '.7fr', cell: (r) => int(r.pushback), cls: 'n' },
+          { h: 'Coalition', w: '1.3fr', cell: (r) => coal.get(r.member) ? chip(coal.get(r.member).coalition, !coal.get(r.member).coalition.startsWith('Usually')) : '—' },
+        ], pm)));
+        S.add(note2(`Share = how much of a member's own motions and remarks fall in this lens compared with the council as a whole (1.0× = average).`));
+        S.add(section(`On the next agenda through the ${L} lens${k.next_meeting ? ' · ' + dlong(k.next_meeting) : ''}`, inLens.length ? grid([
+          { h: 'File', w: '.7fr', cell: (r) => r.file, cls: 'b' },
+          { h: 'Item', w: '2.6fr', cell: (r) => cut(r.short || r.item, 70) },
+          { h: 'Issue', w: '1.3fr', cell: (r) => r.issue },
+          { h: 'Stage', w: '.9fr', cell: (r) => r.stage },
+          { h: 'Last vote', w: '.6fr', cell: (r) => r.last_tally || '—' },
+        ], inLens) : note('No returning business items read through this lens; see the full playbook for the rest.')));
+        S.add(section('How this lens compares', grid([
+          { h: 'Lens', w: '1fr', cell: (r) => r.lens === L ? chip(`▶ ${r.lens}`, true) : r.lens, cls: 'b' },
+          { h: 'Votes · split', w: '2fr', cell: (r) => bar(r.votes, d3.max(lens, (x) => +x.votes) || 1, r.lens === L ? C : '#cfc9d8', `${r.votes} · ${r.splits}`) },
+          { h: 'No dissent', w: '.8fr', cell: (r) => pct(r.unanimous_share), cls: 'n' },
+          { h: 'Leads', w: '1.6fr', cell: (r) => [r.champion_1, r.champion_2].filter((x) => x && x !== NA).join(', ') || '—' },
+        ], lens)));
+        return;
+      }
       S.sub = `Business-related decisions, coalitions and timing · ${span}`;
       const usual = bm.filter((r) => r.coalition.startsWith('Usually')).map((r) => r.member);
       S.add(glance([
@@ -352,11 +453,16 @@
 
   // ---------- assemble, fit to one page, print ----------
   const PAGE_W = 739, PAGE_H = 965; // US letter at 96 dpi with 0.4in margins
-  const build = () => {
+  const build = (kind) => {
     document.getElementById('print-sheet')?.remove();
     const root = el('div'); root.id = 'print-sheet';
     const S = { title: document.title, sub: '', body: el('div', 'ps-body'), add(x) { this.body.appendChild(x); } };
-    B[KIND](S);
+    B[typeof kind === 'string' ? kind : KIND](S);
+    if (S.accent) {
+      const c = d3.color(S.accent), dark = d3.hsl(S.accent); dark.l = Math.min(dark.l, 0.32);
+      root.classList.add('ps-themed'); root.style.setProperty('--ps-acc', c.formatHex()); root.style.setProperty('--ps-acc-text', dark.formatHex());
+      const tint = d3.color(S.accent); tint.opacity = 0.1; root.style.setProperty('--ps-acc-tint', tint.formatRgb());
+    }
     const head = el('header', 'ps-head'); const hl = el('div');
     hl.appendChild(el('h1', '', S.title)); if (S.sub) hl.appendChild(el('div', 'ps-sub', S.sub));
     head.appendChild(hl);
@@ -380,6 +486,8 @@
   if (btn) btn.addEventListener('click', () => { build(); requestAnimationFrame(() => setTimeout(() => window.print(), 60)); });
   window.addEventListener('afterprint', () => document.getElementById('print-sheet')?.remove());
   window.__buildPrintSheet = build;
+  // print a one-pager for a single next-agenda item
+  window.__printItem = (r) => { window.__PRINT_ITEM__ = r; build('item'); requestAnimationFrame(() => setTimeout(() => window.print(), 60)); };
   // the same takeaways, for the "At a glance" box at the top of the page
   window.__glance = () => {
     lastGlance = [];

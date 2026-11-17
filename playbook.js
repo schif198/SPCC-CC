@@ -81,6 +81,7 @@
     const t = h('h2', 'wd-t', r.short || full.replace(/\.$/, '')); const ft = h('p', 'wd-full', full);
     const chips = h('div', 'wd-chips'); const ic = h('span', 'tag', r.issue); ic.style.borderColor = issueColor(r.issue); chips.appendChild(ic); lensChips(chips, r.persia);
     top.append(x, kick, t, ft, chips); dlg.appendChild(top);
+    let pbSlot = h('div', 'wd-actions'); top.appendChild(pbSlot);
 
     const body = h('div', 'wd-body');
     // summary
@@ -136,6 +137,15 @@
     const lg = linkTo(window.__LEGISTAR__ || 'https://stpaul.legistar.com/Legislation.aspx', 'Full text and attachments on the city’s Legistar site ↗', true); links.appendChild(lg);
     rm.appendChild(links);
     rm.appendChild(h('p', 'wd-hint', `On Legistar, search for “${r.file}” to see the ordinance text, staff report and attachments.`));
+    const pb = h('button', 'wd-print', ''); pb.type = 'button';
+    pb.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg><span>Print one-pager</span>';
+    pb.addEventListener('click', () => {
+      if (!window.__printItem) return;
+      dlg.close();
+      window.addEventListener('afterprint', () => openWatch(r), { once: true });
+      window.__printItem(r);
+    });
+    pbSlot.appendChild(pb);
     body.appendChild(rm);
     dlg.appendChild(body);
     dlg.showModal(); x.focus();
@@ -168,6 +178,7 @@
   };
   // ---------- shared focus: one PERSIA lens and/or one business issue at a time ----------
   const F = { lens: null, issue: null };
+  window.__PB__ = { F, lensColor: (l) => lensColor(l), issueColor: (i) => issueColor(i), member: () => cur(), LENSES };
   const refocus = () => dash.setParams({});
   const dimmed = (m, l, key) => (cur() !== 'All' && m && m !== cur()) || (F[key] && l && l !== F[key]);
   (() => { // CSS for focusing one lens in the coalition radars
