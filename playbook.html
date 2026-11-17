@@ -65,6 +65,9 @@
 .pb .mcard { position: relative; }
 .pb .mcard:focus-visible { outline: 3px solid #f15a25; }
 .pb .mcard[aria-pressed=true] { outline: 3px solid #2a0157; box-shadow: 0 8px 24px rgba(42,1,87,.18); }
+.pb .ghost-key { display: flex; align-items: center; gap: 8px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 6px 0 2px; }
+.pb .ghost-key svg { flex: none; }
+.pb .ghost-key b { color: var(--color-fg); }
 .pb .lenspick { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: var(--cds-font-size-caption); }
 .pb .lenspick .lp-l { color: var(--color-fg-muted); margin-right: 2px; }
 .pb .lenspick button { font: inherit; font-size: var(--cds-font-size-caption); border: 1.5px solid var(--color-border-line); background: #fff; color: var(--color-fg); border-radius: 999px; padding: 3px 11px; cursor: pointer; }
@@ -213,6 +216,7 @@ dialog.wd::backdrop { background: rgba(34,24,44,.45); }
     <h2>Coalition map</h2>
     <p class="note">Gauge = how often they side with the majority. Bars = business activity and pushback. Hexagon = their PERSIA profile. <b>Hover or click a letter</b> to focus one lens on every card; <b>click a card</b> to spotlight that member across the page.</p>
     <div class="lenspick" data-draw="lenspick" data-source="b_persia_member"></div>
+    <div class="ghost-key"><svg width="26" height="18" viewBox="0 0 26 18" aria-hidden="true"><polygon points="13,1 24,5.5 24,12.5 13,17 2,12.5 2,5.5" fill="#8c8577" fill-opacity=".16" stroke="#8c8577" stroke-width="1.2" stroke-dasharray="4 3"/></svg><span><b>Gray dashed hexagon</b> = an even spread (the council's average share on every lens). Points <b>outside</b> it get more of that member's attention than average; points <b>inside</b> get less.</span></div>
     <div class="cards" data-draw="cards" data-source="b_members b_persia_member"></div>
   </section>
 

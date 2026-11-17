@@ -319,11 +319,17 @@
     box.replaceChildren();
     const W = Math.max(180, box.clientWidth), R = Math.max(34, Math.min(W / 2 - 40, 56)), cx = W / 2, cy = R + 28, H = cy + R + 28 + 20;
     const svg = d3.select(box).append('svg').attr('class', 'rad').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('height', H);
-    const maxV = 2.5, ang = (i) => -Math.PI / 2 + (i * 2 * Math.PI) / LENSES.length;
-    const pt = (i, v) => [cx + R * Math.min(v, maxV) / maxV * Math.cos(ang(i)), cy + R * Math.min(v, maxV) / maxV * Math.sin(ang(i))];
-    for (const ring of [1, 2]) svg.append('polygon').attr('points', LENSES.map((_, i) => pt(i, ring).join(',')).join(' ')).attr('fill', 'none').attr('stroke', ring === 1 ? 'var(--cds-chart-reference)' : 'var(--cds-chart-grid)').attr('stroke-dasharray', ring === 1 ? '3 3' : null);
+    const ang = (i) => -Math.PI / 2 + (i * 2 * Math.PI) / LENSES.length;
+    // radius grows as v / (v + 1): the even spread (1.0×) sits well inside, 2× and 3× spread out, and very large values stop at the rim
+    const rad = (v) => Math.min(R, R * Math.max(0, v) / (Math.max(0, v) + 1) * 1.25);
+    const pt = (i, v) => [cx + rad(v) * Math.cos(ang(i)), cy + rad(v) * Math.sin(ang(i))];
+    svg.append('polygon').attr('points', LENSES.map((_, i) => pt(i, 2).join(',')).join(' ')).attr('fill', 'none').attr('stroke', 'var(--cds-chart-grid)');
+    // ghost underlay: an even spread, matching the council's average share on every lens (1.0×)
+    svg.append('polygon').attr('class', 'ghost').attr('points', LENSES.map((_, i) => pt(i, 1).join(',')).join(' '))
+      .attr('fill', '#8c8577').attr('fill-opacity', 0.16).attr('stroke', '#8c8577').attr('stroke-width', 1.2).attr('stroke-dasharray', '4 3')
+      .append('title').text('Even spread: the council-average share on every lens (1.0×)');
     const vals = LENSES.map((l) => { const r = rows.find((x) => x.lens === l); return r ? +r.index : 0; });
-    LENSES.forEach((l, i) => { const [x, y] = pt(i, maxV); svg.append('line').attr('data-l', l).attr('x1', cx).attr('y1', cy).attr('x2', x).attr('y2', y).attr('stroke', 'var(--cds-chart-grid)'); });
+    LENSES.forEach((l, i) => { const [x, y] = [cx + R * Math.cos(ang(i)), cy + R * Math.sin(ang(i))]; svg.append('line').attr('data-l', l).attr('x1', cx).attr('y1', cy).attr('x2', x).attr('y2', y).attr('stroke', 'var(--cds-chart-grid)'); });
     svg.append('polygon').attr('class', 'shape').attr('points', vals.map((v, i) => pt(i, v).join(',')).join(' ')).attr('fill', dash.colors[0]).attr('fill-opacity', 0.22).attr('stroke', dash.colors[0]).attr('stroke-width', 2).attr('stroke-linejoin', 'round');
     LENSES.forEach((l, i) => {
       const [lx, ly] = [cx + (R + 14) * Math.cos(ang(i)), cy + (R + 14) * Math.sin(ang(i))];
