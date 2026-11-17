@@ -181,3 +181,24 @@ h1, h2 { letter-spacing: -.01em; }
 .hm-strip .hm-s + .hm-s { border-left: 1px solid #d3c1e6 !important; }
 .hm-strip .hm-sv { font-weight: 600; color: #2a0157; }
 @media (max-width: 760px) { .hm-strip .hm-s + .hm-s { border-left: 0 !important; border-top: 1px solid #d3c1e6 !important; } }
+
+/* home: the latest minutes open straight from the information bar */
+.hm-strip .hm-open { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; font-size: .85rem; font-weight: 700; color: #fff; background: #2a0157; border-radius: 8px; padding: 5px 12px; text-decoration: none; }
+.hm-strip .hm-open:hover { background: #3d0a78; }
+.hm-strip .hm-open:focus-visible { outline: 3px solid #f15a25; outline-offset: 2px; }
+/* Help sits apart from the menus */
+.sa-help { margin-left: 2px; }
+/* guiding reminders on the voting and campaign pages */
+.sa-guide { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; margin: 10px 0 14px; padding: 12px 16px; background: #fff; border: 1px solid #e7e3ee; border-left: 4px solid #2a0157; border-radius: 10px; font-size: .9rem; line-height: 1.45; }
+.sa-guide-t { flex: 1 1 30rem; min-width: 0; }
+.sa-guide-t p { margin: 0; color: var(--color-fg); }
+.sa-guide-t p + p { margin-top: 4px; color: #4d4558; }
+.sa-guide-t b { color: #2a0157; margin-right: 4px; }
+.sa-guide-l { display: flex; flex-wrap: wrap; gap: 8px; flex: 0 1 auto; }
+.sa-guide-l a { display: flex; flex-direction: column; gap: 1px; text-decoration: none; border: 1.5px solid #2a0157; border-radius: 8px; padding: 6px 12px; min-width: 11rem; }
+.sa-guide-l a span { font-size: .75rem; color: #6b6478; }
+.sa-guide-l a b { color: #2a0157; font-size: .9rem; }
+.sa-guide-l a:hover { background: #f6f0fb; }
+.sa-guide-l a:focus-visible { outline: 3px solid #f15a25; outline-offset: 2px; }
+@media (max-width: 640px) { .sa-guide-l a { min-width: 0; flex: 1 1 100%; } }
+@media print { .sa-guide { display: none !important; } }

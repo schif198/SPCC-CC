@@ -5,6 +5,7 @@ Optional environment: GITHUB_REPOSITORY (owner/repo) and GITHUB_REF_NAME (branch
 both are set automatically inside GitHub Actions.
 """
 import csv, datetime, html, io, json, os, re, shutil
+from urllib.parse import quote
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'build', 'out')
@@ -59,10 +60,23 @@ GROUPS = [
                             ('course-of-action.html#tab=search', 'Topic search', 'A plan for any issue you type in'),
                             ('course-of-action.html#tab=priorities', 'Chamber priorities', 'Where each Chamber priority stands')]),
                           ('playbook.html', 'Chamber playbook', 'Business items, coalitions and timing')]),
-    ('Minutes & help', [('library.html', 'Minutes library', 'Every meeting, with the original PDFs'),
-                        ('library.html#upload', 'Add new minutes', 'Upload the latest minutes PDF'),
-                        ('glossary.html', 'Glossary', 'What the terms on this site mean')]),
+    ('Meeting minutes', [('@latest', 'Latest minutes', 'Open the newest meeting minutes (PDF)'),
+                         ('library.html', 'Minutes library', 'Every meeting, with the original PDFs'),
+                         ('library.html#upload', 'Add new minutes', 'Upload the latest minutes PDF')]),
 ]
+HELP = ('glossary.html', 'Help', 'Glossary: what the terms on this site mean')
+LATEST_PDF = ''  # set in main() to the newest minutes file
+GUIDES = {
+    'voting-trends.html': ('The council as a whole: how often it agrees, where it splits, and which members vote together.',
+                           'This is the voting record only. It does not show what members promised voters.',
+                           [('platforms.html', 'Compare votes with campaign promises', 'Platforms vs. votes'), ('member-by-member.html', 'See one member in detail', 'Members')]),
+    'member-by-member.html': ('One member’s record: their votes, absences, allies and the topics they raise.',
+                              'Votes show what happened, not why or what was promised. Check the campaign side before drawing conclusions.',
+                              [('platforms.html', 'This member’s campaign vs. their record', 'Platforms vs. votes'), ('voting-trends.html', 'The whole council', 'Voting trends')]),
+    'platforms.html': ('What each member campaigned on, side by side with what they work on at the council.',
+                       'It measures council activity on each campaign theme (motions, remarks and votes), not whether a promise was kept. Check the voting record before drawing conclusions.',
+                       [('member-by-member.html', 'This member’s full voting record', 'Members'), ('voting-trends.html', 'How the whole council votes', 'Voting trends')]),
+}
 PAGE_INFO = {
     'voting-trends.html': ('Council record', 'Voting trends', 'How does the council vote as a whole?'),
     'member-by-member.html': ('Council record', 'Members', 'How does each member vote, and who do they vote with?'),
@@ -88,7 +102,7 @@ GLOSSARY = [
 ]
 GLOSSARY_JS = [dict(id=i, term=t, rx=rx, df=d) for i, t, rx, d in GLOSSARY]
 for g in GLOSSARY_JS: g['def'] = g.pop('df')
-SEARCH_PAGES = [dict(href=it[0], title=it[1], desc=it[2]) for _, items in GROUPS for it in items] + \
+SEARCH_PAGES = [dict(href=HELP[0], title='Glossary', desc=HELP[2])] + [dict(href=it[0], title=it[1], desc=it[2]) for _, items in GROUPS for it in items if not it[0].startswith('@')] + \
     [dict(href=h, title=t, desc=desc) for _, items in GROUPS for it in items if len(it) > 3 for h, t, desc in it[3] if t != it[1]]
 
 
@@ -111,13 +125,17 @@ def nav(current, printable):
                 links += (f'<div class="sa-subg open"><div class="sa-subh"><a href="{h}"{cur if here else ""}><b>{t}</b><span>{desc}</span></a>'
                           f'<button class="sa-sub-b" type="button" aria-expanded="true" aria-label="Show or hide the {t} sections"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></div>'
                           f'<div class="sa-sub">{sub}</div></div>')
+            elif h == '@latest':
+                if LATEST_PDF:
+                    links += f'<a href="minutes/{quote(LATEST_PDF)}" target="_blank" rel="noopener"><b>{t} ↗</b><span>{desc}</span></a>'
             else:
                 links += f'<a href="{h}"{cur if h == current else ""}><b>{t}</b><span>{desc}</span></a>'
         grp += f'<div class="sa-grp{" cur" if on else ""}"><button class="sa-grp-b" type="button" aria-expanded="false">{name}</button><div class="sa-grp-p">{links}</div></div>'
     pr = f'<button id="sa-print" class="sa-btn" type="button" title="Print a one-page summary of what this page shows">{PRINT_ICON}Print one-pager</button>' if printable else ''
     return (f'<nav class="sa-nav" aria-label="Site"><a class="brand" href="index.html" aria-label="St. Paul Area Chamber: council dashboards home">St. Paul Area Chamber</a>'
             f'<button class="sa-toggle" type="button" aria-expanded="false">Menu</button>'
-            f'<div class="sa-menu"><a class="sa-home" href="index.html"{cur if current == "index.html" else ""}>Home</a>{grp}</div>'
+            f'<div class="sa-menu"><a class="sa-home" href="index.html"{cur if current == "index.html" else ""}>Home</a>{grp}'
+            f'<a class="sa-home sa-help" href="{HELP[0]}" title="{HELP[2]}"{cur if current == HELP[0] else ""}>{HELP[1]}</a></div>'
             f'<form class="sa-search" role="search" autocomplete="off"><input type="search" placeholder="Search members, items, topics" aria-label="Search the site"><div class="sa-sugg" role="listbox" hidden></div></form>'
             f'<div class="act"><a class="sa-btn ghost" href="{LEGISTAR}" target="_blank" rel="noopener" title="The city’s official list of City Council meetings, agendas and minutes">Legistar ↗</a>{pr}</div></nav>')
 
@@ -131,7 +149,13 @@ def template(page, out=None):
     if out in PAGE_INFO:
         group, title, ask = PAGE_INFO[out]
         page = re.sub(r'<p class="(lede|sub)">.*?</p>', '', page, count=1, flags=re.S)
-        top = (f'<div class="sa-crumb">{group}</div><h1>{title}</h1><p class="sa-ask">{ask}</p>'
+        guide = ''
+        if out in GUIDES:
+            use, mind, links = GUIDES[out]
+            ls = ''.join(f'<a href="{h}" data-carry="member"><span>{lbl}</span><b>{pg} →</b></a>' for h, lbl, pg in links)
+            guide = (f'<aside class="sa-guide" aria-label="How to use this page"><div class="sa-guide-t">'
+                     f'<p><b>Use this page for</b> {use}</p><p><b>Keep in mind</b> {mind}</p></div><div class="sa-guide-l">{ls}</div></aside>')
+        top = (f'<div class="sa-crumb">{group}</div><h1>{title}</h1><p class="sa-ask">{ask}</p>{guide}'
                f'<div id="sa-glance" class="sa-glance" aria-live="polite" hidden></div>')
         page = re.sub(r'<h1>.*?</h1>', lambda m: top, page, count=1, flags=re.S)
     return page
@@ -449,7 +473,7 @@ def library(meetings):
 
 
 def home(meetings):
-    latest = meetings[0] if meetings else None
+    latest = max(meetings, key=lambda m: m['date']) if meetings else None
     watch = list(csv.DictReader(open(os.path.join(OUT, 'b_watch.csv'))))
     mem = list(csv.DictReader(open(os.path.join(OUT, 'c_members.csv'))))
     t = totals
@@ -465,7 +489,8 @@ def home(meetings):
     if latest:
         ab = f'Absent: {esc(latest["absent"])}' if latest['absent'] else 'All members present'
         last = (f'<div class="hm-s"><div class="hm-sl">Latest minutes</div><div class="hm-sv">{d(latest["date"], "%a, %b %d")}</div>'
-                f'<div class="hm-ss">{latest["votes"]} vote{'' if int(latest["votes"]) == 1 else 's'} · {latest["splits"]} split · {ab}</div></div>')
+                f'<div class="hm-ss">{latest["votes"]} vote{'' if int(latest["votes"]) == 1 else 's'} · {latest["splits"]} split · {ab}</div>'
+                f'<a class="hm-open" href="minutes/{quote(latest["file"])}" target="_blank" rel="noopener">Open the minutes (PDF) <span aria-hidden="true">↗</span></a></div>')
     else:
         last = ''
     nxt = (f'<div class="hm-s"><div class="hm-sl">Next meeting</div><div class="hm-sv">{d(NEXT, "%a, %b %d") if NEXT else "Not yet set"}</div>'
@@ -535,7 +560,7 @@ def glossary():
     rows = ''.join(f'<div class="gl-row" id="{i}"><dt>{esc(t)}</dt><dd>{esc(df)}</dd></div>' for i, t, _, df in GLOSSARY)
     body = f"""{nav('glossary.html', False)}
 <main class="gl">
-  <div class="sa-crumb">Minutes &amp; help</div>
+  <div class="sa-crumb">Help</div>
   <h1>Glossary</h1>
   <p class="sa-ask">What the terms on this site mean. Look for the <span class="sa-gl" aria-hidden="true">i</span> next to a term on any page.</p>
   <dl>{rows}</dl>
@@ -557,6 +582,8 @@ def main():
     os.makedirs(os.path.join(SITE, 'minutes'))
     lib = json.load(open(os.path.join(OUT, 'meetings.json')))
     meetings = lib['meetings']
+    global LATEST_PDF
+    LATEST_PDF = max(meetings, key=lambda m: m['date'])['file'] if meetings else ''
     for m in meetings:
         shutil.copy(os.path.join(ROOT, 'minutes', m['file']), os.path.join(SITE, 'minutes', m['file']))
         m.pop('txt', None)

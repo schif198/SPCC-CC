@@ -124,6 +124,11 @@
     document.querySelector('.sa-nav')?.classList.remove('menu-open');
   }));
   if (window.dash) dash.afterDraw(markSub); markSub();
+  // guide links between the voting and campaign pages keep the member you are looking at
+  $$('.sa-guide a[data-carry=member]').forEach((a) => a.addEventListener('click', () => {
+    const m = window.dash && dash.params().member;
+    if (m && m !== 'All') a.href = a.getAttribute('href').split('#')[0] + '#member=' + encodeURIComponent(m);
+  }));
   // links that only change the #part of this page update the view
   window.addEventListener('hashchange', () => {
     if (!window.dash) return;
