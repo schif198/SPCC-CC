@@ -134,7 +134,7 @@ h1, h2 { letter-spacing: -.01em; }
 .sa-glance { background: #fff !important; border-left-color: #f15a25 !important; box-shadow: 0 6px 18px rgba(42,1,87,.06); border-radius: 10px; }
 /* cards: crisp white with soft shadows */
 #dash-root .card, #dash-root .kpi, #dash-root .tile, #dash-root .meter, #dash-root .plan, #dash-root .mcard, #dash-root .pcard, #dash-root details,
-.lib-card, .lib-stats div, .hm-task, .hm-s, .hm-links a { border-radius: 10px !important; box-shadow: 0 1px 2px rgba(42,1,87,.05), 0 6px 18px rgba(42,1,87,.05); }
+.lib-card, .lib-stats div, .hm-task, .hm-links a { border-radius: 10px !important; box-shadow: 0 1px 2px rgba(42,1,87,.05), 0 6px 18px rgba(42,1,87,.05); }
 #dash-root .chip, #dash-root .tab, .lib-chip, .hm-chip { border-radius: 8px !important; }
 #dash-root .chip[aria-pressed=true], .lib-chip[aria-pressed=true] { background: #2a0157 !important; border-color: #2a0157 !important; color: #fff !important; }
 /* home: gradient band like the annual report cover */
@@ -165,3 +165,10 @@ h1, h2 { letter-spacing: -.01em; }
 .sa-grp-p .sa-sub a { padding: 6px 10px; }
 .sa-grp-p .sa-sub a b { font-weight: 600; font-size: .92rem; }
 .sa-grp-p .sa-sub a[aria-current] { background: #fdf3ee; box-shadow: inset 3px 0 0 #f15a25; }
+
+/* home: the three facts read as one information bar, not as buttons */
+.hm-strip { gap: 0 !important; background: #efe7f7; border: 1px solid #d9c9ea; border-radius: 12px; padding: 4px 0; box-shadow: none; }
+.hm-strip .hm-s { background: none !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; padding: 10px 20px; cursor: default; user-select: text; }
+.hm-strip .hm-s + .hm-s { border-left: 1px solid #d3c1e6 !important; }
+.hm-strip .hm-sv { font-weight: 600; color: #2a0157; }
+@media (max-width: 760px) { .hm-strip .hm-s + .hm-s { border-left: 0 !important; border-top: 1px solid #d3c1e6 !important; } }
