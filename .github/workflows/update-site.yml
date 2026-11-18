@@ -44,10 +44,11 @@ jobs:
             find . -path ./.git -prune -o -path ./_project -prune -o -type f -name '*.py' -print0 | while IFS= read -r -d '' f; do cp "$f" "$dir/pipeline/"; done
             for n in library.js upload.js print.js shim.js site.css site.js theme.css; do f=$(pick "$n"); [ -n "$f" ] && cp "$f" "$dir/web/"; done
             for n in d3.min.js pdfjs.min.js pdfjs.worker.min.js montserrat-latin-400-normal.woff2 montserrat-latin-500-normal.woff2 montserrat-latin-600-normal.woff2 montserrat-latin-700-normal.woff2 montserrat-latin-800-normal.woff2 chamber-logo.png favicon.png; do f=$(pick "$n"); [ -n "$f" ] && cp "$f" "$dir/web/vendor/"; done
-            for n in course-of-action.html course-of-action.js member-by-member.html member-by-member.js playbook.html playbook.js voting-trends.html platforms.html platforms.js; do
-              f=$(pick "$n"); [ -n "$f" ] && cp "$f" "$dir/web/pages/"
+            # every other .html and .js file is a dashboard page; every .csv is an editable narrative file
+            find . -path ./.git -prune -o -path ./_project -prune -o -type f \( -name '*.html' -o -name '*.js' \) -print0 | while IFS= read -r -d '' f; do
+              case "$(basename "$f")" in library.js|upload.js|print.js|shim.js|site.js|d3.min.js|pdfjs.min.js|pdfjs.worker.min.js) ;; *) cp "$f" "$dir/web/pages/";; esac
             done
-            for n in c_members_text.csv c_priorities.csv platforms.csv; do f=$(pick "$n"); [ -n "$f" ] && cp "$f" "$dir/narrative/"; done
+            find . -path ./.git -prune -o -path ./_project -prune -o -type f -name '*.csv' -print0 | while IFS= read -r -d '' f; do cp "$f" "$dir/narrative/"; done
             find . -path ./.git -prune -o -path ./_project -prune -o -type f -iname '*.pdf' -print0 | while IFS= read -r -d '' f; do cp "$f" "$dir/minutes/"; done
             first_pdf=$(find . -path ./.git -prune -o -path ./_project -prune -o -type f -iname '*.pdf' -print | head -1)
             up=$(dirname "${first_pdf:-./x}"); up=${up#./}; [ "$up" = "." ] && up=""
