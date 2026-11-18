@@ -71,14 +71,11 @@ GROUPS = [
                             ('course-of-action.html#tab=search', 'Topic search', 'A plan for any issue you type in'),
                             ('course-of-action.html#tab=priorities', 'Chamber priorities', 'Where each Chamber priority stands')]),
                           ('playbook.html', 'Chamber playbook', 'Business items, coalitions and timing')]),
-    ('Ward Feedback', [('research.html', 'What ward offices told us', 'Interviews with council legislative aides'),
-                       ('research.html#takeaways', 'What offices agree on', 'Shared advice for reaching any office'),
-                       ('research.html#members', 'By council member', 'Each member’s office, contacts and advice')]),
+    ('Ward Feedback', [('research.html', 'Ward Feedback', 'How to reach each council member')]),
     ('Meeting minutes', [('@latest', 'Latest minutes', 'Open the newest meeting minutes (PDF)'),
                          ('library.html', 'Minutes library', 'Every meeting, with the original PDFs'),
                          ('library.html#upload', 'Add new minutes', 'Upload the latest minutes PDF')]),
-    ('Help', [('help.html', 'About this site', 'Its three goals, and how to keep it current'),
-              ('help.html#yearly', 'Yearly update guide', 'What to check each year, and where'),
+    ('Help', [('help.html', 'About this site', 'Its three goals and the yearly update guide'),
               ('glossary.html', 'Glossary', 'What the terms on this site mean')]),
 ]
 LATEST_PDF = ''  # set in main() to the newest minutes file
@@ -177,6 +174,9 @@ def nav(current, printable):
     grp = ''
     for name, items in GROUPS:
         on = any(it[0] == current for it in items)
+        if len(items) == 1 and len(items[0]) == 3:  # a single page: a plain link, not a drop-down
+            grp += f'<a class="sa-home" href="{items[0][0]}" title="{esc(items[0][2])}"{cur if on else ""}>{name}</a>'
+            continue
         links = ''
         for it in items:
             h, t, desc = it[:3]
@@ -673,7 +673,12 @@ def research():
                             asof=c.get('as_of', ''), interviewed=fr[0]['interviewed'] if fr else '',
                             best=secs.pop('Best way to reach', []), secs=[[k, v] for k, v in secs.items()],
                             themes=[i for i, t in enumerate(themes) if w in said(t)]))
-    data = dict(members=members, themes=[dict(h=t['heading'], t=t['text'], id='t-' + slug(t['heading']), wards=said(t)) for t in themes], logo=LOGO_URI)
+    sec_help = {'Approach': 'How this office prefers to be contacted, and what makes a request land.',
+                'Priorities': 'What the ward and its residents care about most right now.',
+                'Business': 'What local businesses in the ward face, and ideas the office raised.',
+                'Relationships': 'How trust is built with this office over time.',
+                'Follow-up': 'What the office asked for after the interview.'}
+    data = dict(sec_help=sec_help, members=members, themes=[dict(h=t['heading'], t=t['text'], id='t-' + slug(t['heading']), wards=said(t)) for t in themes], logo=LOGO_URI)
     n_int = sum(1 for m in members if m['interviewed'])
     kpis = (f'<div class="rs-kpi"><b>{n_int}</b><span>of {len(members)} offices interviewed</span></div>'
             f'<div class="rs-kpi"><b>{len(themes)}</b><span>shared takeaways</span></div>'
@@ -688,9 +693,8 @@ def research():
   </div>
   <aside class="sa-guide" aria-label="How to use this page"><div class="sa-guide-t"><p><b>Use this page for</b> planning how to reach each member.</p><p><b>Keep in mind</b> staff views from interviews, not official positions.</p></div>
   <div class="sa-guide-l"><a href="course-of-action.html"><span>Who to call first</span><b>Course of action →</b></a><a href="member-by-member.html"><span>Votes and allies</span><b>Member breakdown →</b></a></div></aside>
-  <section class="rs-kpis" aria-label="At a glance">{kpis}</section>
   <section class="rs-card" id="members"><h2>Choose a council member</h2>
-    <div class="dkey" role="note" aria-label="Key"><span class="dk-i"><span class="rs-sw" style="background:#2f6eb5"></span><span>Each member keeps one color on this page</span></span><span class="dk-i"><span class="rs-tick">●</span><span>Office interviewed</span></span><span class="dk-i"><span class="rs-tick rs-tick-no">○</span><span>Not interviewed yet</span></span><span class="dk-i"><span class="rs-wn" style="--mc:#2a0157;--mtx:#fff;width:16px;height:16px;font-size:.6rem">5</span><span>Ward number</span></span></div>
+    <div class="dkey" role="note" aria-label="Key"><span class="dk-i"><span class="rs-tick">●</span><span>Office interviewed</span></span><span class="dk-i"><span class="rs-tick rs-tick-no">○</span><span>Not interviewed yet</span></span></div>
     <div class="rs-strip" role="tablist" aria-label="Council members"></div>
     <div class="rs-detail" id="rs-detail" aria-live="polite"></div>
   </section>
@@ -743,8 +747,9 @@ def research():
 .rs-ct dt { color: var(--color-fg-muted); font-size: .8rem; padding-top: 1px; }
 .rs-ct dd { margin: 0; }
 .rs-ct a { color: #5b2a86; font-weight: 600; }
-.rs-xb ul { margin: 0; padding-left: 18px; font-size: .9rem; line-height: 1.45; }
-.rs-xb li { margin: 2px 0; }
+.rs-sh { font-size: .8rem; font-style: italic; color: var(--color-fg-muted); margin: -2px 0 4px; }
+.rs-xb ul { margin: 0; padding-left: 18px; font-size: .9rem; line-height: 1.5; }
+.rs-xb li { margin: 4px 0; }
 .rs-tk { display: flex; flex-wrap: wrap; gap: 5px; }
 .rs-tk a { font-size: .78rem; border: 1.5px solid var(--mc); border-radius: 999px; padding: 2px 10px; color: var(--color-fg); text-decoration: none; background: #fff; }
 .rs-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
@@ -772,7 +777,7 @@ def research():
 #print-sheet h1 { font-size: 17pt; margin: 0; color: #2a0157; }
 #print-sheet .ps-s { font-size: 8.5pt; color: #6b6478; margin-top: 2px; }
 #print-sheet h2 { font-size: 10pt; text-transform: uppercase; letter-spacing: .07em; color: #b9420c; margin: 12px 0 5px; }
-#print-sheet .ps-cols { display: grid; grid-template-columns: 1fr 1.25fr; gap: 16px; }
+#print-sheet .ps-cols { display: grid; grid-template-columns: 1fr 1.6fr; gap: 16px; font-size: 8.6pt; }
 #print-sheet ol, #print-sheet ul { margin: 0; padding-left: 16px; line-height: 1.4; }
 #print-sheet li { margin: 2px 0; }
 #print-sheet table { width: 100%; border-collapse: collapse; font-size: 8.4pt; }
@@ -783,6 +788,8 @@ def research():
 #print-sheet .ps-ct { background: #f7f6fa; border-radius: 6px; padding: 6px 8px; line-height: 1.5; }
 #print-sheet .ps-tk { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 14px; }
 #print-sheet .ps-tk div { line-height: 1.35; }
+#print-sheet .ps-tk3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px 12px; font-size: 8.4pt; }
+#print-sheet .ps-tk3 .on { font-weight: 700; }
 #print-sheet .ps-f { margin-top: 12px; font-size: 7.5pt; color: #6b6478; border-top: 1px solid #e7e3ee; padding-top: 4px; }
 </style>"""
     script = """<script>(() => {
@@ -835,7 +842,7 @@ def research():
     row('Phone', link(tel(m.phone), m.phone)); row('Email', link('mailto:' + m.email, m.email));
     if (m.aide) row('Legislative aide', m.aide); row('Office', m.room); row('Ward page', link(m.page, 'stpaul.gov ↗', true));
     L.appendChild(dl);
-    if (m.secs.length) for (const [k, v] of m.secs) { R.appendChild(h('div', 'rs-lab', k)); const ul = h('ul'); v.forEach((t) => ul.appendChild(h('li', '', t))); R.appendChild(ul); }
+    if (m.secs.length) for (const [k, v] of m.secs) { R.appendChild(h('div', 'rs-lab', k)); if (D.sec_help[k]) R.appendChild(h('div', 'rs-sh', D.sec_help[k])); const ul = h('ul'); v.forEach((t) => ul.appendChild(h('li', '', t))); R.appendChild(ul); }
     else { R.appendChild(h('div', 'rs-lab', 'What their office told us')); R.appendChild(h('div', 'rs-none', 'No interview notes yet.')); }
     if (m.themes.length) { R.appendChild(h('div', 'rs-lab', 'Shared takeaways they raised')); const tk = h('div', 'rs-tk'); m.themes.forEach((i) => { const a = h('a', '', `${i + 1}. ${D.themes[i].h}`); a.href = '#' + D.themes[i].id; tk.appendChild(a); }); R.appendChild(tk); }
     const ln = h('div', 'rs-links'); ln.append(link(`course-of-action.html#tab=plan&member=${encodeURIComponent(m.m)}`, 'Their course of action →'), link(`member-by-member.html#member=${encodeURIComponent(m.m)}`, 'Their voting record →')); R.appendChild(ln);
@@ -864,11 +871,11 @@ def research():
     if (m.best.length) { const ol = h('ol'); m.best.forEach((t) => ol.appendChild(h('li', '', t))); L.appendChild(ol); } else L.appendChild(h('div', '', 'Not interviewed yet: use the shared takeaways and contact the ward office.'));
     L.appendChild(h('h2', '', `Ward ${m.ward} office`));
     const ct = h('div', 'ps-ct'); ct.innerText = [`Phone: ${m.phone}`, `Email: ${m.email}`, m.aide && `Legislative aide: ${m.aide}`, `Office: ${m.room}`, `Ward page: ${m.page}`].filter(Boolean).join('\\n'); L.appendChild(ct);
-    if (m.secs.length) for (const [k, v] of m.secs) { R.appendChild(h('h2', '', `What their office told us: ${k}`)); const ul = h('ul'); v.forEach((t) => ul.appendChild(h('li', '', t))); R.appendChild(ul); }
+    if (m.secs.length) for (const [k, v] of m.secs) { R.appendChild(h('h2', '', `What their office told us: ${k}`)); if (D.sec_help[k]) R.appendChild(h('div', 'ps-s', D.sec_help[k])); const ul = h('ul'); v.forEach((t) => ul.appendChild(h('li', '', t))); R.appendChild(ul); }
     else { R.appendChild(h('h2', '', 'What their office told us')); R.appendChild(h('div', '', 'No interview notes yet.')); }
     cols.append(L, R); sheet.appendChild(cols);
     sheet.appendChild(h('h2', '', 'What every office agrees on'));
-    const tk = h('div', 'ps-tk'); D.themes.forEach((t, i) => { const d = h('div'); const b = h('b', '', `${i + 1}. ${t.h}${t.wards.includes(m.ward) ? ' ★' : ''} `); d.append(b, t.t); tk.appendChild(d); }); sheet.appendChild(tk);
+    const tk = h('div', 'ps-tk3'); D.themes.forEach((t, i) => { const on = t.wards.includes(m.ward); const d = h('div', on ? 'on' : ''); d.textContent = `${i + 1}. ${t.h}${on ? ' ★' : ''}`; tk.appendChild(d); }); sheet.appendChild(tk);
     if (m.themes.length) sheet.appendChild(h('div', 'ps-s', '★ = raised by this member’s office'));
     sheet.appendChild(foot()); go();
   }
