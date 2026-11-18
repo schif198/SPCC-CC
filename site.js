@@ -25,12 +25,41 @@
   // ---------- search box: members, file numbers, topics ----------
   const form = $('.sa-search'), q = form && $('input', form), sugg = form && $('.sa-sugg', form);
   const FILE_RX = /^(ord|res|res ph|ao|abza|cf|sr|min|rla|ra)\s*\d{2}-\d+/i;
+  // closest-match scoring, so typos and partial names still find the right member, page or term
+  const norm = (x) => String(x || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
+  const lev = (a, b) => {
+    if (a === b) return 0; if (!a.length) return b.length; if (!b.length) return a.length;
+    let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+    for (let i = 1; i <= a.length; i++) {
+      const cur = [i];
+      for (let j = 1; j <= b.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      prev = cur;
+    }
+    return prev[b.length];
+  };
+  const wordSim = (w, v) => {
+    if (v.startsWith(w)) return w.length >= 2 ? 1 : 0.6;
+    const cut = v.slice(0, Math.max(w.length, Math.min(v.length, w.length + 1)));
+    return Math.max(1 - lev(w, v) / Math.max(w.length, v.length), 1 - lev(w, cut) / Math.max(w.length, cut.length));
+  };
+  const score = (query, target) => {
+    const qn = norm(query), tn = norm(target); if (!qn || !tn) return 0;
+    if (tn.includes(qn)) return 1 + (tn.startsWith(qn) ? 0.2 : 0);
+    const qw = qn.split(' ').filter((w) => w.length > 1), tw = tn.split(' ');
+    if (!qw.length) return 0;
+    const per = qw.map((w) => Math.max(...tw.map((v) => wordSim(w, v))));
+    return per.reduce((s, x) => s + x, 0) / per.length;
+  };
   function options(text) {
     const t = text.trim(); if (!t) return [];
-    const lo = t.toLowerCase(), out = [];
-    for (const m of SITE.members) if (m.full.toLowerCase().includes(lo) || m.m.toLowerCase().startsWith(lo)) out.push({ label: m.full, hint: 'Member profile', href: `member-by-member.html#member=${encodeURIComponent(m.m)}` });
-    for (const p of SITE.pages) if (lo.length > 2 && (p.title.toLowerCase().includes(lo) || (p.desc || '').toLowerCase().includes(lo))) out.push({ label: p.title, hint: 'Page', href: p.href });
-    for (const g of SITE.glossary) if (lo.length > 3 && g.term.toLowerCase().includes(lo)) out.push({ label: g.term, hint: 'What it means', href: `glossary.html#${g.id}` });
+    const cand = [];
+    for (const m of SITE.members) cand.push({ s: Math.max(score(t, m.full), score(t, m.m)) + 0.05, label: m.full, hint: 'Member profile', href: `member-by-member.html#member=${encodeURIComponent(m.m)}` });
+    for (const p of SITE.pages) cand.push({ s: Math.max(score(t, p.title), score(t, p.desc) * 0.85), label: p.title, hint: 'Page', href: p.href });
+    for (const g of SITE.glossary) cand.push({ s: score(t, g.term) * 0.95, label: g.term, hint: 'What it means', href: `glossary.html#${g.id}` });
+    for (const x of SITE.sections || []) cand.push({ s: Math.max(score(t, x.t) * 0.97, (x.d && norm(x.d).includes(norm(t)) ? 0.9 : score(t, x.d) * 0.8)), label: x.t, hint: `Section · ${x.p}`, href: x.h });
+    const min = norm(t).length <= 3 ? 0.99 : 0.72;
+    const seen = new Set();
+    const out = cand.filter((c) => c.s >= min).sort((x, y) => y.s - x.s).filter((c) => !seen.has(c.href) && seen.add(c.href)).slice(0, 5);
     if (FILE_RX.test(t)) out.unshift({ label: t.toUpperCase().replace(/^RES PH/, 'RES PH').replace(/^(ORD|RES|AO|ABZA|CF|SR|MIN|RLA|RA)\b/, (x) => x[0] + x.slice(1).toLowerCase()), hint: 'Find in the minutes', href: `library.html#q=${encodeURIComponent(t)}` });
     out.push({ label: `Search the minutes for “${t}”`, hint: 'Minutes library', href: `library.html#q=${encodeURIComponent(t)}` });
     out.push({ label: `Course of action for “${t}”`, hint: 'Chamber strategy', href: `course-of-action.html#tab=search&q=${encodeURIComponent(t)}` });

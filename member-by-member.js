@@ -15,6 +15,25 @@
   const color = { yea: () => dash.colors[0], nay: () => '#2a0157', absent: () => 'var(--color-border-line)' };
   document.querySelectorAll('.cg [data-sw]').forEach((el) => { el.style.background = color[el.dataset.sw](); });
 
+
+  // ward office contact, from narrative/ward_contacts.csv
+  const wardLine = (m, cls) => {
+    const rows = (dash.data('ward_contacts') || {}).data || [];
+    const r = rows.find((x) => x.member === m); if (!r) return null;
+    const box = document.createElement('div'); box.className = cls || 'ward-line';
+    const lab = document.createElement('b'); lab.textContent = `Ward ${r.ward} office`; box.appendChild(lab);
+    const add = (node) => { box.append(' · '); box.appendChild(node); };
+    if (r.phone) { const a = document.createElement('a'); a.href = 'tel:' + r.phone.replace(/[^0-9]/g, ''); a.textContent = r.phone; add(a); }
+    if (r.email) { const a = document.createElement('a'); a.href = 'mailto:' + r.email; a.textContent = r.email; add(a); }
+    if (r.ward_page) { const a = document.createElement('a'); a.href = r.ward_page; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Ward page ↗'; add(a); }
+    if (r.legislative_aide) { const s = document.createElement('span'); s.className = 'ward-aide'; s.textContent = `Legislative aide: ${r.legislative_aide}`; box.appendChild(document.createElement('br')); box.appendChild(s); }
+    return box;
+  };
+  dash.draw('wardcontact', (box) => {
+    box.replaceChildren(); const m = cur(); if (m === 'All') return;
+    const line = wardLine(m, 'ward-line'); if (line) box.appendChild(line);
+  });
+
   // ---------- member chips & views ----------
   const go = (m) => { dash.setParams({ member: m }); dash.setLink(m === 'All' ? 'overview' : 'm-' + m.toLowerCase()); };
   document.querySelectorAll('.cg .chip').forEach((b) => b.addEventListener('click', () => go(b.dataset.pick)));

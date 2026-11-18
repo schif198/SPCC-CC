@@ -11,6 +11,17 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'build', 'out')
 WEB = os.path.join(ROOT, 'web')
 SITE = os.path.join(ROOT, '_site')
+NARR = os.path.join(ROOT, 'narrative')
+def slug(t):
+    return re.sub(r'[^a-z0-9]+', '-', re.sub(r'<[^>]+>', '', t).lower()).strip('-')[:48]
+
+
+def narr(name):
+    p = os.path.join(NARR, name)
+    return open(p, encoding='utf-8').read() if os.path.exists(p) else ''
+def narr_rows(name):
+    t = narr(name)
+    return list(csv.DictReader(io.StringIO(t))) if t else []
 LEGISTAR = 'https://stpaul.legistar.com/DepartmentDetail.aspx?ID=11351&GUID=54C2264A-286D-435B-85A5-F0C20155343F&Mode=MainBody'
 REPO = os.environ.get('GITHUB_REPOSITORY', '').strip()
 BRANCH = os.environ.get('GITHUB_REF_NAME', 'main').strip() or 'main'
@@ -52,35 +63,40 @@ META = dict(first=FIRST, last=LAST, next=NEXT, built=BUILT)
 
 PRINT_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>'
 GROUPS = [
-    ('Council record', [('voting-trends.html', 'Voting trends', 'Totals, months and every split vote'),
-                        ('member-by-member.html', 'Members', 'One member’s votes, allies and focus'),
-                        ('platforms.html', 'Platforms vs. votes', 'Campaign priorities next to the record')]),
+    ('Council Activity', [('voting-trends.html', 'Voting trends', 'Totals, months and every split vote'),
+                          ('member-by-member.html', 'Member breakdown', 'One member’s votes, allies and focus'),
+                          ('platforms.html', 'Platforms vs. votes', 'Campaign promise and voting alignment')]),
     ('Chamber strategy', [('course-of-action.html', 'Course of action', 'Who to talk to, and how, on any issue',
                            [('course-of-action.html#tab=plan', 'Course of action', 'Outreach order and a plan for each member'),
                             ('course-of-action.html#tab=search', 'Topic search', 'A plan for any issue you type in'),
                             ('course-of-action.html#tab=priorities', 'Chamber priorities', 'Where each Chamber priority stands')]),
                           ('playbook.html', 'Chamber playbook', 'Business items, coalitions and timing')]),
+    ('Ward Feedback', [('research.html', 'What ward offices told us', 'Interviews with council legislative aides'),
+                       ('research.html#takeaways', 'What offices agree on', 'Shared advice for reaching any office'),
+                       ('research.html#members', 'By council member', 'Each member’s office, contacts and advice')]),
     ('Meeting minutes', [('@latest', 'Latest minutes', 'Open the newest meeting minutes (PDF)'),
                          ('library.html', 'Minutes library', 'Every meeting, with the original PDFs'),
                          ('library.html#upload', 'Add new minutes', 'Upload the latest minutes PDF')]),
+    ('Help', [('help.html', 'About this site', 'Its three goals, and how to keep it current'),
+              ('help.html#yearly', 'Yearly update guide', 'What to check each year, and where'),
+              ('glossary.html', 'Glossary', 'What the terms on this site mean')]),
 ]
-HELP = ('glossary.html', 'Help', 'Glossary: what the terms on this site mean')
 LATEST_PDF = ''  # set in main() to the newest minutes file
 GUIDES = {
-    'voting-trends.html': ('The council as a whole: how often it agrees, where it splits, and which members vote together.',
-                           'This is the voting record only. It does not show what members promised voters.',
-                           [('platforms.html', 'Compare votes with campaign promises', 'Platforms vs. votes'), ('member-by-member.html', 'See one member in detail', 'Members')]),
-    'member-by-member.html': ('One member’s record: their votes, absences, allies and the topics they raise.',
-                              'Votes show what happened, not why or what was promised. Check the campaign side before drawing conclusions.',
-                              [('platforms.html', 'This member’s campaign vs. their record', 'Platforms vs. votes'), ('voting-trends.html', 'The whole council', 'Voting trends')]),
-    'platforms.html': ('What each member campaigned on, side by side with what they work on at the council.',
-                       'It measures council activity on each campaign theme (motions, remarks and votes), not whether a promise was kept. Check the voting record before drawing conclusions.',
-                       [('member-by-member.html', 'This member’s full voting record', 'Members'), ('voting-trends.html', 'How the whole council votes', 'Voting trends')]),
+    'voting-trends.html': ('How the whole council votes: agreement, splits and voting blocs.',
+                           'Votes only, not campaign promises.',
+                           [('platforms.html', 'Votes vs. campaign promises', 'Platforms vs. votes'), ('member-by-member.html', 'One member in detail', 'Member breakdown')]),
+    'member-by-member.html': ('One member’s votes, absences, allies and topics.',
+                              'Votes show what happened, not why or what was promised.',
+                              [('platforms.html', 'Their campaign vs. their record', 'Platforms vs. votes'), ('voting-trends.html', 'The whole council', 'Voting trends')]),
+    'platforms.html': ('Campaign promise and voting alignment: what each member ran on, next to what they work on.',
+                       'It counts council activity on each theme; it cannot say whether a promise was kept.',
+                       [('member-by-member.html', 'Their full voting record', 'Member breakdown'), ('voting-trends.html', 'How the whole council votes', 'Voting trends')]),
 }
 PAGE_INFO = {
-    'voting-trends.html': ('Council record', 'Voting trends', 'How does the council vote as a whole?'),
-    'member-by-member.html': ('Council record', 'Members', 'How does each member vote, and who do they vote with?'),
-    'platforms.html': ('Council record', 'Platforms vs. votes', 'How does each member’s council activity line up with their campaign?'),
+    'voting-trends.html': ('Council Activity', 'Voting trends', 'How does the council vote as a whole?'),
+    'member-by-member.html': ('Council Activity', 'Member breakdown', 'How does each member vote, and who do they vote with?'),
+    'platforms.html': ('Council Activity', 'Platforms vs. votes', 'Campaign promise and voting alignment: does each member’s council work match what they ran on?'),
     'course-of-action.html': ('Chamber strategy', 'Course of action', 'Who should the Chamber talk to, and how?'),
     'playbook.html': ('Chamber strategy', 'Chamber playbook', 'Which business items are coming, and who decides them?'),
 }
@@ -102,13 +118,58 @@ GLOSSARY = [
 ]
 GLOSSARY_JS = [dict(id=i, term=t, rx=rx, df=d) for i, t, rx, d in GLOSSARY]
 for g in GLOSSARY_JS: g['def'] = g.pop('df')
-SEARCH_PAGES = [dict(href=HELP[0], title='Glossary', desc=HELP[2])] + [dict(href=it[0], title=it[1], desc=it[2]) for _, items in GROUPS for it in items if not it[0].startswith('@')] + \
+SEARCH_PAGES = [dict(href=it[0], title=it[1], desc=it[2] + ' (' + grp + ')') for grp, items in GROUPS for it in items if not it[0].startswith('@')] + \
     [dict(href=h, title=t, desc=desc) for _, items in GROUPS for it in items if len(it) > 3 for h, t, desc in it[3] if t != it[1]]
+
+
+HEAD_RX = re.compile(r'<(h[23])((?:(?!data-draw)[^>])*)>([^<]+)</\1>')
+PAGE_TITLES = {'voting-trends.html': 'Voting trends', 'member-by-member.html': 'Member breakdown', 'platforms.html': 'Platforms vs. votes',
+               'course-of-action.html': 'Course of action', 'playbook.html': 'Chamber playbook'}
+
+
+def heading_ids(page):
+    """Give every fixed h2/h3 heading an id, so search results can jump straight to it."""
+    def add(m):
+        if 'id=' in m.group(2): return m.group(0)
+        return f'<{m.group(1)}{m.group(2)} id="s-{slug(m.group(3))}">{m.group(3)}</{m.group(1)}>'
+    return HEAD_RX.sub(add, page)
+
+
+_SECTIONS = None
+def section_index():
+    """Every section of every page, for the site search."""
+    global _SECTIONS
+    if _SECTIONS is not None: return _SECTIONS
+    out = []
+    for fn, title in PAGE_TITLES.items():
+        p = os.path.join(WEB, 'pages', fn)
+        if not os.path.exists(p): continue
+        src = open(p, encoding='utf-8').read()
+        for m in HEAD_RX.finditer(src):
+            text = html.unescape(re.sub(r'\s+', ' ', m.group(3))).strip()
+            if len(text) < 4: continue
+            before = src[:m.start()]
+            pane = re.findall(r'data-pane="([a-z]+)"', before)
+            view = re.findall(r'data-view="([A-Za-z]+)"', before)
+            hid = f's-{slug(m.group(3))}'
+            if fn == 'course-of-action.html' and pane: href = f'{fn}#tab={pane[-1]}&go={hid}'
+            else: href = f'{fn}#go={hid}'
+            out.append(dict(t=text, p=title, h=href))
+    for r in narr_rows('aide_interviews.csv'):
+        if r['kind'] == 'theme': out.append(dict(t=r['heading'], p='What ward offices told us', h=f'research.html#t-{slug(r["heading"])}', d=r['text']))
+    for c in narr_rows('ward_contacts.csv'):
+        w = c['ward']
+        txt = ' '.join(r['text'] for r in narr_rows('aide_interviews.csv') if r['ward'] == w and r['kind'] != 'theme')
+        out.append(dict(t=f'{c["full_name"]}: Ward {w} office and contacts', p='What ward offices told us', h=f'research.html#member={c["member"]}', d=f'ward {w} office contact phone email {c["legislative_aide"]} {txt}'))
+    for t in ('Three key goals', 'Yearly update guide', 'Update the Chamber’s priorities', 'Check ward office contacts', 'Upload the new minutes', 'Renew the upload key', 'Update campaign platforms'):
+        out.append(dict(t=t, p='About this site', h=f'help.html#{"yearly" if t != "Three key goals" else "goals"}'))
+    seen = set(); _SECTIONS = [x for x in out if not (x['h'] in seen or seen.add(x['h']))]
+    return _SECTIONS
 
 
 def site_data():
     mem = [dict(m=r['member'], full=r['full_name']) for r in csv.DictReader(open(os.path.join(OUT, 'c_members.csv')))]
-    return f'<script>window.__SITE__ = {js(json.dumps(dict(members=mem, glossary=GLOSSARY_JS, pages=SEARCH_PAGES)))};</script>'
+    return f'<script>window.__SITE__ = {js(json.dumps(dict(members=mem, glossary=GLOSSARY_JS, pages=SEARCH_PAGES, sections=section_index())))};</script>' 
 
 
 def nav(current, printable):
@@ -134,9 +195,8 @@ def nav(current, printable):
     pr = f'<button id="sa-print" class="sa-btn" type="button" title="Print a one-page summary of what this page shows">{PRINT_ICON}Print one-pager</button>' if printable else ''
     return (f'<nav class="sa-nav" aria-label="Site"><a class="brand" href="index.html" aria-label="St. Paul Area Chamber: council dashboards home">St. Paul Area Chamber</a>'
             f'<button class="sa-toggle" type="button" aria-expanded="false">Menu</button>'
-            f'<div class="sa-menu"><a class="sa-home" href="index.html"{cur if current == "index.html" else ""}>Home</a>{grp}'
-            f'<a class="sa-home sa-help" href="{HELP[0]}" title="{HELP[2]}"{cur if current == HELP[0] else ""}>{HELP[1]}</a></div>'
-            f'<form class="sa-search" role="search" autocomplete="off"><input type="search" placeholder="Search members, items, topics" aria-label="Search the site"><div class="sa-sugg" role="listbox" hidden></div></form>'
+            f'<div class="sa-menu"><a class="sa-home" href="index.html"{cur if current == "index.html" else ""}>Home</a>{grp}</div>'
+            f'<form class="sa-search" role="search" autocomplete="off"><input type="search" placeholder="Search the site" aria-label="Search the site"><div class="sa-sugg" role="listbox" hidden></div></form>'
             f'<div class="act"><a class="sa-btn ghost" href="{LEGISTAR}" target="_blank" rel="noopener" title="The city’s official list of City Council meetings, agendas and minutes">Legistar ↗</a>{pr}</div></nav>')
 
 
@@ -181,8 +241,24 @@ def shell(title, body, head_extra='', scripts=''):
 """
 
 
+def priorities_band(page):
+    rows = sorted(narr_rows('chamber_top_priorities.csv'), key=lambda r: (r.get('year', ''), int(r.get('rank') or 0)))
+    if not rows: return page
+    year = max(r['year'] for r in rows); rows = [r for r in rows if r['year'] == year]
+    asof = max(r.get('as_of', '') for r in rows)
+    try: asof_txt = datetime.date.fromisoformat(asof).strftime('%B %d, %Y').replace(' 0', ' ')
+    except ValueError: asof_txt = asof
+    items = ''.join(f'<li><span class="n">{i + 1}</span>{esc(r["priority"])}</li>' for i, r in enumerate(rows))
+    src = esc(rows[0].get('source', ''))
+    new = (f'<div class="prio-h">{esc(year)} Priorities</div>\n        <ol class="prio-list">{items}</ol>\n'
+           f'        <div class="prio-asof">As of {esc(asof_txt)}{" · " + src if src else ""}</div>')
+    return re.sub(r'<div class="prio-h">.*?</ol>', lambda m: new, page, count=1, flags=re.S)
+
+
 def dashboard(out, title, page_file, app_file, data, params, kind):
     page = template(rd('pages/' + page_file), out)
+    if out == 'course-of-action.html': page = priorities_band(page)
+    page = heading_ids(page)
     page = re.sub(r'<meta name="dash-one-writer">\s*', '', page)
     page = re.sub(r'<script src="app\.js"></script>\s*', '', page)
     app = rd('pages/' + app_file) if app_file else ''
@@ -513,11 +589,12 @@ def home(meetings):
     <h2>Or explore</h2>
     <div class="hm-links">
       <a href="voting-trends.html"><b>Voting trends</b><span>The council as a whole</span></a>
-      <a href="platforms.html"><b>Platforms vs. votes</b><span>Campaign priorities next to the record</span></a>
+      <a href="platforms.html"><b>Platforms vs. votes</b><span>Campaign promise and voting alignment</span></a>
+      <a href="research.html"><b>What ward offices told us</b><span>Interviews with legislative aides</span></a>
       <a href="playbook.html"><b>Chamber playbook</b><span>Business items, coalitions, timing</span></a>
       <a href="library.html"><b>Minutes library</b><span>Every meeting, original PDFs</span></a>
       <a href="{LEGISTAR}" target="_blank" rel="noopener"><b>Legistar ↗</b><span>The city’s official meeting site</span></a>
-      <a href="glossary.html"><b>Glossary</b><span>What the terms mean</span></a>
+      <a href="help.html"><b>About this site</b><span>Its goals and how to keep it current</span></a>
     </div>
   </section>
   <footer class="hm-foot">Updated {datetime.datetime.now(datetime.timezone.utc).strftime('%B %d, %Y').replace(' 0', ' ')} · refreshes automatically when new minutes are added.</footer>
@@ -577,6 +654,291 @@ def glossary():
     open(os.path.join(SITE, 'glossary.html'), 'w', encoding='utf-8').write(shell('Glossary', body, css, site_data() + f'\n<script>{js(SITEJS)}</script>'))
 
 
+MEMBER_COLORS = {'1': '#2f6eb5', '2': '#f15a25', '3': '#1f8a78', '4': '#b5658f', '5': '#e0a030', '6': '#6aaed6', '7': '#8c8577'}
+
+
+def research():
+    rows = narr_rows('aide_interviews.csv')
+    themes = [r for r in rows if r['kind'] == 'theme']
+    found = [r for r in rows if r['kind'] == 'finding']
+    contacts = narr_rows('ward_contacts.csv')
+    said = lambda r: [w for w in re.split(r'[ ,]+', r['ward'].strip()) if w]
+    members = []
+    for c in sorted(contacts, key=lambda r: int(r['ward'])):
+        w = c['ward']; fr = [r for r in found if r['ward'] == w]
+        secs = {}
+        for r in fr: secs.setdefault(r['section'], []).append(r['text'])
+        members.append(dict(m=c['member'], full=c['full_name'], title=c['title'], ward=w, color=MEMBER_COLORS.get(w, '#8c8577'),
+                            phone=c['phone'], email=c['email'], page=c['ward_page'], aide=c['legislative_aide'], room=c['room'],
+                            asof=c.get('as_of', ''), interviewed=fr[0]['interviewed'] if fr else '',
+                            best=secs.pop('Best way to reach', []), secs=[[k, v] for k, v in secs.items()],
+                            themes=[i for i, t in enumerate(themes) if w in said(t)]))
+    data = dict(members=members, themes=[dict(h=t['heading'], t=t['text'], id='t-' + slug(t['heading']), wards=said(t)) for t in themes], logo=LOGO_URI)
+    n_int = sum(1 for m in members if m['interviewed'])
+    kpis = (f'<div class="rs-kpi"><b>{n_int}</b><span>of {len(members)} offices interviewed</span></div>'
+            f'<div class="rs-kpi"><b>{len(themes)}</b><span>shared takeaways</span></div>'
+            f'<div class="rs-kpi"><b>{sum(1 for t in themes if len(said(t)) >= 2)}</b><span>said by 2 or more offices</span></div>')
+    body = f"""{nav('research.html', False)}
+<main class="rs">
+  <div class="rs-top">
+    <div><div class="sa-crumb">Ward Feedback</div>
+    <h1>What ward offices told us</h1>
+    <p class="sa-ask">How to reach each council member, from interviews with their offices.</p></div>
+    <button type="button" class="rs-print" id="rs-print-all"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg><span>Print one-pager</span></button>
+  </div>
+  <aside class="sa-guide" aria-label="How to use this page"><div class="sa-guide-t"><p><b>Use this page for</b> planning how to reach each member.</p><p><b>Keep in mind</b> staff views from interviews, not official positions.</p></div>
+  <div class="sa-guide-l"><a href="course-of-action.html"><span>Who to call first</span><b>Course of action →</b></a><a href="member-by-member.html"><span>Votes and allies</span><b>Member breakdown →</b></a></div></aside>
+  <section class="rs-kpis" aria-label="At a glance">{kpis}</section>
+  <section class="rs-card" id="members"><h2>Choose a council member</h2>
+    <div class="dkey" role="note" aria-label="Key"><span class="dk-i"><span class="rs-sw" style="background:#2f6eb5"></span><span>Each member keeps one color on this page</span></span><span class="dk-i"><span class="rs-tick">●</span><span>Office interviewed</span></span><span class="dk-i"><span class="rs-tick rs-tick-no">○</span><span>Not interviewed yet</span></span><span class="dk-i"><span class="rs-wn" style="--mc:#2a0157;--mtx:#fff;width:16px;height:16px;font-size:.6rem">5</span><span>Ward number</span></span></div>
+    <div class="rs-strip" role="tablist" aria-label="Council members"></div>
+    <div class="rs-detail" id="rs-detail" aria-live="polite"></div>
+  </section>
+  <section class="rs-card" id="takeaways"><h2>What offices agree on</h2><p class="rs-note">Colored dots show which member’s office said it. Click a dot to open that member.</p><div class="rs-ts"></div></section>
+  <details class="rs-q"><summary>About these interviews</summary><p>Informational interviews with council legislative aides, November 2026, by Jacob Krieger (Team 7). Paraphrased from interview notes. Contacts from the city’s council page.</p></details>
+</main>
+<div id="print-sheet" aria-hidden="true"></div>"""
+    css = """<style>
+.rs { max-width: 1100px; margin: 0 auto; padding: 30px 20px 60px; font-family: var(--font-anthropic-sans); }
+.rs-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+.rs h1 { font-size: 2.1rem; margin: 0; }
+.rs h2 { margin: 0 0 4px; font-size: 1.2rem; color: #2a0157; }
+.rs-print { display: inline-flex; align-items: center; gap: 8px; font: inherit; font-size: .9rem; font-weight: 700; color: #fff; background: #2a0157; border: 0; border-radius: 8px; padding: 9px 16px; cursor: pointer; }
+.rs-print:hover { background: #3d0a78; }
+.rs-print:focus-visible, .rs-m:focus-visible, .rs-dot:focus-visible { outline: 3px solid #f15a25; outline-offset: 2px; }
+.rs-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 10px; margin: 6px 0 14px; }
+.rs-kpi { background: #fff; border: 1px solid var(--color-border-line); border-radius: 10px; padding: 12px 16px; box-shadow: 0 1px 2px rgba(42,1,87,.05), 0 6px 18px rgba(42,1,87,.05); }
+.rs-kpi b { display: block; font-size: 1.9rem; font-weight: 800; color: #2a0157; line-height: 1.1; }
+.rs-kpi span { font-size: .82rem; color: var(--color-fg-muted); }
+.rs-card { background: #fff; border: 1px solid var(--color-border-line); border-radius: 12px; padding: 18px 20px; margin-bottom: 16px; scroll-margin-top: 90px; }
+.rs-note { margin: 0 0 10px; font-size: .82rem; color: var(--color-fg-muted); }
+.rs-sw { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.rs-tick { color: #2a0157; font-size: .8rem; } .rs-tick-no { color: #6b6478; }
+.rs-strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(8.3rem, 1fr)); gap: 8px; margin-top: 6px; }
+.rs-m { font: inherit; text-align: left; background: #fff; border: 1.5px solid var(--color-border-line); border-top: 5px solid var(--mc); border-radius: 10px; padding: 10px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; transition: transform .12s, box-shadow .12s; color: var(--color-fg); }
+.rs-m:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(42,1,87,.12); }
+.rs-m[aria-selected=true] { border-color: var(--mc); background: var(--mt); box-shadow: 0 8px 22px rgba(42,1,87,.14); }
+.rs-m .rs-mh { display: flex; align-items: center; gap: 7px; }
+.rs-wn { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: .78rem; background: var(--mc); color: var(--mtx); }
+.rs-m b { font-size: .9rem; line-height: 1.2; }
+.rs-m small { font-size: .74rem; color: var(--color-fg-muted); }
+.rs-m .rs-st { font-size: .72rem; font-weight: 700; color: #2a0157; }
+.rs-m .rs-st.no { color: #6b6478; font-weight: 600; }
+.rs-detail:empty::before { content: 'Click a member to see their ward office, the best ways to reach them, and what their office told us.'; display: block; margin-top: 12px; padding: 14px 16px; border: 1.5px dashed var(--color-border-line); border-radius: 10px; color: var(--color-fg-muted); font-size: .9rem; }
+.rs-x { margin-top: 12px; border: 2px solid var(--mc); border-radius: 12px; overflow: hidden; }
+.rs-xh { background: var(--mt); padding: 14px 18px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.rs-xh .rs-wn { width: 40px; height: 40px; font-size: 1.05rem; }
+.rs-xh h3 { margin: 0; font-size: 1.3rem; color: #2a0157; }
+.rs-xh .rs-sub { font-size: .85rem; color: var(--color-fg-muted); }
+.rs-xh .rs-print { margin-left: auto; }
+.rs-xb { padding: 14px 18px 18px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 18px; }
+@media (max-width: 760px) { .rs-xb { grid-template-columns: 1fr; } }
+.rs-lab { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #b9420c; margin: 10px 0 4px; }
+.rs-lab:first-child { margin-top: 0; }
+.rs-best { margin: 0; padding: 0; list-style: none; counter-reset: b; }
+.rs-best li { counter-increment: b; position: relative; padding: 6px 0 6px 32px; font-size: .92rem; line-height: 1.4; border-bottom: 1px solid var(--color-border-line); }
+.rs-best li:last-child { border-bottom: 0; }
+.rs-best li::before { content: counter(b); position: absolute; left: 0; top: 6px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--mc); color: var(--mtx); font-weight: 800; font-size: .74rem; }
+.rs-ct { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: .9rem; background: #f7f6fa; border-radius: 10px; padding: 10px 12px; }
+.rs-ct dt { color: var(--color-fg-muted); font-size: .8rem; padding-top: 1px; }
+.rs-ct dd { margin: 0; }
+.rs-ct a { color: #5b2a86; font-weight: 600; }
+.rs-xb ul { margin: 0; padding-left: 18px; font-size: .9rem; line-height: 1.45; }
+.rs-xb li { margin: 2px 0; }
+.rs-tk { display: flex; flex-wrap: wrap; gap: 5px; }
+.rs-tk a { font-size: .78rem; border: 1.5px solid var(--mc); border-radius: 999px; padding: 2px 10px; color: var(--color-fg); text-decoration: none; background: #fff; }
+.rs-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.rs-links a { font-size: .82rem; font-weight: 700; color: #2a0157; border: 1.5px solid #2a0157; border-radius: 8px; padding: 5px 11px; text-decoration: none; }
+.rs-links a:hover { background: #f6f0fb; }
+.rs-none { font-size: .9rem; color: var(--color-fg-muted); background: #f7f6fa; border: 1.5px dashed var(--color-border-line); border-radius: 10px; padding: 10px 12px; }
+.rs-ts { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: 10px; }
+.rs-t { display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--color-border-line); border-radius: 10px; padding: 12px 14px; scroll-margin-top: 90px; transition: opacity .15s; }
+.rs-t.dim { opacity: .3; }
+.rs-t h3 { margin: 0 0 3px; font-size: .98rem; color: #2a0157; }
+.rs-t p { margin: 0 0 8px; font-size: .88rem; line-height: 1.45; }
+.rs-n { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, #c9400c, #d31d44); color: #fff; font-weight: 800; font-size: .8rem; }
+.rs-dots { display: flex; flex-wrap: wrap; gap: 5px; }
+.rs-dot { font: inherit; display: inline-flex; align-items: center; gap: 5px; font-size: .74rem; font-weight: 600; border: 1.5px solid var(--mc); background: #fff; border-radius: 999px; padding: 1px 8px 1px 3px; cursor: pointer; color: var(--color-fg); }
+.rs-dot i { width: 12px; height: 12px; border-radius: 50%; background: var(--mc); }
+.rs-q { background: #f7f6fa; border-radius: 10px; padding: 10px 16px; font-size: .85rem; }
+.rs-q summary { font-weight: 700; cursor: pointer; color: #2a0157; }
+.rs-q p { color: var(--color-fg-muted); margin: 6px 0 0; }
+#print-sheet:empty { display: none; }
+#print-sheet { font-family: var(--font-anthropic-sans); color: #22182c; font-size: 9.5pt; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+@media screen { #print-sheet { position: absolute; left: -10000px; top: 0; width: 7.6in; } }
+@media print { @page { size: letter; margin: .45in; } }
+#print-sheet .ps-h { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid var(--mc, #2a0157); padding-bottom: 6px; margin-bottom: 10px; }
+#print-sheet .ps-h img { height: 34px; }
+#print-sheet h1 { font-size: 17pt; margin: 0; color: #2a0157; }
+#print-sheet .ps-s { font-size: 8.5pt; color: #6b6478; margin-top: 2px; }
+#print-sheet h2 { font-size: 10pt; text-transform: uppercase; letter-spacing: .07em; color: #b9420c; margin: 12px 0 5px; }
+#print-sheet .ps-cols { display: grid; grid-template-columns: 1fr 1.25fr; gap: 16px; }
+#print-sheet ol, #print-sheet ul { margin: 0; padding-left: 16px; line-height: 1.4; }
+#print-sheet li { margin: 2px 0; }
+#print-sheet table { width: 100%; border-collapse: collapse; font-size: 8.4pt; }
+#print-sheet th { text-align: left; font-size: 7.5pt; text-transform: uppercase; letter-spacing: .05em; color: #6b6478; border-bottom: 1.5px solid #2a0157; padding: 3px 4px; }
+#print-sheet td { border-bottom: 1px solid #e7e3ee; padding: 4px; vertical-align: top; }
+#print-sheet td:nth-child(2), #print-sheet td:nth-child(3) { white-space: nowrap; }
+#print-sheet .ps-wn { display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; font-weight: 800; font-size: 7.5pt; margin-right: 4px; vertical-align: -3px; }
+#print-sheet .ps-ct { background: #f7f6fa; border-radius: 6px; padding: 6px 8px; line-height: 1.5; }
+#print-sheet .ps-tk { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 14px; }
+#print-sheet .ps-tk div { line-height: 1.35; }
+#print-sheet .ps-f { margin-top: 12px; font-size: 7.5pt; color: #6b6478; border-top: 1px solid #e7e3ee; padding-top: 4px; }
+</style>"""
+    script = """<script>(() => {
+  const D = JSON.parse(document.getElementById('rs-data').textContent);
+  const $ = (s, r = document) => r.querySelector(s);
+  const h = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+  const lum = (hex) => { const v = hex.match(/[0-9a-f]{2}/gi).map((x) => { x = parseInt(x, 16) / 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
+  const ink = (c) => (1.05 / (lum(c) + 0.05) >= 3 ? '#fff' : '#22182c');
+  const tint = (c) => { const n = c.match(/[0-9a-f]{2}/gi).map((x) => parseInt(x, 16)); return `rgba(${n.join(',')},.12)`; };
+  const paint = (el, m) => { el.style.setProperty('--mc', m.color); el.style.setProperty('--mt', tint(m.color)); el.style.setProperty('--mtx', ink(m.color)); };
+  const byWard = Object.fromEntries(D.members.map((m) => [m.ward, m]));
+  const tel = (p) => 'tel:' + p.replace(/[^0-9]/g, '');
+  let sel = null;
+
+  // member strip
+  const strip = $('.rs-strip');
+  for (const m of D.members) {
+    const b = h('button', 'rs-m'); b.type = 'button'; b.setAttribute('role', 'tab'); b.dataset.m = m.m; paint(b, m);
+    const hd = h('span', 'rs-mh'); hd.append(h('span', 'rs-wn', m.ward), h('b', '', m.full)); b.appendChild(hd);
+    b.title = `${m.title} ${m.full}, Ward ${m.ward}`; b.append(h('small', '', `Ward ${m.ward}`), h('span', 'rs-st' + (m.interviewed ? '' : ' no'), m.interviewed ? '● Interviewed' : '○ Not yet'));
+    b.addEventListener('click', () => pick(sel === m.m ? null : m.m, true));
+    strip.appendChild(b);
+  }
+
+  // shared takeaways, with colored member dots
+  const ts = $('.rs-ts');
+  D.themes.forEach((t, i) => {
+    const a = h('article', 'rs-t'); a.id = t.id; a.dataset.wards = t.wards.join(' ');
+    const body = h('div'); body.append(h('h3', '', t.h), h('p', '', t.t));
+    const dots = h('div', 'rs-dots');
+    for (const w of t.wards) { const m = byWard[w]; if (!m) continue; const d = h('button', 'rs-dot'); d.type = 'button'; paint(d, m); d.append(h('i'), `${m.m} · W${w}`); d.title = `Open ${m.full}`; d.addEventListener('click', () => pick(m.m, true)); dots.appendChild(d); }
+    body.appendChild(dots); a.append(h('span', 'rs-n', i + 1), body); ts.appendChild(a);
+  });
+
+  const printBtn = (label) => { const b = h('button', 'rs-print'); b.type = 'button'; b.innerHTML = document.getElementById('rs-print-all').innerHTML; b.lastChild.textContent = label; return b; };
+  function detail(m) {
+    const box = $('#rs-detail'); box.replaceChildren(); if (!m) return;
+    const x = h('div', 'rs-x'); paint(x, m);
+    const hd = h('div', 'rs-xh'); const nm = h('div'); nm.append(h('h3', '', m.full), h('div', 'rs-sub', `${m.title} · Ward ${m.ward} · ${m.interviewed ? 'Office interviewed ' + m.interviewed : 'Not interviewed yet'}`));
+    const pb = printBtn('Print one-pager'); pb.addEventListener('click', () => print1(m));
+    hd.append(h('span', 'rs-wn', m.ward), nm, pb); x.appendChild(hd);
+    const bd = h('div', 'rs-xb'); const L = h('div'), R = h('div');
+    L.appendChild(h('div', 'rs-lab', 'Best ways to reach them'));
+    if (m.best.length) { const ol = h('ol', 'rs-best'); m.best.forEach((t) => ol.appendChild(h('li', '', t))); L.appendChild(ol); }
+    else L.appendChild(h('div', 'rs-none', 'Not interviewed yet. Use the shared takeaways below, and contact the ward office.'));
+    L.appendChild(h('div', 'rs-lab', `Ward ${m.ward} office`));
+    const dl = h('dl', 'rs-ct');
+    const row = (k, v) => { dl.append(h('dt', '', k)); const dd = h('dd'); typeof v === 'string' ? (dd.textContent = v) : dd.appendChild(v); dl.appendChild(dd); };
+    const link = (href, txt, ext) => { const a = h('a', '', txt); a.href = href; if (ext) { a.target = '_blank'; a.rel = 'noopener'; } return a; };
+    row('Phone', link(tel(m.phone), m.phone)); row('Email', link('mailto:' + m.email, m.email));
+    if (m.aide) row('Legislative aide', m.aide); row('Office', m.room); row('Ward page', link(m.page, 'stpaul.gov ↗', true));
+    L.appendChild(dl);
+    if (m.secs.length) for (const [k, v] of m.secs) { R.appendChild(h('div', 'rs-lab', k)); const ul = h('ul'); v.forEach((t) => ul.appendChild(h('li', '', t))); R.appendChild(ul); }
+    else { R.appendChild(h('div', 'rs-lab', 'What their office told us')); R.appendChild(h('div', 'rs-none', 'No interview notes yet.')); }
+    if (m.themes.length) { R.appendChild(h('div', 'rs-lab', 'Shared takeaways they raised')); const tk = h('div', 'rs-tk'); m.themes.forEach((i) => { const a = h('a', '', `${i + 1}. ${D.themes[i].h}`); a.href = '#' + D.themes[i].id; tk.appendChild(a); }); R.appendChild(tk); }
+    const ln = h('div', 'rs-links'); ln.append(link(`course-of-action.html#tab=plan&member=${encodeURIComponent(m.m)}`, 'Their course of action →'), link(`member-by-member.html#member=${encodeURIComponent(m.m)}`, 'Their voting record →')); R.appendChild(ln);
+    bd.append(L, R); x.appendChild(bd); box.appendChild(x);
+  }
+  function pick(name, scroll) {
+    sel = name; const m = D.members.find((x) => x.m === name);
+    document.querySelectorAll('.rs-m').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.m === name)));
+    document.querySelectorAll('.rs-t').forEach((t) => t.classList.toggle('dim', !!m && !t.dataset.wards.split(' ').includes(m.ward)));
+    detail(m);
+    history.replaceState(null, '', name ? '#member=' + encodeURIComponent(name) : location.pathname);
+    try { if (name) localStorage.setItem('spcc-member', name); } catch (e) {}
+    if (scroll && m) $('#members').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // one-pagers
+  const sheet = $('#print-sheet');
+  const head = (title, sub, color) => { const d = h('div', 'ps-h'); const l = h('div'); l.append(h('h1', '', title), h('div', 'ps-s', sub)); const img = document.createElement('img'); img.src = D.logo; img.alt = 'St. Paul Area Chamber'; d.append(l, img); sheet.style.setProperty('--mc', color || '#2a0157'); return d; };
+  const wn = (m) => { const s = h('span', 'ps-wn', m.ward); s.style.background = m.color; s.style.color = ink(m.color); return s; };
+  const foot = () => h('div', 'ps-f', `St. Paul Area Chamber · Ward feedback from interviews with council legislative aides, November 2026 · contacts from stpaul.gov (as of ${new Date(D.members[0].asof + 'T12:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}) · printed ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`);
+  const go = () => { requestAnimationFrame(() => setTimeout(() => window.print(), 60)); };
+  function print1(m) {
+    sheet.replaceChildren(head(`Reaching ${m.full}`, `${m.title} · Ward ${m.ward} · ${m.interviewed ? 'office interviewed ' + m.interviewed : 'office not interviewed yet'}`, m.color));
+    const cols = h('div', 'ps-cols'), L = h('div'), R = h('div');
+    L.appendChild(h('h2', '', 'Best ways to reach them'));
+    if (m.best.length) { const ol = h('ol'); m.best.forEach((t) => ol.appendChild(h('li', '', t))); L.appendChild(ol); } else L.appendChild(h('div', '', 'Not interviewed yet: use the shared takeaways and contact the ward office.'));
+    L.appendChild(h('h2', '', `Ward ${m.ward} office`));
+    const ct = h('div', 'ps-ct'); ct.innerText = [`Phone: ${m.phone}`, `Email: ${m.email}`, m.aide && `Legislative aide: ${m.aide}`, `Office: ${m.room}`, `Ward page: ${m.page}`].filter(Boolean).join('\\n'); L.appendChild(ct);
+    if (m.secs.length) for (const [k, v] of m.secs) { R.appendChild(h('h2', '', `What their office told us: ${k}`)); const ul = h('ul'); v.forEach((t) => ul.appendChild(h('li', '', t))); R.appendChild(ul); }
+    else { R.appendChild(h('h2', '', 'What their office told us')); R.appendChild(h('div', '', 'No interview notes yet.')); }
+    cols.append(L, R); sheet.appendChild(cols);
+    sheet.appendChild(h('h2', '', 'What every office agrees on'));
+    const tk = h('div', 'ps-tk'); D.themes.forEach((t, i) => { const d = h('div'); const b = h('b', '', `${i + 1}. ${t.h}${t.wards.includes(m.ward) ? ' ★' : ''} `); d.append(b, t.t); tk.appendChild(d); }); sheet.appendChild(tk);
+    if (m.themes.length) sheet.appendChild(h('div', 'ps-s', '★ = raised by this member’s office'));
+    sheet.appendChild(foot()); go();
+  }
+  function printAll() {
+    sheet.replaceChildren(head('Reaching the St. Paul City Council', 'Ward office contacts and how each office prefers to be reached'));
+    sheet.appendChild(h('h2', '', 'Council members'));
+    const tb = h('table'); const tr = h('tr'); ['Member', 'Phone', 'Email', 'Legislative aide', 'Best way to reach'].forEach((x) => tr.appendChild(h('th', '', x))); tb.appendChild(tr);
+    for (const m of D.members) { const r = h('tr'); const c = h('td'); c.append(wn(m), h('b', '', m.full)); r.append(c, h('td', '', m.phone), h('td', '', m.email), h('td', '', m.aide || '—'), h('td', '', m.best[0] || 'Not interviewed yet: see shared takeaways')); tb.appendChild(r); }
+    sheet.appendChild(tb);
+    sheet.appendChild(h('h2', '', 'What every office agrees on'));
+    const tk = h('div', 'ps-tk'); D.themes.forEach((t, i) => { const d = h('div'); d.append(h('b', '', `${i + 1}. ${t.h} `), t.t, h('span', 'ps-s', ` (Ward ${t.wards.join(', ')})`)); tk.appendChild(d); }); sheet.appendChild(tk);
+    sheet.appendChild(foot()); go();
+  }
+  $('#rs-print-all').addEventListener('click', () => (sel ? print1(D.members.find((x) => x.m === sel)) : printAll()));
+  window.addEventListener('afterprint', () => sheet.replaceChildren());
+
+  const fromHash = () => { const q = new URLSearchParams(location.hash.slice(1)).get('member'); if (q && D.members.some((m) => m.m === q)) pick(q, false); };
+  fromHash(); window.addEventListener('hashchange', fromHash);
+})();</script>"""
+    data_tag = '<script type="application/json" id="rs-data">' + json.dumps(data).replace('</', '<\\/') + '</script>'
+    open(os.path.join(SITE, 'research.html'), 'w', encoding='utf-8').write(shell('What ward offices told us', body, css, data_tag + '\n' + script + '\n' + site_data() + f'\n<script>{js(SITEJS)}</script>'))
+
+
+def help_page():
+    goals = [('1', 'Find council information fast', 'The record, member profiles and upcoming items in a few clicks, without reading every set of minutes.', 'voting-trends.html', 'Voting trends'),
+             ('2', 'Tailor outreach to each member', 'Each member’s votes, allies, priorities and ward office, so every conversation starts from what matters to them.', 'course-of-action.html', 'Course of action'),
+             ('3', 'Stay current with little upkeep', 'Upload new minutes and the site rebuilds itself; a short yearly check keeps everything else accurate.', '#yearly', 'Yearly update guide')]
+    g = ''.join(f'<article class="hp-goal"><span class="hp-n">{n}</span><h3>{esc(t)}</h3><p>{esc(d)}</p><a href="{h}">{esc(lk)} →</a></article>' for n, t, d, h, lk in goals)
+    steps = [('After every council meeting', 'Upload the new minutes', 'Meeting minutes → Add new minutes. Every page, one-pager and agenda item updates on its own within a few minutes.', None),
+             ('Each January', 'Update the Chamber’s priorities', 'Edit <code>chamber_top_priorities.csv</code>: one row per priority, the year, and today’s date in <code>as_of</code>.', 'chamber_top_priorities.csv'),
+             ('Each January, and after any staff change', 'Check ward office contacts', 'Compare <code>ward_contacts.csv</code> with the city’s council page and update names, phones and the <code>as_of</code> date.', 'ward_contacts.csv'),
+             ('Each January', 'Review each member’s plan', 'Read <code>c_members_text.csv</code> and update the approach, cautions and Chamber relationship for each member.', 'c_members_text.csv'),
+             ('After a council election', 'Update campaign platforms', 'Replace departing members’ rows in <code>platforms.csv</code> with the new members’ platforms, and add the new members to the other files above.', 'platforms.csv'),
+             ('After new interviews', 'Add what ward offices told you', 'Add rows to <code>aide_interviews.csv</code>; the “What ward offices told us” page rebuilds itself.', 'aide_interviews.csv'),
+             ('Each year', 'Renew the upload key', 'Upload keys expire. Make a new one in GitHub and paste it in the Add new minutes dialog.', None)]
+    st = ''.join(f'<li><div class="hp-when">{esc(w)}</div><b>{esc(t)}</b><p>{d}</p></li>' for w, t, d, _ in steps)
+    body = f"""{nav('help.html', False)}
+<main class="hp">
+  <div class="sa-crumb">Help</div>
+  <h1>About this site</h1>
+  <p class="sa-ask">The St. Paul Area Chamber’s guide to the City Council, built from the council’s own meeting minutes.</p>
+  <h2 id="goals">Three key goals</h2>
+  <div class="hp-goals">{g}</div>
+  <h2 id="yearly">Yearly update guide</h2>
+  <p class="hp-lede">Most of the site updates itself from the minutes. These files hold what the minutes can’t: open the site’s GitHub repository, click the file, click the pencil icon to edit, then <b>Commit changes</b>. The site rebuilds in a few minutes.</p>
+  <ol class="hp-steps">{st}</ol>
+  <p class="hp-more">Not sure what a term means? See the <a href="glossary.html">Glossary</a>.</p>
+</main>"""
+    css = """<style>
+.hp { max-width: 960px; margin: 0 auto; padding: 30px 20px 60px; font-family: var(--font-anthropic-sans); }
+.hp h1 { font-size: 2.1rem; margin: 0; }
+.hp h2 { margin: 28px 0 12px; font-size: 1.25rem; color: #2a0157; scroll-margin-top: 90px; }
+.hp-goals { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 12px; }
+.hp-goal { background: #fff; border: 1px solid var(--color-border-line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; box-shadow: 0 1px 2px rgba(42,1,87,.05), 0 6px 18px rgba(42,1,87,.05); }
+.hp-n { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, #c9400c, #d31d44); color: #fff; font-weight: 800; }
+.hp-goal h3 { margin: 10px 0 6px; font-size: 1.05rem; color: #2a0157; }
+.hp-goal p { margin: 0 0 10px; line-height: 1.5; font-size: .92rem; }
+.hp-goal a { margin-top: auto; color: #5b2a86; font-weight: 700; }
+.hp-lede { line-height: 1.55; }
+.hp-steps { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.hp-steps li { background: #fff; border: 1px solid var(--color-border-line); border-radius: 10px; padding: 12px 16px; }
+.hp-when { font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #b9420c; }
+.hp-steps b { display: block; margin: 2px 0; color: #2a0157; }
+.hp-steps p { margin: 0; line-height: 1.5; font-size: .92rem; }
+.hp-steps code { background: #f1e8f0; padding: 1px 5px; border-radius: 4px; font-size: .85em; }
+.hp-more { margin-top: 18px; }
+</style>"""
+    open(os.path.join(SITE, 'help.html'), 'w', encoding='utf-8').write(shell('About this site', body, css, site_data() + f'\n<script>{js(SITEJS)}</script>'))
+
+
 def main():
     shutil.rmtree(SITE, ignore_errors=True)
     os.makedirs(os.path.join(SITE, 'minutes'))
@@ -591,19 +953,21 @@ def main():
     dashboard('voting-trends.html', 'St. Paul City Council voting trends, 2026', 'voting-trends.html', None,
               {k: k for k in ['totals', 'members', 'monthly', 'member_monthly', 'contested', 'agreement', 'm_splits']} | {'votes': 'votes_2026'}, {}, 'trends')
     dashboard('member-by-member.html', 'St. Paul City Council: member by member, 2026', 'member-by-member.html', 'member-by-member.js',
-              {k: k for k in ['m_action_log', 'm_splits', 'member_monthly', 'p_agree', 'p_council', 'p_focus', 'p_member', 'p_months', 'p_topic']},
+              {k: k for k in ['m_action_log', 'm_splits', 'member_monthly', 'p_agree', 'p_council', 'p_focus', 'p_member', 'p_months', 'p_topic']} | {'ward_contacts': narr('ward_contacts.csv') or 'member\n'},
               {'from': months[0]['month'], 'member': 'All', 'to': months[-1]['month']}, 'members')
     pb = {k: k for k in ['b_kpis', 'b_members', 'b_issue_member', 'b_issues', 'b_splits', 'b_ordinances', 'b_delays', 'b_log', 'b_persia', 'b_persia_member']}
     pb['b_watch'] = playbook_watch()
     pb['b_watch_hist'] = watch_history()
     dashboard('playbook.html', 'Chamber of Commerce playbook: St. Paul City Council, 2026', 'playbook.html', 'playbook.js', pb, {'member': 'All'}, 'playbook')
     dashboard('course-of-action.html', 'St. Paul Chamber course of action: City Council 2026', 'course-of-action.html', 'course-of-action.js',
-              {k: k for k in ['c_members', 'c_priorities', 'c_issues', 'c_items', 'b_kpis', 'b_watch']}, {'tab': 'plan', 'q': '', 'member': 'All'}, 'coa')
+              {k: k for k in ['c_members', 'c_priorities', 'c_issues', 'c_items', 'b_kpis', 'b_watch']} | {'ward_contacts': narr('ward_contacts.csv') or 'member\n'}, {'tab': 'plan', 'q': '', 'member': 'All'}, 'coa')
     dashboard('platforms.html', 'Platforms vs. votes: St. Paul City Council, 2026', 'platforms.html', 'platforms.js',
               {k: k for k in ['pv_platforms', 'pv_cells', 'pv_theme', 'pv_items']}, {'member': 'Noecker', 'theme': 'Housing & renters'}, 'platforms')
     library(meetings)
     home(meetings)
     glossary()
+    research()
+    help_page()
     os.makedirs(os.path.join(SITE, 'vendor'), exist_ok=True)
     for n in ('pdfjs.min.js', 'pdfjs.worker.min.js'):
         p = os.path.join(WEB, 'vendor', n)

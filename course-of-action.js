@@ -43,6 +43,20 @@
   const naSpan = (v) => { const s = el('span', isNA(v) ? 'na' : '', isNA(v) ? (v && String(v).length > NA.length ? v : NA) : v); return s; };
   const rankColor = (r) => dash.colors[(+r - 1) % dash.colors.length];
   const sel = () => { const m = dash.params().member; return m && m !== 'All' ? m : null; };
+  // ward office contact, from narrative/ward_contacts.csv
+  const wardLine = (m, cls) => {
+    const rows = (dash.data('ward_contacts') || {}).data || [];
+    const r = rows.find((x) => x.member === m); if (!r) return null;
+    const box = document.createElement('div'); box.className = cls || 'ward-line';
+    const lab = document.createElement('b'); lab.textContent = `Ward ${r.ward} office`; box.appendChild(lab);
+    const add = (node) => { box.append(' · '); box.appendChild(node); };
+    if (r.phone) { const a = document.createElement('a'); a.href = 'tel:' + r.phone.replace(/[^0-9]/g, ''); a.textContent = r.phone; add(a); }
+    if (r.email) { const a = document.createElement('a'); a.href = 'mailto:' + r.email; a.textContent = r.email; add(a); }
+    if (r.ward_page) { const a = document.createElement('a'); a.href = r.ward_page; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Ward page ↗'; add(a); }
+    if (r.legislative_aide) { const s = document.createElement('span'); s.className = 'ward-aide'; s.textContent = `Legislative aide: ${r.legislative_aide}`; box.appendChild(document.createElement('br')); box.appendChild(s); }
+    return box;
+  };
+
   const pickM = (m) => dash.setParams({ member: sel() === m ? 'All' : m });
   const members = () => { const m = ok('c_members'); return m ? m.slice().sort((a, b) => +a.rank - +b.rank) : null; };
 
@@ -168,6 +182,7 @@
       meterRow(ms, 'Business lead', +d.biz_lead, +d.biz_lead_max, d.biz_lead, rankColor(d.rank));
       meterRow(ms, 'Pushback', +d.biz_pushback, +d.biz_pushback_max, d.biz_pushback, 'var(--color-bad)');
       c.appendChild(ms);
+      const wl = wardLine(d.member, 'ward-line'); if (wl) c.appendChild(wl);
       const pk = el('button', 'pick', sel() ? '← Show all members' : `Focus on ${d.member}`); pk.type = 'button'; pk.addEventListener('click', () => { pickM(d.member); document.getElementById('plan-members')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }); c.appendChild(pk);
       const secs = el('div', 'secs'); c.appendChild(secs);
       const sec = (h, v, mode) => { const s = el('div', 'sec'); s.appendChild(el('b', '', h)); s.appendChild(mode && !isNA(v) ? rich(v, mode) : naSpan(v)); secs.appendChild(s); };

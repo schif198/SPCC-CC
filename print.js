@@ -357,7 +357,9 @@
         ]));
         S.add(kpis([['Outreach order', `#${who.rank} of ${cm.length}`], ['With majority on splits', pct(who.majority_share)], ['Votes cast', pct(who.participation)], ['Business-item activity', int(who.biz_lead)]]));
         const plan = el('div', 'ps-plan');
-        for (const [h, v] of [['Recommended approach', who.approach], ['Engage on', who.engage_on], ['Lead with (Chamber value)', who.lead_with], ['Cautions', who.cautions], ['Chamber relationship', who.chamber_relationship]]) {
+        const wc = rows('ward_contacts').find((r) => r.member === who.member);
+        const office = wc ? `Ward ${wc.ward}: ${[wc.phone, wc.email].filter(Boolean).join(' · ')}${wc.legislative_aide ? ` · aide ${wc.legislative_aide}` : ''}` : '';
+        for (const [h, v] of [['Recommended approach', who.approach], ['Engage on', who.engage_on], ['Lead with (Chamber value)', who.lead_with], ['Cautions', who.cautions], ['Chamber relationship', who.chamber_relationship], ['Ward office', office]]) {
           const d = el('div', 'ps-pl'); d.appendChild(el('b', '', h)); d.appendChild(el('span', '', isNA(v) ? NA : cut(v, 330))); plan.appendChild(d);
         }
         S.add(section('Plan', plan));

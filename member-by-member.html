@@ -64,6 +64,10 @@
 #member-allies .ally-key span { display: inline-flex; align-items: center; gap: 5px; }
 #member-allies .ally-key i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
 #member-allies .ally-key b { color: var(--color-fg); font-weight: 600; }
+.ward-contact .ward-line { margin-top: 10px; padding: 8px 12px; background: #f6f0fb; border-radius: 8px; font-size: var(--cds-font-size-caption); line-height: 1.6; }
+.ward-contact .ward-line b { color: #2a0157; }
+.ward-contact a { color: #5b2a86; font-weight: 600; white-space: nowrap; }
+.ward-contact .ward-aide { color: var(--color-fg-muted); }
 </style>
 
 <div class="cg">
@@ -146,6 +150,7 @@
         <div class="role" data-draw="mv" data-source="p_member" data-field="role" data-fmt="text">—</div>
         <div class="lead">Leads most on <b data-draw="mv" data-source="p_member" data-field="top_focus" data-fmt="text">—</b></div>
         <div class="lead">Votes most like <b data-draw="mv" data-source="p_member" data-field="closest" data-fmt="text">—</b>, least like <b data-draw="mv" data-source="p_member" data-field="farthest" data-fmt="text">—</b></div>
+        <div class="ward-contact" data-draw="wardcontact" data-source="ward_contacts"></div>
       </div>
       <div class="meter"><div class="lab">Participation</div><div class="chart gauge" data-draw="mgauge" data-source="p_member" data-field="participation"></div></div>
       <div class="meter"><div class="lab">Sided with majority on split votes</div><div class="chart gauge" data-draw="mgauge" data-source="p_member" data-field="majority_share"></div></div>
