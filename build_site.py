@@ -77,6 +77,7 @@ GROUPS = [
                          ('@latest', 'Latest minutes', 'Open the newest meeting minutes (PDF)'),
                          ('library.html#upload', 'Add new minutes', 'Upload the latest minutes PDF')]),
     ('Help', [('help.html', 'About this site', 'Its three goals and the yearly update guide'),
+              ('edit-guide.html', 'How to edit this site', 'Plain-language steps for keeping the site up to date'),
               ('glossary.html', 'Glossary', 'What the terms on this site mean')]),
 ]
 LATEST_PDF = ''  # set in main() to the newest minutes file
@@ -993,7 +994,7 @@ def help_page():
   <h2 id="yearly">Yearly update guide</h2>
   <p class="hp-lede">Most of the site updates itself from the minutes. These files hold what the minutes can’t: open the site’s GitHub repository, click the file, click the pencil icon to edit, then <b>Commit changes</b>. The site rebuilds in a few minutes.</p>
   <ol class="hp-steps">{st}</ol>
-  <p class="hp-more">Not sure what a term means? See the <a href="glossary.html">Glossary</a>.</p>
+  <p class="hp-more">New to GitHub? Start with <a href="edit-guide.html">How to edit this site</a>. Not sure what a term means? See the <a href="glossary.html">Glossary</a>.</p>
 </main>"""
     css = """<style>
 .hp { max-width: 960px; margin: 0 auto; padding: 30px 20px 60px; font-family: var(--font-anthropic-sans); }
@@ -1015,6 +1016,108 @@ def help_page():
 .hp-more { margin-top: 18px; }
 </style>"""
     open(os.path.join(SITE, 'help.html'), 'w', encoding='utf-8').write(shell('About this site', body, css, site_data() + f'\n<script>{js(SITEJS)}</script>'))
+
+
+def edit_guide():
+    repo = REPO or 'schif198/SPCC-CC'
+    gh = f'https://github.com/{repo}'
+    files = [('Ward office phone, email or aide', 'ward_contacts.csv'), ('What ward offices told us', 'aide_interviews.csv'),
+             ('The Chamber’s top priorities', 'chamber_top_priorities.csv'), ('Each member’s outreach plan', 'c_members_text.csv'),
+             ('Campaign platforms', 'platforms.csv'), ('Council member photos', 'headshot-lastname.jpg')]
+    ft = ''.join(f'<tr><td>{esc(a)}</td><td><code>{esc(b)}</code></td></tr>' for a, b in files)
+    body = f"""{nav('edit-guide.html', False)}
+<main class="eg" id="eg">
+  <div class="eg-top">
+    <div><div class="sa-crumb">Help</div>
+    <h1>How to edit this site</h1>
+    <p class="sa-ask">Plain steps for whoever looks after the site. No coding needed.</p></div>
+    <button type="button" class="eg-print" id="eg-print"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg><span>Print this guide</span></button>
+  </div>
+  <section class="eg-intro">
+    <p><b>How it works.</b> The site’s files live in an online folder on <b>GitHub</b>, a free website for storing files. The folder is called <a href="{gh}" target="_blank" rel="noopener">{esc(repo.split('/')[-1])} ↗</a>. When a file there changes, the site rebuilds itself in about 3 minutes.</p>
+    <p><b>You need</b> a free GitHub account that has been given access to that folder. Ask the current site owner to add you.</p>
+  </section>
+  <div class="eg-grid">
+    <section class="eg-card"><h2><span class="eg-n">1</span>Add new meeting minutes</h2>
+      <p class="eg-tag">Most common task · no GitHub needed</p>
+      <ol><li>On this site, open <b>Meeting minutes → Add new minutes</b>.</li><li>Choose the minutes PDF from your computer.</li><li>Paste the <b>upload key</b> (see step 5) and click <b>Upload</b>.</li><li>Wait about 3 minutes. Every page updates on its own.</li></ol></section>
+    <section class="eg-card"><h2><span class="eg-n">2</span>Upload a file to GitHub</h2>
+      <ol><li>Open the <a href="{gh}" target="_blank" rel="noopener">site folder ↗</a> and sign in.</li><li>Click <b>Add file</b>, then <b>Upload files</b>.</li><li>Drag the files into the box. Keep their names exactly as they are.</li><li>Click the green <b>Commit changes</b> button.</li></ol></section>
+    <section class="eg-card eg-wide"><h2><span class="eg-n">3</span>Change words on the site</h2>
+      <div class="eg-split"><table class="eg-tb"><thead><tr><th>To change…</th><th>Edit this file</th></tr></thead><tbody>{ft}</tbody></table>
+      <ol><li>In the <a href="{gh}" target="_blank" rel="noopener">site folder ↗</a>, click the file’s name.</li><li>Click the pencil icon ✎ (Edit).</li><li>Change only the words. Keep the first row and the commas between columns.</li><li>Click <b>Commit changes</b>.</li></ol></div>
+      <p class="eg-tip">Easier in Excel? Download the file, edit it, choose <b>Save As → CSV</b>, then upload it as in step 2 with the same name.</p></section>
+    <section class="eg-card"><h2><span class="eg-n">4</span>Check that it worked</h2>
+      <p>Open the <a href="{gh}/actions" target="_blank" rel="noopener">Actions tab ↗</a> in the folder.</p>
+      <ul class="eg-status"><li><i class="y"></i><span><b>Yellow dot:</b> still building. Wait.</span></li><li><i class="g">✓</i><span><b>Green check:</b> done. Refresh the site.</span></li><li><i class="r">✕</i><span><b>Red X:</b> click it and read the message; it names the file to upload again. The site keeps its last good version meanwhile.</span></li></ul></section>
+    <section class="eg-card"><h2><span class="eg-n">5</span>Renew the upload key (yearly)</h2>
+      <ol><li>On GitHub, click your photo → <b>Settings</b> → <b>Developer settings</b> → <b>Personal access tokens</b> → <b>Fine-grained tokens</b> → <b>Generate new token</b>.</li><li>Under <b>Repository access</b>, pick only <b>{esc(repo.split('/')[-1])}</b>. Under <b>Permissions</b>, set <b>Contents</b> to <b>Read and write</b>.</li><li>Click <b>Generate</b>, copy the key, and keep it somewhere safe.</li></ol></section>
+  </div>
+  <section class="eg-hand"><h2>Before December 16: handing the site over</h2>
+    <ul><li>In the <a href="{gh}/settings/access" target="_blank" rel="noopener">folder’s settings ↗</a>, choose <b>Collaborators → Add people</b> and add the new owner (or transfer the folder to them).</li><li>Have them make their own upload key (step 5).</li><li>Print this page for them. For yearly checks, see <a href="help.html#yearly">About this site</a>; for terms, the <a href="glossary.html">Glossary</a>.</li></ul></section>
+  <p class="eg-foot">Stuck? Don’t delete files. A wrong change can be undone in GitHub: open the file, click <b>History</b>, and upload the earlier version again.</p>
+</main>
+<div id="print-sheet"></div>"""
+    css = """<style>
+.eg { max-width: 1060px; margin: 0 auto; padding: 26px 20px 50px; font-family: var(--font-anthropic-sans); }
+.eg-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; }
+.eg h1 { font-size: 2.1rem; margin: 0; }
+.eg-print { display: inline-flex; align-items: center; gap: 8px; font: inherit; font-size: .88rem; font-weight: 700; color: #fff; background: #2a0157; border: 0; border-radius: 8px; padding: 9px 14px; cursor: pointer; }
+.eg-print:hover { background: #3d0a78; }
+.eg-intro { background: var(--brand-tint, #f6f0fb); border: 1px solid #e3d6f0; border-radius: 12px; padding: 12px 16px; margin-bottom: 12px; }
+.eg-intro p { margin: 4px 0; line-height: 1.5; }
+.eg a { color: #5b2a86; font-weight: 600; }
+.eg-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 760px) { .eg-grid { grid-template-columns: minmax(0, 1fr); } }
+.eg-card { background: #fff; border: 1px solid var(--color-border-line); border-radius: 12px; padding: 12px 16px; box-shadow: 0 1px 2px rgba(42,1,87,.05), 0 6px 18px rgba(42,1,87,.05); }
+.eg-wide { grid-column: 1 / -1; }
+.eg h2 { display: flex; align-items: center; gap: 10px; margin: 0 0 6px; font-size: 1.08rem; color: #2a0157; }
+.eg-n { width: 28px; height: 28px; flex: none; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, #c9400c, #d31d44); color: #fff; font-weight: 800; font-size: .85rem; }
+.eg-tag { margin: -2px 0 6px 38px; font-size: .74rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #b9420c; }
+.eg ol, .eg ul { margin: 0; padding-left: 1.3rem; line-height: 1.5; font-size: .93rem; }
+.eg li + li { margin-top: 3px; }
+.eg p { font-size: .93rem; }
+.eg-card p { margin: 0 0 6px; line-height: 1.5; }
+.eg-split { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 760px) { .eg-split { grid-template-columns: minmax(0, 1fr); } }
+.eg-tb { width: 100%; border-collapse: collapse; font-size: .88rem; }
+.eg-tb th { text-align: left; font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: #6b6478; border-bottom: 2px solid #2a0157; padding: 4px 6px; }
+.eg-tb td { border-bottom: 1px solid var(--color-border-line); padding: 4px 6px; vertical-align: top; }
+.eg code { background: #f1e8f0; padding: 1px 5px; border-radius: 4px; font-size: .86em; overflow-wrap: anywhere; }
+.eg-tip { margin-top: 8px !important; font-size: .86rem !important; color: var(--color-fg-muted); }
+.eg-status { list-style: none; padding: 0 !important; display: flex; flex-direction: column; gap: 5px; }
+.eg-status li { display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: start; margin: 0 !important; }
+.eg-status i { width: 18px; height: 18px; margin-top: 2px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: .7rem; font-weight: 800; color: #fff; }
+.eg-status i.y { background: #e0a030; } .eg-status i.g { background: #1f8a78; } .eg-status i.r { background: #c9400c; }
+.eg-hand { margin-top: 12px; border: 2px solid #f15a25; border-radius: 12px; padding: 12px 16px; background: #fff7f2; }
+.eg-hand h2 { color: #b9420c; }
+.eg-foot { margin: 12px 0 0; font-size: .88rem; color: var(--color-fg-muted); }
+/* the printed guide: the same content on one letter page */
+#print-sheet .eg { max-width: none; padding: 0; font-size: 8.4pt; }
+#print-sheet .eg-print, #print-sheet .sa-crumb { display: none; }
+#print-sheet .eg h1 { font-size: 17pt; }
+#print-sheet .sa-ask { margin: 2px 0 0; font-size: 9pt; }
+#print-sheet .eg-top { margin-bottom: 6px; }
+#print-sheet .eg ol, #print-sheet .eg ul, #print-sheet .eg p, #print-sheet .eg-tb { font-size: 8.4pt; line-height: 1.35; }
+#print-sheet .eg-grid { gap: 6px; } #print-sheet .eg-card, #print-sheet .eg-intro, #print-sheet .eg-hand { padding: 6px 10px; box-shadow: none; margin-bottom: 6px; }
+#print-sheet .eg-grid .eg-card { margin-bottom: 0; }
+#print-sheet .eg h2 { font-size: 10pt; margin-bottom: 3px; } #print-sheet .eg-n { width: 18px; height: 18px; font-size: 7.5pt; }
+#print-sheet .eg-tag { margin-left: 28px; font-size: 6.5pt; }
+#print-sheet .eg-tb td, #print-sheet .eg-tb th { padding: 1px 4px; }
+#print-sheet a { color: #2a0157; text-decoration: none; }
+#print-sheet .eg-tip { font-size: 8pt !important; margin-top: 4px !important; }
+@media print { @page { size: letter; margin: .45in; } }
+</style>"""
+    script = """<script>(function () {
+  const sheet = document.getElementById('print-sheet');
+  document.getElementById('eg-print').addEventListener('click', () => {
+    const c = document.getElementById('eg').cloneNode(true); c.removeAttribute('id');
+    c.querySelectorAll('a[href^="http"]').forEach((a) => { a.textContent = a.textContent.replace(' ↗', '') + ' (' + a.href.replace(/^https:\\/\\//, '') + ')'; });
+    sheet.replaceChildren(c); window.print();
+  });
+  window.addEventListener('afterprint', () => sheet.replaceChildren());
+})();</script>"""
+    open(os.path.join(SITE, 'edit-guide.html'), 'w', encoding='utf-8').write(shell('How to edit this site', body, css, script + '\n' + site_data() + f'\n<script>{js(SITEJS)}</script>'))
 
 
 def main():
@@ -1047,6 +1150,7 @@ def main():
     research()
     outreach()
     help_page()
+    edit_guide()
     os.makedirs(os.path.join(SITE, 'vendor'), exist_ok=True)
     for n in ('pdfjs.min.js', 'pdfjs.worker.min.js'):
         p = os.path.join(WEB, 'vendor', n)
