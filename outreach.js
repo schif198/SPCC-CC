@@ -77,13 +77,239 @@
     S.facts.forEach((f, i) => {
       const row = h('div', 'op-fact'); row.append(h('span', 'num', String(i + 1)));
       const box = h('div', 'in');
-      const a = h('input'); a.maxLength = 180; a.placeholder = ['e.g. 42 drive-thru restaurants employ 600 St. Paul residents.', 'e.g. 70% of drive-thru sales come after 5 p.m.', 'e.g. Minneapolis reversed its ban in 2025.'][i] || 'Another fact'; a.value = f.t; a.setAttribute('aria-label', `Fact ${i + 1}`);
+      const a = h('textarea'); a.rows = 1; a.maxLength = 180;
+      const grow = () => { a.style.height = 'auto'; a.style.height = a.scrollHeight + 2 + 'px'; }; a.placeholder = ['e.g. 42 drive-thru restaurants employ 600 St. Paul residents.', 'e.g. 70% of drive-thru sales come after 5 p.m.', 'e.g. Minneapolis reversed its ban in 2025.'][i] || 'Another fact'; a.value = f.t; a.setAttribute('aria-label', `Fact ${i + 1}`);
       const s = h('input'); s.maxLength = 70; s.placeholder = 'Source'; s.value = f.s; s.setAttribute('aria-label', `Source for fact ${i + 1}`);
-      a.addEventListener('input', () => { f.t = a.value; update(false); });
+      a.addEventListener('input', () => { f.t = a.value; grow(); update(false); });
+      requestAnimationFrame(grow);
       s.addEventListener('input', () => { f.s = s.value; update(false); });
       box.append(a, s); row.append(box); factsBox.appendChild(row);
     });
   };
+
+
+  // ---------- pull facts from a document: read it in the browser, skim for key takeaways ----------
+  // Nothing is uploaded anywhere; the file is read on this computer only.
+  const td = new TextDecoder();
+  async function unzip(buf) {
+    const v = new DataView(buf), u8 = new Uint8Array(buf), files = {};
+    let e = buf.byteLength - 22; while (e >= 0 && v.getUint32(e, true) !== 0x06054b50) e--;
+    if (e < 0) throw new Error('not a zip');
+    let p = v.getUint32(e + 16, true); const n = v.getUint16(e + 10, true);
+    for (let i = 0; i < n; i++) {
+      const method = v.getUint16(p + 10, true), size = v.getUint32(p + 20, true), nl = v.getUint16(p + 28, true), xl = v.getUint16(p + 30, true), cl = v.getUint16(p + 32, true), off = v.getUint32(p + 42, true);
+      const name = td.decode(u8.subarray(p + 46, p + 46 + nl)); p += 46 + nl + xl + cl;
+      files[name] = async () => {
+        const start = off + 30 + v.getUint16(off + 26, true) + v.getUint16(off + 28, true), raw = u8.subarray(start, start + size);
+        if (method === 0) return td.decode(raw);
+        const ds = new Blob([raw]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+        return td.decode(await new Response(ds).arrayBuffer());
+      };
+    }
+    return files;
+  }
+  const xml = (s) => new DOMParser().parseFromString(s, 'application/xml');
+  const tagText = (el, ns) => [...el.getElementsByTagName(ns)].map((t) => t.textContent).join('');
+  const natural = (a, b) => a.localeCompare(b, undefined, { numeric: true });
+
+  async function readDoc(file) {
+    const ext = (file.name.split('.').pop() || '').toLowerCase(), buf = await file.arrayBuffer();
+    if (ext === 'pdf') {
+      const pdfjs = await import(new URL('vendor/pdfjs.min.js', location.href).href);
+      pdfjs.GlobalWorkerOptions.workerSrc = new URL('vendor/pdfjs.worker.min.js', location.href).href;
+      const doc = await pdfjs.getDocument({ data: new Uint8Array(buf) }).promise, pages = [];
+      for (let i = 1; i <= Math.min(doc.numPages, 40); i++) {
+        const items = (await (await doc.getPage(i)).getTextContent()).items.filter((t) => t.str && t.str.trim());
+        const rows = [];
+        items.forEach((t) => { const y = t.transform[5], r = rows.find((r) => Math.abs(r.y - y) < Math.max(2, (t.height || 8) * 0.45)); (r || (rows.push({ y, it: [] }), rows[rows.length - 1])).it.push(t); });
+        rows.sort((a, b) => b.y - a.y);
+        const tidy = (o) => o.replace(/ +/g, ' ').replace(/ ?\t ?/g, '\t').trim();
+        pages.push(rows.flatMap((r) => {
+          r.it.sort((a, b) => a.transform[4] - b.transform[4]);
+          const segs = []; let out = '', end = null;
+          r.it.forEach((t) => {
+            const x = t.transform[4], fs = t.height || 8;
+            if (end != null && x < end - fs) { segs.push(tidy(out)); out = ''; end = null; } // overlapping text: a separate stream
+            if (end != null) out += x - end > fs * 0.8 ? '\t' : (x - end > fs * 0.15 || /\s$/.test(out) ? ' ' : '');
+            out += t.str; end = x + (t.width || 0);
+          });
+          segs.push(tidy(out)); return segs.reverse().filter(Boolean);
+        }));
+      }
+      return pages;
+    }
+    if (ext === 'docx') {
+      const z = await unzip(buf); const d = xml(await z['word/document.xml']()); const out = [];
+      const body = d.getElementsByTagName('w:body')[0] || d.documentElement;
+      [...body.children].forEach((el) => {
+        if (el.localName === 'tbl') [...el.getElementsByTagName('w:tr')].forEach((tr) => out.push([...tr.getElementsByTagName('w:tc')].map((tc) => tagText(tc, 'w:t').trim()).join('\t')));
+        else if (el.localName === 'p') { const style = (el.getElementsByTagName('w:pStyle')[0] || {}).getAttribute?.('w:val') || ''; const num = el.getElementsByTagName('w:numPr').length; const t = tagText(el, 'w:t').trim(); if (t) out.push((/heading|title/i.test(style) ? '#' : num ? '• ' : '') + t); }
+      });
+      return [out];
+    }
+    if (ext === 'pptx') {
+      const z = await unzip(buf); const names = Object.keys(z).filter((n) => /^ppt\/slides\/slide\d+\.xml$/.test(n)).sort(natural);
+      return Promise.all(names.map(async (n) => [...xml(await z[n]()).getElementsByTagName('a:p')].map((p) => tagText(p, 'a:t').trim()).filter(Boolean)));
+    }
+    if (ext === 'xlsx') {
+      const z = await unzip(buf);
+      const ss = z['xl/sharedStrings.xml'] ? [...xml(await z['xl/sharedStrings.xml']()).getElementsByTagName('si')].map((si) => tagText(si, 't')) : [];
+      const names = Object.keys(z).filter((n) => /^xl\/worksheets\/sheet\d+\.xml$/.test(n)).sort(natural);
+      return Promise.all(names.map(async (n) => [...xml(await z[n]()).getElementsByTagName('row')].map((row) => [...row.getElementsByTagName('c')].map((c) => {
+        const t = c.getAttribute('t'), vv = (c.getElementsByTagName('v')[0] || {}).textContent || '';
+        if (t === 's') return ss[+vv] || ''; if (t === 'inlineStr') return tagText(c, 't');
+        const s = c.getAttribute('s'); return vv && !isNaN(vv) && Math.abs(+vv) >= 1000 && !/^\d{4}$/.test(vv) ? Math.round(+vv).toLocaleString('en-US') : vv; // keep years as-is
+      }).map((x) => String(x).trim()).filter(Boolean).join('\t')).filter(Boolean)));
+    }
+    const text = td.decode(buf);
+    if (ext === 'csv') return [text.split(/\r?\n/).map((l) => { const c = []; let cur = '', q = false; for (const ch of l) { if (ch === '"') q = !q; else if (ch === ',' && !q) { c.push(cur.trim()); cur = ''; } else cur += ch; } c.push(cur.trim()); return c.filter(Boolean).join('\t'); }).filter(Boolean)];
+    return [text.split(/\r?\n/).map((l) => l.replace(/^#+\s*/, (m) => '#')).map((l) => l.trim()).filter(Boolean)];
+  }
+
+  const NUM = /(\$\s?\d|\d[\d,.]*\s?%|\b\d{1,3}(,\d{3})+\b|\b\d+(\.\d+)?\s?(x|times|percent|jobs|businesses|residents|people|days|weeks|months|years|million|billion|thousand|k)\b|\b(one|two|three|four|five|half|double|triple)\b(?= (of|times|as))|\b\d{3,}\b(?!\s*(·|-|–)\s*\d))/i;
+  const ABBR = /\b(St|Mr|Mrs|Ms|Dr|vs|No|Inc|Co|Jr|Sr|Ave|Blvd|approx|est|Jan|Feb|Mar|Apr|Aug|Sept?|Oct|Nov|Dec|e\.g|i\.e|U\.S|a\.m|p\.m)\./g;
+  const sentences = (t) => (t.replace(ABBR, (m) => m.replace(/\./g, '\u2024')).match(/[^.!?]+(?:[.!?]+(?=\s|$)|$)/g) || [t]).map((x) => x.replace(/\u2024/g, '.').trim()).filter(Boolean);
+  const COMPARE = /\b(highest|lowest|most|least|more|less|fewer|double|triple|twice|half|times|than|above|below|only|every|increase[sd]?|decrease[sd]?|rose|fell|grew|cut|drop(ped)?|gap|cost(s|ly)?|save[sd]?|lose|lost)\b/i;
+  const KEYHEAD = /(key\s+(takeaways?|findings?|points?|facts?|messages?)|takeaways?|highlights?|summary|executive summary|conclusions?|bottom line|what we found|findings|recommendations?|at a glance)/i;
+  const isHeading = (l) => l.startsWith('#') || (l.length <= 40 && KEYHEAD.test(l) && !/[.;,]$/.test(l)) || (/^[A-Z][a-z’']*( [a-z&’'/-]+| [A-Z][\w’'/-]*){0,4}$/.test(l) && !/\t/.test(l)) || (l.length <= 70 && !/[.;:,]$/.test(l) && !NUM.test(l) && !l.includes('\t') && (/^[A-Z0-9 &/,'’()-]{4,}$/.test(l) || /^([A-Z][\w’'&/-]*\s?){1,7}$/.test(l)));
+
+  function skim(pages, fname) {
+    // 1. stitch lines that a print cut across pages (a spreadsheet printed in two halves, for example)
+    let lines = [];
+    const first = new Set();
+    pages.forEach((pg, pi) => pg.forEach((l) => { const k = l.toLowerCase(); if (first.has(k)) return; first.add(k); lines.push({ t: l, pg: pi }); })); // repeated page headers and columns
+    const tailLen = 22;
+    for (const a of lines) {
+      if (a.dead || a.t.length < 40) continue;
+      for (let guard = 0; guard < 4; guard++) {
+        const tail = a.t.slice(-tailLen); let hit = false;
+        for (const b of lines) {
+          if (b === a || b.dead || b.pg === a.pg || b.t.length < tailLen + 4) continue;
+          const i = b.t.indexOf(tail);
+          if (i >= 0 && i + tailLen < b.t.length && !a.t.includes(b.t.slice(i + tailLen, i + tailLen + 12))) { a.t += b.t.slice(i + tailLen); b.dead = true; hit = true; break; }
+        }
+        if (!hit) break;
+      }
+    }
+    lines = lines.filter((l) => !l.dead).map((l) => l.t);
+    // drop fragments that are just a piece of a longer line (the cut-off half of a stitched line)
+    lines = lines.filter((l) => l.length < 14 || !lines.some((m) => m !== l && m.length > l.length && m.includes(l)));
+    // 2. title, sections, paragraphs and table rows
+    const okTitle = (l) => l.length >= 8 && l.length <= 100 && !l.includes('\t') && !/[.:;,]$/.test(l) && !/^(page \d|key take)/i.test(l) && !/^\s*(\d+[.)]|[•●▪\-–*])\s/.test(l);
+    const title = (lines.find((l) => l.startsWith('#') && okTitle(l.slice(1))) || lines.slice(0, 6).find(okTitle) || fname.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ')).replace(/^#/, '').trim();
+    const paras = [], rows = []; let sec = '', cur = null, header = null;
+    const bulletRe = /^\s*(\d{1,2}[.)]|[•●▪◦\-–*])\s+/;
+    for (const raw of lines) {
+      const l = raw.replace(/^#/, '').trim(); if (!l || l === title) continue;
+      const cells = l.split('\t').map((c) => c.trim()).filter(Boolean).flatMap((c, i) => { const m = i && c.match(/^([$\-–(]?\s?[\d,.]+%?\)?)\s+(.+)$/); return m ? [m[1], m[2]] : [c]; });
+      const numCells = cells.filter((c) => /^[$\-–(]?\s?[\d,.]+%?\)?$|^n\/?a$|^—$/i.test(c));
+      if (cells.length >= 3 && numCells.length === cells.length - 1 && cells.slice(1).every((c) => /^(19|20)\d{2}$/.test(c))) { header = cells; cur = null; continue; } // a row of years is a header
+      if (cells.length >= 2 && numCells.length >= 1 && !numCells.includes(cells[0]) && (numCells.length >= 2 || header) && cells.length - numCells.length <= 3) {
+        const label = cells[0].replace(/\s*\([^)]*$/, '').trim(), vals = cells.slice(1);
+        const hd = header ? header.slice(header.length > vals.length ? 1 : 0).slice(0, vals.length) : [];
+        const old = rows.find((r) => r.label === label);
+        if (old) { old.vals.push(...vals); old.hd.push(...hd.concat(Array(vals.length - hd.length).fill(''))); }
+        else rows.push({ label, vals, hd: hd.concat(Array(vals.length - hd.length).fill('')), sec });
+        cur = null; continue;
+      }
+      if (cells.length >= 3 && !numCells.length && cells.every((c) => c.length < 40)) { header = cells; cur = null; continue; }
+      const cellish = cells.length > 1 ? cells.join(' ') : l;
+      if (raw.startsWith('#') || isHeading(cellish)) { sec = cellish; cur = null; continue; }
+      const cont = cur && !bulletRe.test(cellish) && !/[.!?:)”"]$/.test(cur.t) && (/^[a-z(“"$0-9]/.test(cellish) || (cur.list && cellish.length > 30));
+      if (!cont) { cur = { t: cellish.replace(bulletRe, ''), sec, list: bulletRe.test(cellish) }; paras.push(cur); }
+      else cur.t += ' ' + cellish;
+    }
+    // 3. score points: a list item or a sentence that carries a number, a comparison, St. Paul, or sits under "Key takeaways"
+    const pts = [];
+    paras.forEach((p, pi) => {
+      const key = KEYHEAD.test(p.sec);
+      const parts = p.list || key ? [p.t] : sentences(p.t);
+      parts.forEach((t, si) => {
+        if (t.length < 25 || t.length > 900) return;
+        let sc = 0;
+        if (key) sc += 6; if (p.list) sc += 2; if (NUM.test(t)) sc += 3; if (COMPARE.test(t)) sc += 2;
+        if (/\b(st\.?|saint)\s+paul\b/i.test(t)) sc += 1.5; if (/\b(business(es)?|jobs?|employ|owners?|tax|fees?|costs?|permits?|licen[sc]e)/i.test(t)) sc += 1;
+        if (/\b(see|click|page \d|table of contents|copyright|prepared (by|for)|all rights)\b/i.test(t) && !NUM.test(t)) sc -= 4;
+        if (si === 0) sc += 0.5; sc -= pi * 0.01;
+        if (/·/.test(t) && /prepared|schedules?|vs\./i.test(t)) sc -= 5;
+        pts.push({ t, sc, key, i: pts.length });
+      });
+    });
+    pts.sort((a, b) => b.sc - a.sc);
+    const norm = (t) => t.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+    const take = []; for (const p of pts) { const n = norm(p.t); if (p.sc < 2.5 || take.some((q) => norm(q.t).includes(n) || n.includes(norm(q.t)))) continue; take.push(p); if (take.length >= 8) break; }
+    // keep key takeaways in the document's own order
+    if (take.filter((p) => p.key).length >= 3) take.sort((a, b) => (b.key - a.key) || (a.i - b.i));
+    const points = take.map((p) => ({ full: p.t, short: shorten(p.t) }));
+    const isNum = (v) => /^[$\-–(]?\s?[\d,.]+%?\)?$/.test(v);
+    const data = rows.slice(0, 40).map((r) => {
+      const parts = r.vals.map((v, i) => [r.hd[i] || '', v]).filter(([, v]) => !/^(n\/?a|—|-)$/i.test(v));
+      const nums = parts.filter(([, v]) => isNum(v)).map(([k, v]) => (k ? `${k} ${v}` : v));
+      const words = parts.filter(([, v]) => !isNum(v)).map(([k, v]) => (k ? `${k.toLowerCase()}: ${v}` : v));
+      const t = `${r.label}: ${nums.join(' · ')}${words.length ? ` (${words.join('; ')})` : ''}`;
+      return { full: t, short: shorten(t) };
+    }).filter((r) => r.full.length > 8);
+    return { title, points, data };
+  }
+  function shorten(t) {
+    t = t.replace(/\s+/g, ' ').trim();
+    if (t.length <= 180) return t;
+    const ss = sentences(t); let acc = '';
+    for (const x of ss) { if ((acc + ' ' + x).trim().length > 180) break; acc = (acc + ' ' + x).trim(); }
+    if (acc.length >= 90 || (acc.length >= 40 && NUM.test(acc))) return acc;
+    const cut = t.slice(0, 178); const at = Math.max(cut.lastIndexOf('; '), cut.lastIndexOf(', '), cut.lastIndexOf(' – '));
+    return (at > 90 ? cut.slice(0, at) : cut.slice(0, cut.lastIndexOf(' '))).replace(/[,;:\s]+$/, '') + '…';
+  }
+
+  const skimBox = $('#op-skim'); let SK = null;
+  function drawSkim() {
+    skimBox.replaceChildren(); skimBox.hidden = !SK; if (!SK) return;
+    const hd = h('div', 'op-skim-h'); const ti = h('div'); ti.append(h('b', '', SK.title || SK.name));
+    if (SK.busy) ti.append(h('small', '', 'Reading the document…'));
+    else if (SK.err) ti.append(h('small', '', SK.err));
+    else ti.append(h('small', '', `${SK.points.length} key point${SK.points.length === 1 ? '' : 's'}${SK.data.length ? ` · ${SK.data.length} data row${SK.data.length === 1 ? '' : 's'}` : ''} · click 1, 2 or 3 to use as a fact`));
+    const x = h('button', 'op-x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Close'); x.addEventListener('click', () => { SK = null; drawSkim(); });
+    hd.append(ti, x); skimBox.appendChild(hd);
+    if (SK.busy || SK.err) return;
+    if (!SK.points.length && !SK.data.length) { skimBox.appendChild(h('div', 'op-msg', 'No clear takeaways found. Try a document with written findings or a summary.')); return; }
+    const acts = h('div', 'op-skim-acts');
+    const all = [...SK.points, ...SK.data];
+    if (all.length) { const b = h('button', 'op-q', `Use the top ${Math.min(3, all.length)} as facts`); b.type = 'button'; b.addEventListener('click', () => { all.slice(0, 3).forEach((p, i) => { S.facts[i] = { t: p.short, s: SK.source }; }); drawFacts(); update(false); drawSkim(); }); acts.appendChild(b); }
+    if (SK.title && S.topic !== SK.title.slice(0, 90)) { const b = h('button', 'op-q', 'Use its title as the topic'); b.type = 'button'; b.addEventListener('click', () => { S.topic = SK.title.slice(0, 90); $('#f-topic').value = S.topic; detect(); refreshWhy(); update(); drawSkim(); }); acts.appendChild(b); }
+    skimBox.appendChild(acts);
+    const list = (head, arr) => {
+      if (!arr.length) return;
+      skimBox.appendChild(h('h4', '', head)); const ul = h('ul');
+      arr.forEach((p) => {
+        const used = S.facts.findIndex((f) => f.t === p.short);
+        const li = h('li', 'op-pt' + (used >= 0 ? ' used' : '')); const tx = h('p');
+        const m = p.short.match(/^([^:]{3,48}):\s(.+)$/); if (m) tx.append(h('i', '', m[1] + ': '), m[2]); else tx.textContent = p.short;
+        if (p.short !== p.full) tx.title = p.full;
+        const use = h('div', 'op-use'); use.setAttribute('role', 'group'); use.setAttribute('aria-label', 'Use as fact');
+        [0, 1, 2].forEach((i) => { const b = h('button', '', String(i + 1)); b.type = 'button'; b.setAttribute('aria-pressed', String(used === i)); b.setAttribute('aria-label', `Use as fact ${i + 1}`); b.title = `Use as fact ${i + 1}`;
+          b.addEventListener('click', () => { S.facts[i] = used === i ? { t: '', s: '' } : { t: p.short, s: SK.source }; drawFacts(); update(false); drawSkim(); }); use.appendChild(b); });
+        li.append(tx, use); ul.appendChild(li);
+      });
+      skimBox.appendChild(ul);
+    };
+    list('Key points', SK.points); list('Data rows', SK.data.slice(0, 10));
+  }
+  async function importFile(file) {
+    if (!file) return;
+    if (file.size > 25 * 1024 * 1024) { SK = { name: file.name, err: 'That file is over 25 MB. Try a shorter version.' }; drawSkim(); return; }
+    SK = { name: file.name, busy: true }; drawSkim();
+    try {
+      const r = skim(await readDoc(file), file.name);
+      SK = Object.assign({ name: file.name, source: r.title.slice(0, 70) }, r);
+    } catch (e) { SK = { name: file.name, err: 'Could not read this file. Save it as PDF, Word, Excel or text and try again.' }; console.warn(e); }
+    drawSkim(); skimBox.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+  window.__opSkim = skim; // used by the site's tests
+  const drop = $('#op-drop'), fileIn = $('#op-file');
+  fileIn.addEventListener('change', () => { importFile(fileIn.files[0]); fileIn.value = ''; });
+  ['dragenter', 'dragover'].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', (e) => importFile(e.dataTransfer.files[0]));
 
   // ---------- step 4: tailoring ----------
   const lc = (s) => s.charAt(0).toLowerCase() + s.slice(1);

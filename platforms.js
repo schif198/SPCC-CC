@@ -91,7 +91,7 @@
     const lmax = Math.max(1, ...rows.map((r) => +r.lead));
     const list = el('div'); list.style.cssText = 'display:flex;flex-direction:column;gap:8px';
     for (const r of st.sort((a, b) => +b.level - +a.level || +b.lead - +a.lead)) {
-      const lv = +r.level; const row = el('div'); row.style.cssText = 'display:grid;grid-template-columns:minmax(7rem,1.2fr) 6.2rem 1fr;gap:10px;align-items:center;cursor:pointer';
+      const lv = +r.level; const row = el('div', 'pv-row');
       row.addEventListener('click', () => dash.setParams({ theme: r.theme }));
       const nm = el('div'); nm.appendChild(el('div', '', r.theme)); nm.firstChild.style.fontWeight = '600'; nm.firstChild.style.fontSize = '.9rem';
       const pr = plat.find((x) => x.theme === r.theme); if (pr) { const s = el('div', 'note', `“${pr.statement}”`); s.style.margin = '0'; nm.appendChild(s); }

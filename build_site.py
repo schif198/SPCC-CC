@@ -70,8 +70,8 @@ GROUPS = [
                            [('course-of-action.html#tab=plan', 'Course of action', 'Outreach order and a plan for each member'),
                             ('course-of-action.html#tab=search', 'Topic search', 'A plan for any issue you type in'),
                             ('course-of-action.html#tab=priorities', 'Chamber priorities', 'Where each Chamber priority stands')]),
-                          ('playbook.html', 'Chamber playbook', 'Business items, coalitions and timing'),
-                          ('outreach.html', 'One-pager builder', 'Persuasive one-pagers tailored to each member')]),
+                          ('playbook.html', 'Chamber playbook', 'Business items, coalitions and timing')]),
+    ('One-Pager Builder', [('outreach.html', 'One-Pager Builder', 'Persuasive one-pagers tailored to each member, with facts pulled from your documents')]),
     ('Ward Feedback', [('research.html', 'Ward Feedback', 'How to reach each council member')]),
     ('Meeting minutes', [('library.html', 'Minutes library', 'Every meeting, with the original PDFs'),
                          ('@latest', 'Latest minutes', 'Open the newest meeting minutes (PDF)'),
@@ -193,7 +193,7 @@ def nav(current, printable):
             else:
                 links += f'<a href="{h}"{cur if h == current else ""}><b>{t}</b><span>{desc}</span></a>'
         grp += f'<div class="sa-grp{" cur" if on else ""}"><button class="sa-grp-b" type="button" aria-expanded="false">{name}</button><div class="sa-grp-p">{links}</div></div>'
-    pr = f'<button id="sa-print" class="sa-btn" type="button" title="Print a one-page summary of what this page shows">{PRINT_ICON}Print one-pager</button>' if printable else ''
+    pr = f'<button id="sa-print" class="sa-btn" type="button" title="Print a one-page summary of what this page shows" aria-label="Print one-pager">{PRINT_ICON}<span class="sa-btn-t">Print one-pager</span></button>' if printable else ''
     return (f'<nav class="sa-nav" aria-label="Site"><a class="brand" href="index.html" aria-label="St. Paul Area Chamber: council dashboards home">St. Paul Area Chamber</a>'
             f'<button class="sa-toggle" type="button" aria-expanded="false">Menu</button>'
             f'<div class="sa-menu"><a class="sa-home" href="index.html"{cur if current == "index.html" else ""}>Home</a>{grp}</div>'
@@ -593,7 +593,7 @@ def home(meetings):
       <a href="platforms.html"><b>Platforms vs. votes</b><span>Campaign promise and voting alignment</span></a>
       <a href="research.html"><b>What ward offices told us</b><span>Interviews with legislative aides</span></a>
       <a href="playbook.html"><b>Chamber playbook</b><span>Business items, coalitions, timing</span></a>
-      <a href="outreach.html"><b>One-pager builder</b><span>A tailored brief for any member</span></a>
+      <a href="outreach.html"><b>One-Pager Builder</b><span>A tailored brief for any member</span></a>
       <a href="library.html"><b>Minutes library</b><span>Every meeting, original PDFs</span></a>
       <a href="{LEGISTAR}" target="_blank" rel="noopener"><b>Legistar ↗</b><span>The city’s official meeting site</span></a>
       <a href="help.html"><b>About this site</b><span>Its goals and how to keep it current</span></a>

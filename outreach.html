@@ -37,11 +37,17 @@
       <section class="op-step" aria-labelledby="s3">
         <h2 id="s3"><span class="op-n">3</span>Your evidence</h2>
         <p class="op-hint">Hallway talks are short: give three facts staff can repeat to the council member.</p>
+        <div class="op-drop" id="op-drop">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="m9 15 3-3 3 3"/></svg>
+          <div><b>Pull facts from a document</b><span>PDF, Word, Excel, PowerPoint, CSV or text. Drop it here or</span></div>
+          <label class="op-btn ghost op-up">Choose file<input type="file" id="op-file" accept=".pdf,.docx,.xlsx,.pptx,.csv,.txt,.md" hidden></label>
+        </div>
+        <div class="op-skim" id="op-skim" hidden></div>
         <div id="op-facts"></div>
         <label class="op-f"><span>A local story <em>a business she knows, in its own words</em></span>
           <textarea id="f-story" rows="3" maxlength="420" placeholder="e.g. “We added 6 jobs after the drive-thru opened.” Maria Lopez, owner, Rice Street Tacos"></textarea></label>
         <label class="op-f"><span>Proposed solution <em>bring a fix, even an imperfect one</em></span>
-          <textarea id="f-solution" rows="2" maxlength="320" placeholder="e.g. Allow drive-thrus on commercial corridors with stacking and pedestrian standards."></textarea></label>
+          <textarea id="f-solution" rows="3" maxlength="320" placeholder="e.g. Allow drive-thrus on commercial corridors with stacking and pedestrian standards."></textarea></label>
       </section>
 
       <section class="op-step" aria-labelledby="s4">
@@ -83,13 +89,14 @@
 .op-step h2 { display: flex; align-items: center; gap: 10px; margin: 0 0 4px; font-size: 1.1rem; color: #2a0157; }
 .op-n { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, #c9400c, #d31d44); color: #fff; font-size: .8rem; font-weight: 800; flex: none; }
 .op-hint { margin: 0 0 10px; font-size: .82rem; color: var(--color-fg-muted); }
-.op-members { display: grid; grid-template-columns: repeat(auto-fill, minmax(8.6rem, 1fr)); gap: 7px; }
+.op-members { display: grid; grid-template-columns: repeat(auto-fill, minmax(9.6rem, 1fr)); gap: 8px; }
 .op-mb { font: inherit; text-align: left; background: #fff; border: 1.5px solid var(--color-border-line); border-top: 5px solid var(--mc); border-radius: 10px; padding: 8px 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: var(--color-fg); }
 .op-mb:hover { background: #faf8fc; }
 .op-mb[aria-pressed=true] { border-color: var(--mc); background: var(--mt); }
 .op-mb .ck { margin-left: auto; width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid #b9b2c4; display: grid; place-items: center; font-size: .7rem; color: #fff; flex: none; }
 .op-mb[aria-pressed=true] .ck { background: #2a0157; border-color: #2a0157; }
-.op-mb b { font-size: .86rem; line-height: 1.15; display: block; }
+.op-mb > span:nth-child(2) { min-width: 0; }
+.op-mb b { font-size: .86rem; line-height: 1.15; display: block; overflow-wrap: anywhere; }
 .op-mb small { font-size: .72rem; color: var(--color-fg-muted); }
 .op-wn { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: .76rem; background: var(--mc); color: var(--mtx); }
 .op-f { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; font-size: .86rem; font-weight: 700; color: #2a0157; }
@@ -98,15 +105,40 @@
 .op-f input:focus, .op-f select:focus, .op-f textarea:focus { outline: none; border-color: #5b2a86; box-shadow: 0 0 0 3px rgba(91,42,134,.15); }
 .op-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 @media (max-width: 560px) { .op-row { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .op-members { grid-template-columns: repeat(2, minmax(0, 1fr)); } .op-mb { padding: 8px; gap: 6px; } }
 .op-quick { display: flex; flex-wrap: wrap; gap: 5px; }
 .op-q { font: inherit; font-size: .76rem; font-weight: 600; border: 1.5px solid var(--color-border-line); background: #fff; color: #2a0157; border-radius: 999px; padding: 2px 10px; cursor: pointer; }
 .op-q:hover { background: #f6f0fb; border-color: #5b2a86; }
+.op-drop { display: flex; align-items: center; gap: 12px; border: 1.5px dashed #b9a8cf; background: #faf8fc; border-radius: 10px; padding: 10px 12px; color: #5b2a86; }
+.op-drop.over { border-color: #f15a25; background: #fff4ee; }
+.op-drop > div { flex: 1; min-width: 0; display: flex; flex-direction: column; font-size: .8rem; color: var(--color-fg-muted); line-height: 1.35; }
+.op-drop > div b { color: #2a0157; font-size: .9rem; }
+.op-up { flex: none; padding: 6px 12px; }
+.op-up:focus-within { outline: 3px solid #f15a25; outline-offset: 2px; }
+@media (max-width: 560px) { .op-drop { flex-wrap: wrap; } .op-drop > div { flex-basis: calc(100% - 40px); } }
+.op-skim { margin-top: 10px; border: 1px solid var(--color-border-line); border-radius: 10px; background: #fff; overflow: hidden; }
+.op-skim-h { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; padding: 10px 12px; background: #f6f0fb; border-bottom: 1px solid var(--color-border-line); }
+.op-skim-h b { display: block; color: #2a0157; font-size: .9rem; overflow-wrap: anywhere; }
+.op-skim-h small { color: var(--color-fg-muted); font-size: .76rem; }
+.op-skim-h .op-x { flex: none; font: inherit; background: none; border: 0; font-size: 1.1rem; line-height: 1; color: #5b2a86; cursor: pointer; padding: 2px 4px; }
+.op-skim-acts { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 12px 0; }
+.op-skim h4 { margin: 10px 12px 4px; font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: #b9420c; }
+.op-skim ul { list-style: none; margin: 0; padding: 0 12px 10px; display: flex; flex-direction: column; gap: 6px; max-height: 320px; overflow: auto; }
+.op-pt { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: start; border: 1px solid var(--color-border-line); border-radius: 8px; padding: 7px 9px; font-size: .84rem; line-height: 1.4; }
+.op-pt p { margin: 0; overflow-wrap: anywhere; }
+.op-pt p i { font-style: normal; font-weight: 700; color: #2a0157; }
+.op-pt .op-use { display: flex; gap: 4px; }
+.op-pt .op-use button { font: inherit; font-size: .72rem; font-weight: 700; width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid #2a0157; background: #fff; color: #2a0157; cursor: pointer; padding: 0; }
+.op-pt .op-use button[aria-pressed=true] { background: #2a0157; color: #fff; }
+.op-pt .op-use button:focus-visible { outline: 3px solid #f15a25; outline-offset: 1px; }
+.op-pt.used { border-color: #2a0157; background: #faf8fc; }
+.op-skim .op-msg { padding: 12px; font-size: .86rem; color: var(--color-fg-muted); }
 .op-fact { display: grid; grid-template-columns: 26px 1fr; gap: 8px; align-items: start; margin-top: 8px; }
 .op-fact .num { width: 22px; height: 22px; margin-top: 8px; border-radius: 50%; display: grid; place-items: center; background: #2a0157; color: #fff; font-size: .72rem; font-weight: 800; }
-.op-fact .in { display: grid; grid-template-columns: 1fr 9.5rem; gap: 6px; }
+.op-fact .in { display: grid; grid-template-columns: 1fr 9.5rem; gap: 6px; align-items: start; }
 @media (max-width: 560px) { .op-fact .in { grid-template-columns: 1fr; } }
-.op-fact input { font: inherit; font-size: .9rem; border: 1.5px solid var(--color-border-line); border-radius: 8px; padding: 7px 9px; box-sizing: border-box; width: 100%; }
-.op-fact input:focus { outline: none; border-color: #5b2a86; box-shadow: 0 0 0 3px rgba(91,42,134,.15); }
+.op-fact input, .op-fact textarea { font: inherit; resize: none; overflow: hidden; line-height: 1.35; min-height: 36px; font-size: .9rem; border: 1.5px solid var(--color-border-line); border-radius: 8px; padding: 7px 9px; box-sizing: border-box; width: 100%; }
+.op-fact input:focus, .op-fact textarea:focus { outline: none; border-color: #5b2a86; box-shadow: 0 0 0 3px rgba(91,42,134,.15); }
 .op-side { position: sticky; top: calc(var(--nav-h, 64px) + 10px); display: flex; flex-direction: column; gap: 10px; }
 @media (max-width: 980px) { .op-side { position: static; } }
 .op-tabs { display: flex; flex-wrap: wrap; gap: 5px; }

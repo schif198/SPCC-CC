@@ -13,8 +13,10 @@
 .pv .sw { width: 16px; height: 16px; border-radius: 4px; display: inline-block; }
 .pv .ring { width: 16px; height: 16px; border-radius: 50%; border: 3px solid #2a0157; box-sizing: border-box; display: inline-block; }
 .pv .grid2 { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 18px; }
-@media (max-width: 900px) { .pv .grid2 { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .pv .grid2 { grid-template-columns: minmax(0, 1fr); } }
 .pv .chart { position: relative; min-height: 200px; }
+.pv .pv-row { display: grid; grid-template-columns: minmax(7rem, 1.2fr) 6.2rem minmax(0, 1fr); gap: 10px; align-items: center; cursor: pointer; }
+@media (max-width: 560px) { .pv .pv-row { grid-template-columns: minmax(0, 1fr) 6.2rem; gap: 4px 10px; } .pv .pv-row > :nth-child(3) { grid-column: 1 / -1; } }
 .pv .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .pv .chip { font: inherit; font-size: .85rem; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--color-border-line); background: var(--color-panel); color: var(--color-fg); cursor: pointer; }
 .pv .chip[aria-pressed=true] { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
