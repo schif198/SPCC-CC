@@ -1,43 +1,43 @@
-kind,ward,office,interviewed,section,heading,text
-theme,2 3 5,,,,"One page, handed over","One page, delivered in person, not lost in an inbox."
-theme,3 5,,,,Go through the aide,The aide decides what reaches the council member. Bring an agenda.
-theme,5,,,,Three facts to carry,Hallway talks are short. Give three facts staff can repeat.
-theme,2 3 5,,,,Show the ward’s stake,Lead with what residents and local businesses gain or lose.
-theme,5,,,,Numbers plus stories,Pair data with business stories and press coverage.
-theme,3,,,,Relationships first,Call with a clear purpose. Show up between votes.
-theme,2 5,,,,Shared pain points,Citywide problems land better than downtown-only projects.
-theme,2 5,,,,Show the budget impact,Most issues come down to cost. Show what it costs or saves.
-theme,3,,,,Bring a solution,"Propose a fix, even an imperfect one. Pressure backfires."
-finding,2,Council President Noecker,Nov 2026,Best way to reach,,Hand-deliver a one-pager; email alone gets buried.
-finding,2,Council President Noecker,Nov 2026,Best way to reach,,Send it through a messenger already in their circle.
-finding,2,Council President Noecker,Nov 2026,Best way to reach,,Frame it as the ward’s stake.
-finding,3,Councilmember Jost,Nov 2026,Best way to reach,,Call the legislative aide with a clear purpose and an agenda.
-finding,3,Councilmember Jost,Nov 2026,Best way to reach,,One page with a clear hook and a proposed fix.
-finding,3,Councilmember Jost,Nov 2026,Best way to reach,,No meeting needed for an opinion: submit a written public comment.
-finding,5,Councilmember Kim,"Nov 5, 2026",Best way to reach,,A one-pager plus personal stories from local businesses.
-finding,5,Councilmember Kim,"Nov 5, 2026",Best way to reach,,Three facts staff can repeat in a three-minute hallway talk.
-finding,5,Councilmember Kim,"Nov 5, 2026",Best way to reach,,"Lead with neighborhood impact, not downtown projects."
-finding,2,Council President Noecker,Nov 2026,Approach,,"The office is open to hearing from the Chamber. Its goal is a workable compromise, not picking a side, so arrive ready to meet in the middle."
-finding,2,Council President Noecker,Nov 2026,Approach,,Bring a one-pager in person rather than only emailing it; emailed memos often go unread. It lands better coming from someone they already know and trust.
-finding,2,Council President Noecker,Nov 2026,Priorities,,"Ward 2 is the most varied ward (West Side, Downtown, West 7th, Summit Hill and Railroad Island), and almost every part has its own business corridor, so ask which neighborhood an issue touches."
-finding,2,Council President Noecker,Nov 2026,Priorities,,"Downtown is the hardest area: office workers are not coming back after COVID. The city’s answer is housing, with a goal of 20,000 new downtown residents by 2030."
-finding,2,Council President Noecker,Nov 2026,Priorities,,"The office is wary of adding more affordable housing downtown. About 25% of downtown housing is already affordable, and staff worry the tax base cannot support more need there."
-finding,2,Council President Noecker,Nov 2026,Priorities,,"For most residents, the biggest worry is everyday cost: taxes, gas and groceries. Tie business asks to keeping the city affordable."
-finding,2,Council President Noecker,Nov 2026,Follow-up,,"Staff asked to see our final playbook, and may share it with Ramsey County, where they move in January."
-finding,3,Councilmember Jost,Nov 2026,Approach,,"The council member represents about 46,000 people and has little free time, so most requests go to the legislative aide first. The aide decides what reaches the council member."
-finding,3,Councilmember Jost,Nov 2026,Approach,,"Keep it to one page with a clear hook: how the issue affects residents and what could improve. Bring a proposed solution, even an imperfect one."
-finding,3,Councilmember Jost,Nov 2026,Approach,,"If you only want to share an opinion, you may not need a meeting at all: a well-written comment submitted for the public record can be just as effective."
-finding,3,Councilmember Jost,Nov 2026,Relationships,,"Staff pointed to the Chamber’s own calls as the model: a clear reason for calling, respect for staff time, and groundwork laid well before an important vote."
-finding,3,Councilmember Jost,Nov 2026,Relationships,,"City politics runs on in-person relationships at events and in the community, not on websites. The city’s ward pages have not been updated since the 2024 election."
-finding,5,Councilmember Kim,"Nov 5, 2026",Approach,,The office tracks themes across many messages more than any single email. The themes it hears most right now are the city budget and streetlight repairs.
-finding,5,Councilmember Kim,"Nov 5, 2026",Approach,,"The most effective format is a one-pager backed by personal stories. A neighborhood business group won back its city funding this way, with crime and sales tax figures plus stories from local businesses."
-finding,5,Councilmember Kim,"Nov 5, 2026",Approach,,"Most persuading happens in quick three-minute hallway talks between staff, so give them three facts they can repeat to their council member."
-finding,5,Councilmember Kim,"Nov 5, 2026",Priorities,,Residents feel the East and West Sides lose out to downtown: they see rec centers and libraries close while downtown projects get millions.
-finding,5,Councilmember Kim,"Nov 5, 2026",Priorities,,"Chamber messages about stadiums and data centers do not land well here, because residents worry about industrial development near their homes."
-finding,5,Councilmember Kim,"Nov 5, 2026",Priorities,,"Problems felt across the whole city work better. Losing a grocery store, for example, resonated downtown and on the East Side alike."
-finding,5,Councilmember Kim,"Nov 5, 2026",Business,,"Ward 5 has the city’s smallest job base: mostly small shops, restaurants and corner stores, which big economic development programs do not fit."
-finding,5,Councilmember Kim,"Nov 5, 2026",Business,,"At this scale, small help goes a long way: a $1,000 storefront refresh (paint, lights, an awning or a sign) can transform a business."
-finding,5,Councilmember Kim,"Nov 5, 2026",Business,,"Vacant storefronts are a major problem. Minneapolis charges owners a vacancy fee; St. Paul does not yet, but aims to within one to two years."
-finding,5,Councilmember Kim,"Nov 5, 2026",Business,,"New buildings tend to have large commercial spaces that are costly to build out, which prices out small operators. Ideas raised: smaller spaces, ready-made kitchens, and a city restaurant incubator."
-finding,5,Councilmember Kim,"Nov 5, 2026",Follow-up,,Staff asked to see our final project results.
-missing,4,Councilmember Coleman,,,,Notes not yet available
+kind,ward,office,interviewed,section,heading,text,short
+theme,2 3 5,,,,"One page, handed over","One page, delivered in person, not lost in an inbox.",
+theme,3 5,,,,Go through the aide,The aide decides what reaches the council member. Bring an agenda.,
+theme,5,,,,Three facts to carry,Hallway talks are short. Give three facts staff can repeat.,
+theme,2 3 5,,,,Show the ward’s stake,Lead with what residents and local businesses gain or lose.,
+theme,5,,,,Numbers plus stories,Pair data with business stories and press coverage.,
+theme,3,,,,Relationships first,Call with a clear purpose. Show up between votes.,
+theme,2 5,,,,Shared pain points,Citywide problems land better than downtown-only projects.,
+theme,2 5,,,,Show the budget impact,Most issues come down to cost. Show what it costs or saves.,
+theme,3,,,,Bring a solution,"Propose a fix, even an imperfect one. Pressure backfires.",
+finding,2,Council President Noecker,Nov 2026,Best way to reach,,Hand-deliver a one-pager; email alone gets buried.,
+finding,2,Council President Noecker,Nov 2026,Best way to reach,,Send it through a messenger already in their circle.,
+finding,2,Council President Noecker,Nov 2026,Best way to reach,,Frame it as the ward’s stake.,
+finding,3,Councilmember Jost,Nov 2026,Best way to reach,,Call the legislative aide with a clear purpose and an agenda.,
+finding,3,Councilmember Jost,Nov 2026,Best way to reach,,One page with a clear hook and a proposed fix.,
+finding,3,Councilmember Jost,Nov 2026,Best way to reach,,No meeting needed for an opinion: submit a written public comment.,
+finding,5,Councilmember Kim,"Nov 5, 2026",Best way to reach,,A one-pager plus personal stories from local businesses.,
+finding,5,Councilmember Kim,"Nov 5, 2026",Best way to reach,,Three facts staff can repeat in a three-minute hallway talk.,
+finding,5,Councilmember Kim,"Nov 5, 2026",Best way to reach,,"Lead with neighborhood impact, not downtown projects.",
+finding,2,Council President Noecker,Nov 2026,Approach,,"The office is open to hearing from the Chamber. Its goal is a workable compromise, not picking a side, so arrive ready to meet in the middle.",Open to Chamber outreach; aims for compromise.
+finding,2,Council President Noecker,Nov 2026,Approach,,Bring a one-pager in person rather than only emailing it; emailed memos often go unread. It lands better coming from someone they already know and trust.,Hand-deliver one-pagers; use a messenger they trust.
+finding,2,Council President Noecker,Nov 2026,Priorities,,"Ward 2 is the most varied ward (West Side, Downtown, West 7th, Summit Hill and Railroad Island), and almost every part has its own business corridor, so ask which neighborhood an issue touches.",Most varied ward; nearly every area has a business corridor.
+finding,2,Council President Noecker,Nov 2026,Priorities,,"Downtown is the hardest area: office workers are not coming back after COVID. The city’s answer is housing, with a goal of 20,000 new downtown residents by 2030.","Downtown: offices empty; goal of 20,000 new residents by 2030."
+finding,2,Council President Noecker,Nov 2026,Priorities,,"The office is wary of adding more affordable housing downtown. About 25% of downtown housing is already affordable, and staff worry the tax base cannot support more need there.",Wary of more downtown affordable housing; tax base is stretched.
+finding,2,Council President Noecker,Nov 2026,Priorities,,"For most residents, the biggest worry is everyday cost: taxes, gas and groceries. Tie business asks to keeping the city affordable.",Residents’ top worry: everyday costs.
+finding,2,Council President Noecker,Nov 2026,Follow-up,,"Staff asked to see our final playbook, and may share it with Ramsey County, where they move in January.",Wants the final playbook (may share with Ramsey County).
+finding,3,Councilmember Jost,Nov 2026,Approach,,"The council member represents about 46,000 people and has little free time, so most requests go to the legislative aide first. The aide decides what reaches the council member.",The aide decides what reaches the council member.
+finding,3,Councilmember Jost,Nov 2026,Approach,,"Keep it to one page with a clear hook: how the issue affects residents and what could improve. Bring a proposed solution, even an imperfect one.","One page, a clear hook, and a proposed fix."
+finding,3,Councilmember Jost,Nov 2026,Approach,,"If you only want to share an opinion, you may not need a meeting at all: a well-written comment submitted for the public record can be just as effective.",A written public comment can replace a meeting.
+finding,3,Councilmember Jost,Nov 2026,Relationships,,"Staff pointed to the Chamber’s own calls as the model: a clear reason for calling, respect for staff time, and groundwork laid well before an important vote.","The Chamber’s calls are the model: clear purpose, early groundwork."
+finding,3,Councilmember Jost,Nov 2026,Relationships,,"City politics runs on in-person relationships at events and in the community, not on websites. The city’s ward pages have not been updated since the 2024 election.","Trust is built in person, not online."
+finding,5,Councilmember Kim,"Nov 5, 2026",Approach,,The office tracks themes across many messages more than any single email. The themes it hears most right now are the city budget and streetlight repairs.,"Tracks themes, not single emails; now: budget, streetlights."
+finding,5,Councilmember Kim,"Nov 5, 2026",Approach,,"The most effective format is a one-pager backed by personal stories. A neighborhood business group won back its city funding this way, with crime and sales tax figures plus stories from local businesses.",One-pager plus local business stories works best.
+finding,5,Councilmember Kim,"Nov 5, 2026",Approach,,"Most persuading happens in quick three-minute hallway talks between staff, so give them three facts they can repeat to their council member.",Give three facts for a three-minute hallway talk.
+finding,5,Councilmember Kim,"Nov 5, 2026",Priorities,,Residents feel the East and West Sides lose out to downtown: they see rec centers and libraries close while downtown projects get millions.,East and West Sides feel passed over for downtown.
+finding,5,Councilmember Kim,"Nov 5, 2026",Priorities,,"Chamber messages about stadiums and data centers do not land well here, because residents worry about industrial development near their homes.",Stadium and data center messages don’t land.
+finding,5,Councilmember Kim,"Nov 5, 2026",Priorities,,"Problems felt across the whole city work better. Losing a grocery store, for example, resonated downtown and on the East Side alike.","Citywide pain points, like grocery closures, do."
+finding,5,Councilmember Kim,"Nov 5, 2026",Business,,"Ward 5 has the city’s smallest job base: mostly small shops, restaurants and corner stores, which big economic development programs do not fit.",Smallest job base: small shops and restaurants.
+finding,5,Councilmember Kim,"Nov 5, 2026",Business,,"At this scale, small help goes a long way: a $1,000 storefront refresh (paint, lights, an awning or a sign) can transform a business.","A $1,000 storefront refresh can transform a business."
+finding,5,Councilmember Kim,"Nov 5, 2026",Business,,"Vacant storefronts are a major problem. Minneapolis charges owners a vacancy fee; St. Paul does not yet, but aims to within one to two years.",Vacant storefronts; no city vacancy fee yet.
+finding,5,Councilmember Kim,"Nov 5, 2026",Business,,"New buildings tend to have large commercial spaces that are costly to build out, which prices out small operators. Ideas raised: smaller spaces, ready-made kitchens, and a city restaurant incubator.",New buildings price out small operators.
+finding,5,Councilmember Kim,"Nov 5, 2026",Follow-up,,Staff asked to see our final project results.,Wants the final project results.
+missing,4,Councilmember Coleman,,,,Notes not yet available,

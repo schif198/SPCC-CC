@@ -70,10 +70,11 @@ GROUPS = [
                            [('course-of-action.html#tab=plan', 'Course of action', 'Outreach order and a plan for each member'),
                             ('course-of-action.html#tab=search', 'Topic search', 'A plan for any issue you type in'),
                             ('course-of-action.html#tab=priorities', 'Chamber priorities', 'Where each Chamber priority stands')]),
-                          ('playbook.html', 'Chamber playbook', 'Business items, coalitions and timing')]),
+                          ('playbook.html', 'Chamber playbook', 'Business items, coalitions and timing'),
+                          ('outreach.html', 'One-pager builder', 'Persuasive one-pagers tailored to each member')]),
     ('Ward Feedback', [('research.html', 'Ward Feedback', 'How to reach each council member')]),
-    ('Meeting minutes', [('@latest', 'Latest minutes', 'Open the newest meeting minutes (PDF)'),
-                         ('library.html', 'Minutes library', 'Every meeting, with the original PDFs'),
+    ('Meeting minutes', [('library.html', 'Minutes library', 'Every meeting, with the original PDFs'),
+                         ('@latest', 'Latest minutes', 'Open the newest meeting minutes (PDF)'),
                          ('library.html#upload', 'Add new minutes', 'Upload the latest minutes PDF')]),
     ('Help', [('help.html', 'About this site', 'Its three goals and the yearly update guide'),
               ('glossary.html', 'Glossary', 'What the terms on this site mean')]),
@@ -85,15 +86,15 @@ GUIDES = {
                            [('platforms.html', 'Votes vs. campaign promises', 'Platforms vs. votes'), ('member-by-member.html', 'One member in detail', 'Member breakdown')]),
     'member-by-member.html': ('One member’s votes, absences, allies and topics.',
                               'Votes show what happened, not why or what was promised.',
-                              [('platforms.html', 'Their campaign vs. their record', 'Platforms vs. votes'), ('voting-trends.html', 'The whole council', 'Voting trends')]),
+                              [('platforms.html', 'Her campaign vs. her record', 'Platforms vs. votes'), ('voting-trends.html', 'The whole council', 'Voting trends')]),
     'platforms.html': ('Campaign promise and voting alignment: what each member ran on, next to what they work on.',
                        'It counts council activity on each theme; it cannot say whether a promise was kept.',
-                       [('member-by-member.html', 'Their full voting record', 'Member breakdown'), ('voting-trends.html', 'How the whole council votes', 'Voting trends')]),
+                       [('member-by-member.html', 'Her full voting record', 'Member breakdown'), ('voting-trends.html', 'How the whole council votes', 'Voting trends')]),
 }
 PAGE_INFO = {
     'voting-trends.html': ('Council Activity', 'Voting trends', 'How does the council vote as a whole?'),
-    'member-by-member.html': ('Council Activity', 'Member breakdown', 'How does each member vote, and who do they vote with?'),
-    'platforms.html': ('Council Activity', 'Platforms vs. votes', 'Campaign promise and voting alignment: does each member’s council work match what they ran on?'),
+    'member-by-member.html': ('Council Activity', 'Member breakdown', 'How does each member vote, and who does she vote with?'),
+    'platforms.html': ('Council Activity', 'Platforms vs. votes', 'Campaign promise and voting alignment: does each member’s council work match what she ran on?'),
     'course-of-action.html': ('Chamber strategy', 'Course of action', 'Who should the Chamber talk to, and how?'),
     'playbook.html': ('Chamber strategy', 'Chamber playbook', 'Which business items are coming, and who decides them?'),
 }
@@ -106,7 +107,7 @@ GLOSSARY = [
     ('pushback', 'Pushback', r'pushback|push back', 'Times a member spoke against an item, raised concerns, or moved to delay or deny it.'),
     ('motions', 'Motions', r'\bmotions?\b', 'Motions a member made to approve, amend or deny an item.'),
     ('participation', 'Participation', r'participation|votes cast', 'The share of roll-call votes a member took part in (was not absent for).'),
-    ('focus', 'Leads on', r'leads? on|take the lead|focus', 'Topics where a member’s motions and remarks make up a bigger share of their activity than the council average. Often reflects their own ward.'),
+    ('focus', 'Leads on', r'leads? on|take the lead|focus', 'Topics where a member’s motions and remarks make up a bigger share of her activity than the council average. Often reflects their own ward.'),
     ('coalition', 'Coalition', r'coalition', 'Members who usually vote together on split votes.'),
     ('persia', 'PERSIA', r'persia|lens', 'A way to sort issues by their Political, Economic, Religious, Social, Intellectual and Artistic (cultural) dimensions.'),
     ('readings', 'Readings and layovers', r'reading|layover|laid over|delay|ordinance clock|days to', 'Ordinances get first, second and third readings and a public hearing before final adoption. A layover moves an item to a later meeting.'),
@@ -592,6 +593,7 @@ def home(meetings):
       <a href="platforms.html"><b>Platforms vs. votes</b><span>Campaign promise and voting alignment</span></a>
       <a href="research.html"><b>What ward offices told us</b><span>Interviews with legislative aides</span></a>
       <a href="playbook.html"><b>Chamber playbook</b><span>Business items, coalitions, timing</span></a>
+      <a href="outreach.html"><b>One-pager builder</b><span>A tailored brief for any member</span></a>
       <a href="library.html"><b>Minutes library</b><span>Every meeting, original PDFs</span></a>
       <a href="{LEGISTAR}" target="_blank" rel="noopener"><b>Legistar ↗</b><span>The city’s official meeting site</span></a>
       <a href="help.html"><b>About this site</b><span>Its goals and how to keep it current</span></a>
@@ -666,12 +668,15 @@ def research():
     members = []
     for c in sorted(contacts, key=lambda r: int(r['ward'])):
         w = c['ward']; fr = [r for r in found if r['ward'] == w]
-        secs = {}
-        for r in fr: secs.setdefault(r['section'], []).append(r['text'])
+        secs = {}; short = {}
+        for r in fr:
+            secs.setdefault(r['section'], []).append(r['text'])
+            short.setdefault(r['section'], []).append(r.get('short') or r['text'])
+        short.pop('Best way to reach', None)
         members.append(dict(m=c['member'], full=c['full_name'], title=c['title'], ward=w, color=MEMBER_COLORS.get(w, '#8c8577'),
                             phone=c['phone'], email=c['email'], page=c['ward_page'], aide=c['legislative_aide'], room=c['room'],
                             asof=c.get('as_of', ''), interviewed=fr[0]['interviewed'] if fr else '',
-                            best=secs.pop('Best way to reach', []), secs=[[k, v] for k, v in secs.items()],
+                            best=secs.pop('Best way to reach', []), secs=[[k, v] for k, v in secs.items()], short=[[k, v] for k, v in short.items()],
                             themes=[i for i, t in enumerate(themes) if w in said(t)]))
     sec_help = {'Approach': 'How this office prefers to be contacted, and what makes a request land.',
                 'Priorities': 'What the ward and its residents care about most right now.',
@@ -728,7 +733,7 @@ def research():
 .rs-m small { font-size: .74rem; color: var(--color-fg-muted); }
 .rs-m .rs-st { font-size: .72rem; font-weight: 700; color: #2a0157; }
 .rs-m .rs-st.no { color: #6b6478; font-weight: 600; }
-.rs-detail:empty::before { content: 'Click a member to see their ward office, the best ways to reach them, and what their office told us.'; display: block; margin-top: 12px; padding: 14px 16px; border: 1.5px dashed var(--color-border-line); border-radius: 10px; color: var(--color-fg-muted); font-size: .9rem; }
+.rs-detail:empty::before { content: 'Click a member to see her ward office, the best ways to reach her, and what her office told us.'; display: block; margin-top: 12px; padding: 14px 16px; border: 1.5px dashed var(--color-border-line); border-radius: 10px; color: var(--color-fg-muted); font-size: .9rem; }
 .rs-x { margin-top: 12px; border: 2px solid var(--mc); border-radius: 12px; overflow: hidden; }
 .rs-xh { background: var(--mt); padding: 14px 18px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .rs-xh .rs-wn { width: 40px; height: 40px; font-size: 1.05rem; }
@@ -777,7 +782,7 @@ def research():
 #print-sheet h1 { font-size: 17pt; margin: 0; color: #2a0157; }
 #print-sheet .ps-s { font-size: 8.5pt; color: #6b6478; margin-top: 2px; }
 #print-sheet h2 { font-size: 10pt; text-transform: uppercase; letter-spacing: .07em; color: #b9420c; margin: 12px 0 5px; }
-#print-sheet .ps-cols { display: grid; grid-template-columns: 1fr 1.6fr; gap: 16px; font-size: 8.6pt; }
+#print-sheet .ps-cols { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; }
 #print-sheet ol, #print-sheet ul { margin: 0; padding-left: 16px; line-height: 1.4; }
 #print-sheet li { margin: 2px 0; }
 #print-sheet table { width: 100%; border-collapse: collapse; font-size: 8.4pt; }
@@ -788,6 +793,8 @@ def research():
 #print-sheet .ps-ct { background: #f7f6fa; border-radius: 6px; padding: 6px 8px; line-height: 1.5; }
 #print-sheet .ps-tk { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 14px; }
 #print-sheet .ps-tk div { line-height: 1.35; }
+#print-sheet .ps-know { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 18px; }
+#print-sheet .ps-know b { display: block; color: #2a0157; font-size: 9pt; margin-bottom: 1px; }
 #print-sheet .ps-tk3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px 12px; font-size: 8.4pt; }
 #print-sheet .ps-tk3 .on { font-weight: 700; }
 #print-sheet .ps-f { margin-top: 12px; font-size: 7.5pt; color: #6b6478; border-top: 1px solid #e7e3ee; padding-top: 4px; }
@@ -832,7 +839,7 @@ def research():
     const pb = printBtn('Print one-pager'); pb.addEventListener('click', () => print1(m));
     hd.append(h('span', 'rs-wn', m.ward), nm, pb); x.appendChild(hd);
     const bd = h('div', 'rs-xb'); const L = h('div'), R = h('div');
-    L.appendChild(h('div', 'rs-lab', 'Best ways to reach them'));
+    L.appendChild(h('div', 'rs-lab', 'Best ways to reach her'));
     if (m.best.length) { const ol = h('ol', 'rs-best'); m.best.forEach((t) => ol.appendChild(h('li', '', t))); L.appendChild(ol); }
     else L.appendChild(h('div', 'rs-none', 'Not interviewed yet. Use the shared takeaways below, and contact the ward office.'));
     L.appendChild(h('div', 'rs-lab', `Ward ${m.ward} office`));
@@ -843,9 +850,9 @@ def research():
     if (m.aide) row('Legislative aide', m.aide); row('Office', m.room); row('Ward page', link(m.page, 'stpaul.gov ↗', true));
     L.appendChild(dl);
     if (m.secs.length) for (const [k, v] of m.secs) { R.appendChild(h('div', 'rs-lab', k)); if (D.sec_help[k]) R.appendChild(h('div', 'rs-sh', D.sec_help[k])); const ul = h('ul'); v.forEach((t) => ul.appendChild(h('li', '', t))); R.appendChild(ul); }
-    else { R.appendChild(h('div', 'rs-lab', 'What their office told us')); R.appendChild(h('div', 'rs-none', 'No interview notes yet.')); }
-    if (m.themes.length) { R.appendChild(h('div', 'rs-lab', 'Shared takeaways they raised')); const tk = h('div', 'rs-tk'); m.themes.forEach((i) => { const a = h('a', '', `${i + 1}. ${D.themes[i].h}`); a.href = '#' + D.themes[i].id; tk.appendChild(a); }); R.appendChild(tk); }
-    const ln = h('div', 'rs-links'); ln.append(link(`course-of-action.html#tab=plan&member=${encodeURIComponent(m.m)}`, 'Their course of action →'), link(`member-by-member.html#member=${encodeURIComponent(m.m)}`, 'Their voting record →')); R.appendChild(ln);
+    else { R.appendChild(h('div', 'rs-lab', 'What her office told us')); R.appendChild(h('div', 'rs-none', 'No interview notes yet.')); }
+    if (m.themes.length) { R.appendChild(h('div', 'rs-lab', 'Shared takeaways her office raised')); const tk = h('div', 'rs-tk'); m.themes.forEach((i) => { const a = h('a', '', `${i + 1}. ${D.themes[i].h}`); a.href = '#' + D.themes[i].id; tk.appendChild(a); }); R.appendChild(tk); }
+    const ln = h('div', 'rs-links'); ln.append(link(`course-of-action.html#tab=plan&member=${encodeURIComponent(m.m)}`, 'Her course of action →'), link(`member-by-member.html#member=${encodeURIComponent(m.m)}`, 'Her voting record →'), link(`outreach.html#member=${encodeURIComponent(m.m)}`, 'Write her a one-pager →')); R.appendChild(ln);
     bd.append(L, R); x.appendChild(bd); box.appendChild(x);
   }
   function pick(name, scroll) {
@@ -866,17 +873,22 @@ def research():
   const go = () => { requestAnimationFrame(() => setTimeout(() => window.print(), 60)); };
   function print1(m) {
     sheet.replaceChildren(head(`Reaching ${m.full}`, `${m.title} · Ward ${m.ward} · ${m.interviewed ? 'office interviewed ' + m.interviewed : 'office not interviewed yet'}`, m.color));
-    const cols = h('div', 'ps-cols'), L = h('div'), R = h('div');
-    L.appendChild(h('h2', '', 'Best ways to reach them'));
-    if (m.best.length) { const ol = h('ol'); m.best.forEach((t) => ol.appendChild(h('li', '', t))); L.appendChild(ol); } else L.appendChild(h('div', '', 'Not interviewed yet: use the shared takeaways and contact the ward office.'));
-    L.appendChild(h('h2', '', `Ward ${m.ward} office`));
-    const ct = h('div', 'ps-ct'); ct.innerText = [`Phone: ${m.phone}`, `Email: ${m.email}`, m.aide && `Legislative aide: ${m.aide}`, `Office: ${m.room}`, `Ward page: ${m.page}`].filter(Boolean).join('\\n'); L.appendChild(ct);
-    if (m.secs.length) for (const [k, v] of m.secs) { R.appendChild(h('h2', '', `What their office told us: ${k}`)); if (D.sec_help[k]) R.appendChild(h('div', 'ps-s', D.sec_help[k])); const ul = h('ul'); v.forEach((t) => ul.appendChild(h('li', '', t))); R.appendChild(ul); }
-    else { R.appendChild(h('h2', '', 'What their office told us')); R.appendChild(h('div', '', 'No interview notes yet.')); }
-    cols.append(L, R); sheet.appendChild(cols);
-    sheet.appendChild(h('h2', '', 'What every office agrees on'));
+    const top = h('div', 'ps-cols'), L = h('div'), R = h('div');
+    L.appendChild(h('h2', '', 'How to reach her'));
+    if (m.best.length) { const ol = h('ol'); m.best.forEach((t) => ol.appendChild(h('li', '', t))); L.appendChild(ol); }
+    else L.appendChild(h('div', '', 'Not interviewed yet. Use the shared advice below and contact the ward office.'));
+    R.appendChild(h('h2', '', `Ward ${m.ward} office`));
+    const ct = h('div', 'ps-ct'); ct.innerText = [`${m.phone} · ${m.email}`, m.aide && `Legislative aide: ${m.aide}`, m.room, m.page.replace('https://www.', '')].filter(Boolean).join('\\n'); R.appendChild(ct);
+    top.append(L, R); sheet.appendChild(top);
+    if (m.short.length) {
+      sheet.appendChild(h('h2', '', 'What to know'));
+      const g = h('div', 'ps-know');
+      for (const [k, v] of m.short) { const c = h('div'); c.appendChild(h('b', '', k)); const ul = h('ul'); v.forEach((t) => ul.appendChild(h('li', '', t))); c.appendChild(ul); g.appendChild(c); }
+      sheet.appendChild(g);
+    }
+    sheet.appendChild(h('h2', '', 'Advice every office gave'));
     const tk = h('div', 'ps-tk3'); D.themes.forEach((t, i) => { const on = t.wards.includes(m.ward); const d = h('div', on ? 'on' : ''); d.textContent = `${i + 1}. ${t.h}${on ? ' ★' : ''}`; tk.appendChild(d); }); sheet.appendChild(tk);
-    if (m.themes.length) sheet.appendChild(h('div', 'ps-s', '★ = raised by this member’s office'));
+    if (m.themes.length) sheet.appendChild(h('div', 'ps-s', '★ = raised by this member’s office. Full notes: What ward offices told us, on the Chamber council site.'));
     sheet.appendChild(foot()); go();
   }
   function printAll() {
@@ -899,9 +911,40 @@ def research():
     open(os.path.join(SITE, 'research.html'), 'w', encoding='utf-8').write(shell('What ward offices told us', body, css, data_tag + '\n' + script + '\n' + site_data() + f'\n<script>{js(SITEJS)}</script>'))
 
 
+def outreach():
+    rd_out = lambda n: list(csv.DictReader(open(os.path.join(OUT, n + '.csv'), encoding='utf-8')))
+    na = lambda v: '' if (v or '').strip().upper().startswith('NOT AVAILABLE') else (v or '').strip()
+    clean = lambda v: ' '.join(x for x in re.split(r'(?<=[.!?])\s+', na(v)) if 'NOT AVAILABLE' not in x)
+    cm = {r['member']: r for r in rd_out('c_members')}
+    lead = {}
+    for r in rd_out('b_issue_member'):
+        lead.setdefault(r['member'], {})[r['issue']] = dict(lead=int(r['lead'] or 0), push=int(r['pushback'] or 0))
+    found = [r for r in narr_rows('aide_interviews.csv') if r['kind'] == 'finding']
+    members = []
+    for c in sorted(narr_rows('ward_contacts.csv'), key=lambda r: int(r['ward'])):
+        w = c['ward']; m = cm.get(c['member'], {})
+        sec = lambda k: [(r.get('short') or r['text']) for r in found if r['ward'] == w and r['section'] == k]
+        members.append(dict(m=c['member'], full=c['full_name'], title=c['title'], ward=w, color=MEMBER_COLORS.get(w, '#8c8577'),
+                            aide=c['legislative_aide'], phone=c['phone'], email=c['email'],
+                            lead_with=clean(m.get('lead_with')), engage_on=clean(m.get('engage_on')), cautions=clean(m.get('cautions')),
+                            stance=clean(m.get('stance')), closest=m.get('closest', ''), maj=float(m.get('majority_share') or 0),
+                            best=[r['text'] for r in found if r['ward'] == w and r['section'] == 'Best way to reach'],
+                            prio=sec('Priorities'), biz=sec('Business'), interviewed=any(r['ward'] == w for r in found),
+                            issues=lead.get(c['member'], {})))
+    issues = [dict(n=r['issue'], kw=[k.strip().lower() for k in r['keywords'].split(';') if k.strip()],
+                   frame=na(r['value_frame']), pos=na(r['chamber_position'])) for r in rd_out('c_issues')]
+    watch = [dict(f=r['file'], t=short_title(r['item']), issue=r['issue'], when=r['next_meeting'], stage=r['stage']) for r in rd_out('b_watch')]
+    prios = [r['priority'] for r in narr_rows('chamber_top_priorities.csv')]
+    data = dict(members=members, issues=issues, watch=watch, prios=prios, logo=LOGO_URI)
+    body = nav('outreach.html', False) + '\n' + rd('pages/outreach.html')
+    data_tag = '<script type="application/json" id="op-data">' + json.dumps(data).replace('</', '<\\/') + '</script>'
+    open(os.path.join(SITE, 'outreach.html'), 'w', encoding='utf-8').write(
+        shell('One-pager builder', body, '', data_tag + f'\n<script>{js(rd("pages/outreach.js"))}</script>\n' + site_data() + f'\n<script>{js(SITEJS)}</script>'))
+
+
 def help_page():
     goals = [('1', 'Find council information fast', 'The record, member profiles and upcoming items in a few clicks, without reading every set of minutes.', 'voting-trends.html', 'Voting trends'),
-             ('2', 'Tailor outreach to each member', 'Each member’s votes, allies, priorities and ward office, so every conversation starts from what matters to them.', 'course-of-action.html', 'Course of action'),
+             ('2', 'Tailor outreach to each member', 'Each member’s votes, allies, priorities and ward office, so every conversation starts from what matters to her.', 'course-of-action.html', 'Course of action'),
              ('3', 'Stay current with little upkeep', 'Upload new minutes and the site rebuilds itself; a short yearly check keeps everything else accurate.', '#yearly', 'Yearly update guide')]
     g = ''.join(f'<article class="hp-goal"><span class="hp-n">{n}</span><h3>{esc(t)}</h3><p>{esc(d)}</p><a href="{h}">{esc(lk)} →</a></article>' for n, t, d, h, lk in goals)
     steps = [('After every council meeting', 'Upload the new minutes', 'Meeting minutes → Add new minutes. Every page, one-pager and agenda item updates on its own within a few minutes.', None),
@@ -974,6 +1017,7 @@ def main():
     home(meetings)
     glossary()
     research()
+    outreach()
     help_page()
     os.makedirs(os.path.join(SITE, 'vendor'), exist_ok=True)
     for n in ('pdfjs.min.js', 'pdfjs.worker.min.js'):

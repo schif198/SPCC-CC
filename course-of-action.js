@@ -160,7 +160,7 @@
   dash.draw('ordsel', (box) => {
     const m = members(), k = (ok('b_kpis') || [])[0]; box.replaceChildren(); if (!m) return;
     const d = m.find((x) => x.member === sel());
-    if (!d) { box.textContent = 'Click a member to select them here, in the member plans below and on the one-pager.'; return; }
+    if (!d) { box.textContent = 'Click a member to select her here, in the member plans below and on the one-pager.'; return; }
     const need = k ? +k.min_winning_yeas : 4;
     box.append(el('b', '', `${d.full_name}: #${d.rank} of ${m.length}`), +d.rank <= need ? ` · part of the first ${need} calls that build a winning vote` : ` · beyond the ${need} votes needed: persuade or keep informed`);
   });
@@ -300,7 +300,7 @@
       ['Frame the ask', 'Lead with ', main ? main.value_frame : NA],
       ['First calls', `${first.join(', ')}. ` + (leads.length ? `${leads.slice(0, 3).join(', ')} moved or spoke most on these items; Coleman is the Chamber's PAC-endorsed partner.` : 'No recorded movers on matching items (NOT AVAILABLE); Coleman is the Chamber\'s PAC-endorsed partner.'), null],
       ['Build to four votes', `Then ${toFour.map((x) => `${x.member} (with majority ${fPct(+x.majority_share)} on splits)`).join(', ')}. ${main ? (main.splits === '0' ? `All ${main.votes} recorded votes on ${main.issue.toLowerCase()} were unanimous, so aim for consensus language early.` : `${main.splits} of ${main.votes} votes on ${main.issue.toLowerCase()} split; count votes before the hearing.`) : ''}`, null],
-      ['Expect pushback', watch.length ? `${watch.join(', ')} voted no or raised concerns on related items. Meet them on their terms (see their cards) and bring data on equity and neighborhood impact.` : 'None recorded on related items. ', watch.length ? null : (main ? main.dissenters : NA)],
+      ['Expect pushback', watch.length ? `${watch.join(', ')} voted no or raised concerns on related items. Meet her on her terms (see her cards) and bring data on equity and neighborhood impact.` : 'None recorded on related items. ', watch.length ? null : (main ? main.dissenters : NA)],
       ['Timing', k ? `Engage before first reading: ordinances took a median of ${k.ord_median_days} days to adoption and ${fPct(+k.ord_amended_share)} were amended along the way. ${fPct(+k.delays_adopted_share)} of delayed items were later adopted, so a layover is a window to shape amendments, not a defeat.` : NA, null],
       ['Show up', 'Submit written comments by noon the day before the public hearing, line up member-business testimony, and follow city lobbyist registration and reporting rules.', null],
     ];

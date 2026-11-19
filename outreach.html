@@ -1,0 +1,168 @@
+<main class="op">
+  <div class="op-top">
+    <div>
+      <div class="sa-crumb">One-Pager Builder</div>
+      <h1>Build a one-pager</h1>
+      <p class="sa-ask">A persuasive one-page brief, tailored to each council member, built on the Chamber playbook.</p>
+    </div>
+    <div class="op-acts">
+      <button type="button" class="op-btn ghost" id="op-reset" title="Clear every field and start over">Start over</button>
+      <button type="button" class="op-btn ghost" id="op-copy" title="Copy the brief as email text for the member shown in the preview">Copy as email</button>
+      <button type="button" class="op-btn" id="op-print"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg><span>Print one-pagers</span></button>
+    </div>
+  </div>
+
+  <div class="op-grid">
+    <!-- the form -->
+    <form class="op-form" id="op-form" autocomplete="off" onsubmit="return false">
+      <section class="op-step" aria-labelledby="s1">
+        <h2 id="s1"><span class="op-n">1</span>Who is it for?</h2>
+        <p class="op-hint">Pick one or more members. Each gets her own tailored page.</p>
+        <div class="op-members" id="op-members" role="group" aria-label="Council members"></div>
+      </section>
+
+      <section class="op-step" aria-labelledby="s2">
+        <h2 id="s2"><span class="op-n">2</span>What is the issue?</h2>
+        <label class="op-f"><span>Topic <em>headline at the top of the page</em></span>
+          <input id="f-topic" maxlength="90" placeholder="e.g. Keep drive-thrus legal for small restaurants"></label>
+        <div class="op-row">
+          <label class="op-f"><span>Agenda item <em>optional</em></span><select id="f-item"><option value="">None</option></select></label>
+          <label class="op-f"><span>Issue area <em>detected from your topic</em></span><select id="f-issue"><option value="">Choose…</option></select></label>
+        </div>
+        <label class="op-f"><span>Your ask <em>what you want her to do</em></span>
+          <div class="op-quick" id="op-quick" aria-label="Quick starts"></div>
+          <textarea id="f-ask" rows="2" maxlength="220" placeholder="e.g. Vote yes on Ord 26-56 at its second reading on December 2."></textarea></label>
+      </section>
+
+      <section class="op-step" aria-labelledby="s3">
+        <h2 id="s3"><span class="op-n">3</span>Your evidence</h2>
+        <p class="op-hint">Hallway talks are short: give three facts staff can repeat to the council member.</p>
+        <div id="op-facts"></div>
+        <label class="op-f"><span>A local story <em>a business she knows, in its own words</em></span>
+          <textarea id="f-story" rows="3" maxlength="420" placeholder="e.g. “We added 6 jobs after the drive-thru opened.” Maria Lopez, owner, Rice Street Tacos"></textarea></label>
+        <label class="op-f"><span>Proposed solution <em>bring a fix, even an imperfect one</em></span>
+          <textarea id="f-solution" rows="2" maxlength="320" placeholder="e.g. Allow drive-thrus on commercial corridors with stacking and pedestrian standards."></textarea></label>
+      </section>
+
+      <section class="op-step" aria-labelledby="s4">
+        <h2 id="s4"><span class="op-n">4</span>Tailor and sign</h2>
+        <label class="op-f"><span>Why it matters to <b id="why-who">her ward</b> <em>pre-filled from her record; edit freely</em></span>
+          <textarea id="f-why" rows="3" maxlength="340"></textarea></label>
+        <div class="op-row">
+          <label class="op-f"><span>From</span><input id="f-from" maxlength="60" placeholder="Your name and title"></label>
+          <label class="op-f"><span>Contact</span><input id="f-contact" maxlength="70" placeholder="Email or phone"></label>
+        </div>
+      </section>
+    </form>
+
+    <!-- preview, tips and checklist -->
+    <aside class="op-side" aria-label="Preview">
+      <div class="op-tabs" id="op-tabs" role="tablist" aria-label="Preview a member"></div>
+      <div class="op-stage" id="op-stage"><div class="op-empty">Pick a member in step 1 to see her one-pager here.</div></div>
+      <div class="op-check" id="op-check" aria-live="polite"></div>
+      <div class="op-tips" id="op-tips"></div>
+    </aside>
+  </div>
+</main>
+<div id="print-sheet"></div>
+
+<style>
+.op { max-width: 1280px; margin: 0 auto; padding: 26px 20px 60px; font-family: var(--font-anthropic-sans); }
+.op-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+.op h1 { font-size: 2.1rem; margin: 0; }
+.op-acts { display: flex; gap: 8px; flex-wrap: wrap; }
+.op-btn { display: inline-flex; align-items: center; gap: 8px; font: inherit; font-size: .88rem; font-weight: 700; color: #fff; background: #2a0157; border: 1.5px solid #2a0157; border-radius: 8px; padding: 8px 14px; cursor: pointer; }
+.op-btn:hover { background: #3d0a78; }
+.op-btn.ghost { background: #fff; color: #2a0157; }
+.op-btn.ghost:hover { background: #f6f0fb; }
+.op-btn:disabled { opacity: .45; cursor: not-allowed; }
+.op-btn:focus-visible, .op-mb:focus-visible, .op-tab:focus-visible, .op-q:focus-visible { outline: 3px solid #f15a25; outline-offset: 2px; }
+.op-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 20px; align-items: start; }
+@media (max-width: 980px) { .op-grid { grid-template-columns: minmax(0, 1fr); } }
+.op-step { background: #fff; border: 1px solid var(--color-border-line); border-radius: 12px; padding: 16px 18px; margin-bottom: 12px; }
+.op-step h2 { display: flex; align-items: center; gap: 10px; margin: 0 0 4px; font-size: 1.1rem; color: #2a0157; }
+.op-n { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, #c9400c, #d31d44); color: #fff; font-size: .8rem; font-weight: 800; flex: none; }
+.op-hint { margin: 0 0 10px; font-size: .82rem; color: var(--color-fg-muted); }
+.op-members { display: grid; grid-template-columns: repeat(auto-fill, minmax(8.6rem, 1fr)); gap: 7px; }
+.op-mb { font: inherit; text-align: left; background: #fff; border: 1.5px solid var(--color-border-line); border-top: 5px solid var(--mc); border-radius: 10px; padding: 8px 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: var(--color-fg); }
+.op-mb:hover { background: #faf8fc; }
+.op-mb[aria-pressed=true] { border-color: var(--mc); background: var(--mt); }
+.op-mb .ck { margin-left: auto; width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid #b9b2c4; display: grid; place-items: center; font-size: .7rem; color: #fff; flex: none; }
+.op-mb[aria-pressed=true] .ck { background: #2a0157; border-color: #2a0157; }
+.op-mb b { font-size: .86rem; line-height: 1.15; display: block; }
+.op-mb small { font-size: .72rem; color: var(--color-fg-muted); }
+.op-wn { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: .76rem; background: var(--mc); color: var(--mtx); }
+.op-f { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; font-size: .86rem; font-weight: 700; color: #2a0157; }
+.op-f em { font-style: normal; font-weight: 500; color: var(--color-fg-muted); font-size: .78rem; margin-left: 4px; }
+.op-f input, .op-f select, .op-f textarea { font: inherit; font-weight: 500; font-size: .92rem; color: var(--color-fg); border: 1.5px solid var(--color-border-line); border-radius: 8px; padding: 8px 10px; background: #fff; width: 100%; box-sizing: border-box; resize: vertical; }
+.op-f input:focus, .op-f select:focus, .op-f textarea:focus { outline: none; border-color: #5b2a86; box-shadow: 0 0 0 3px rgba(91,42,134,.15); }
+.op-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 560px) { .op-row { grid-template-columns: 1fr; } }
+.op-quick { display: flex; flex-wrap: wrap; gap: 5px; }
+.op-q { font: inherit; font-size: .76rem; font-weight: 600; border: 1.5px solid var(--color-border-line); background: #fff; color: #2a0157; border-radius: 999px; padding: 2px 10px; cursor: pointer; }
+.op-q:hover { background: #f6f0fb; border-color: #5b2a86; }
+.op-fact { display: grid; grid-template-columns: 26px 1fr; gap: 8px; align-items: start; margin-top: 8px; }
+.op-fact .num { width: 22px; height: 22px; margin-top: 8px; border-radius: 50%; display: grid; place-items: center; background: #2a0157; color: #fff; font-size: .72rem; font-weight: 800; }
+.op-fact .in { display: grid; grid-template-columns: 1fr 9.5rem; gap: 6px; }
+@media (max-width: 560px) { .op-fact .in { grid-template-columns: 1fr; } }
+.op-fact input { font: inherit; font-size: .9rem; border: 1.5px solid var(--color-border-line); border-radius: 8px; padding: 7px 9px; box-sizing: border-box; width: 100%; }
+.op-fact input:focus { outline: none; border-color: #5b2a86; box-shadow: 0 0 0 3px rgba(91,42,134,.15); }
+.op-side { position: sticky; top: calc(var(--nav-h, 64px) + 10px); display: flex; flex-direction: column; gap: 10px; }
+@media (max-width: 980px) { .op-side { position: static; } }
+.op-tabs { display: flex; flex-wrap: wrap; gap: 5px; }
+.op-tabs:empty { display: none; }
+.op-tab { font: inherit; font-size: .8rem; font-weight: 600; border: 1.5px solid var(--mc); background: #fff; color: var(--color-fg); border-radius: 999px; padding: 3px 11px 3px 4px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.op-tab .op-wn { width: 18px; height: 18px; font-size: .62rem; }
+.op-tab[aria-selected=true] { background: var(--mt); font-weight: 800; box-shadow: inset 0 0 0 1px var(--mc); }
+.op-stage { background: #e9e5ef; border-radius: 12px; padding: 14px; overflow: hidden; }
+.op-empty { background: #fff; border: 1.5px dashed #c9c2d4; border-radius: 10px; padding: 40px 20px; text-align: center; color: var(--color-fg-muted); font-size: .9rem; }
+.op-scale { transform-origin: top left; }
+.op-check { background: #fff; border: 1px solid var(--color-border-line); border-radius: 12px; padding: 12px 16px; }
+.op-check:empty { display: none; }
+.op-check h3, .op-tips h3 { margin: 0 0 6px; font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; color: #b9420c; }
+.op-check ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 3px 14px; font-size: .84rem; }
+@media (max-width: 560px) { .op-check ul { grid-template-columns: 1fr; } }
+.op-check li { display: flex; gap: 6px; align-items: flex-start; }
+.op-check li i { flex: none; width: 16px; height: 16px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: .62rem; font-weight: 800; margin-top: 2px; }
+.op-check li.ok i { background: #1f8a78; color: #fff; }
+.op-check li.no i { background: #fff; border: 1.5px solid #b9b2c4; color: #6b6478; }
+.op-check li.warn i { background: #c9400c; color: #fff; }
+.op-check li.no, .op-check li.warn { color: var(--color-fg); }
+.op-check li.ok { color: var(--color-fg-muted); }
+.op-tips { background: #fff; border: 1px solid var(--color-border-line); border-left: 5px solid var(--mc, #2a0157); border-radius: 12px; padding: 12px 16px; font-size: .86rem; line-height: 1.45; }
+.op-tips:empty { display: none; }
+.op-tips dl { margin: 0; display: grid; grid-template-columns: 7.2rem 1fr; gap: 5px 10px; }
+.op-tips dt { color: var(--color-fg-muted); font-size: .78rem; padding-top: 1px; }
+.op-tips dd { margin: 0; }
+.op-tips a { color: #5b2a86; font-weight: 600; }
+.op-tips .tag { display: inline-block; border: 1.5px solid var(--mc); border-radius: 999px; padding: 0 8px; font-size: .76rem; font-weight: 700; }
+
+/* the one-page brief: same markup on screen (scaled) and in print */
+.op-page { width: 8.5in; height: 11in; background: #fff; box-shadow: 0 6px 24px rgba(42,1,87,.18); box-sizing: border-box; padding: .55in .6in .5in; display: flex; flex-direction: column; font-family: var(--font-anthropic-sans); color: #22182c; font-size: var(--fs, 11pt); line-height: 1.42; overflow: hidden; }
+.op-page .pg-h { display: flex; justify-content: space-between; align-items: center; padding-bottom: .12in; border-bottom: 3px solid var(--mc); }
+.op-page .pg-h img { height: .42in; }
+.op-page .pg-to { text-align: right; font-size: .82em; color: #6b6478; line-height: 1.35; }
+.op-page .pg-to b { color: #22182c; display: block; font-size: 1.12em; }
+.op-page h1 { font-size: 2em; line-height: 1.15; margin: .2in 0 .12in; color: #2a0157; font-weight: 800; }
+.op-page .pg-ask { background: var(--mt); border-left: 6px solid var(--mc); border-radius: 6px; padding: .1in .16in; font-size: 1.12em; font-weight: 700; }
+.op-page .pg-ask span { display: block; font-size: .68em; letter-spacing: .1em; text-transform: uppercase; color: #6b6478; font-weight: 700; margin-bottom: 2px; }
+.op-page h2 { font-size: .78em; text-transform: uppercase; letter-spacing: .1em; color: #b9420c; margin: .2in 0 .06in; }
+.op-page .pg-why { margin: 0; }
+.op-page .pg-facts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .07in; }
+.op-page .pg-facts li { display: grid; grid-template-columns: .32in 1fr; align-items: start; }
+.op-page .pg-facts li::before { content: attr(data-n); width: .25in; height: .25in; border-radius: 50%; background: var(--mc); color: var(--mtx); display: grid; place-items: center; font-weight: 800; font-size: .85em; }
+.op-page .pg-facts small { display: block; color: #6b6478; font-size: .78em; }
+.op-page blockquote { margin: 0; padding: .02in 0 .02in .16in; border-left: 3px solid #e7e3ee; font-style: italic; }
+.op-page .pg-sol { margin: 0; }
+.op-page .pg-ph { color: #b2abbd; font-style: italic; }
+.op-page .pg-f { margin-top: auto; padding-top: .1in; border-top: 1px solid #e7e3ee; font-size: .78em; color: #6b6478; display: flex; justify-content: space-between; gap: .2in; }
+.op-page .pg-f b { color: #22182c; }
+#print-sheet:empty { display: none; }
+@media screen { #print-sheet { position: absolute; left: -10000px; top: 0; } }
+@media print {
+  @page { size: letter; margin: 0; }
+  #print-sheet .op-page { box-shadow: none; page-break-after: always; break-after: page; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  #print-sheet .op-page:last-child { page-break-after: auto; break-after: auto; }
+  #print-sheet .pg-ph { display: none; }
+}
+</style>
