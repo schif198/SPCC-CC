@@ -14,7 +14,7 @@
   const paint = (el, m) => { el.style.setProperty('--mc', m.color); el.style.setProperty('--mt', tint(m.color)); el.style.setProperty('--mtx', ink(m.color)); };
 
   // ---------- state ----------
-  const blank = () => ({ sel: [], active: '', topic: '', item: '', issue: '', issueSet: false, ask: '', facts: [{ t: '', s: '' }, { t: '', s: '' }, { t: '', s: '' }], story: '', solution: '', why: {}, from: '', contact: '' });
+  const blank = () => ({ sel: [], active: '', topic: '', item: '', issue: '', issueSet: false, ask: '', facts: [{ t: '', s: '' }, { t: '', s: '' }, { t: '', s: '' }], table: null, story: '', solution: '', why: {}, from: '', contact: '' });
   let S = blank();
   try { const v = JSON.parse(localStorage.getItem(KEY) || 'null'); if (v && Array.isArray(v.sel)) S = Object.assign(blank(), v); } catch (e) { /* storage unavailable */ }
   S.sel = S.sel.filter((n) => byName[n]);
@@ -249,7 +249,19 @@
       const t = `${r.label}: ${nums.join(' · ')}${words.length ? ` (${words.join('; ')})` : ''}`;
       return { full: t, short: shorten(t) };
     }).filter((r) => r.full.length > 8);
-    return { title, points, data };
+    const groups = [];
+    rows.forEach((r) => {
+      const n = r.vals.length, hd = r.hd.map((x, i) => x || (n > 1 ? `Value ${i + 1}` : 'Value'));
+      let g = groups.find((g) => g.cols.length === hd.length && g.cols.every((c, i) => c === hd[i]));
+      if (!g) { g = { cols: hd, rows: [] }; groups.push(g); }
+      g.rows.push({ g: r.sec || '', label: r.label, vals: r.vals.map((v) => (/^(n\/?a|—|-)$/i.test(v) ? '' : v)) });
+    });
+    const tables = groups.filter((g) => g.rows.length >= 2 || g.cols.length >= 2).sort((a, b) => b.rows.length * b.cols.length - a.rows.length * a.cols.length)
+      .map((g) => { // drop columns with no values
+        const keep = g.cols.map((c, i) => g.rows.some((r) => r.vals[i]));
+        return { cols: g.cols.filter((c, i) => keep[i]), rows: g.rows.slice(0, 20).map((r) => ({ g: r.g, label: r.label, vals: r.vals.filter((v, i) => keep[i]), on: true })) };
+      }).filter((t) => t.cols.length);
+    return { title, points, data, tables };
   }
   function shorten(t) {
     t = t.replace(/\s+/g, ' ').trim();
@@ -267,13 +279,13 @@
     const hd = h('div', 'op-skim-h'); const ti = h('div'); ti.append(h('b', '', SK.title || SK.name));
     if (SK.busy) ti.append(h('small', '', 'Reading the document…'));
     else if (SK.err) ti.append(h('small', '', SK.err));
-    else ti.append(h('small', '', `${SK.points.length} key point${SK.points.length === 1 ? '' : 's'}${SK.data.length ? ` · ${SK.data.length} data row${SK.data.length === 1 ? '' : 's'}` : ''} · click 1, 2 or 3 to use as a fact`));
+    else ti.append(h('small', '', `${SK.points.length} key point${SK.points.length === 1 ? '' : 's'}${(SK.tables || []).length ? ` · ${SK.tables.length} table${SK.tables.length === 1 ? '' : 's'}` : ''} · click 1, 2 or 3 to use as a fact`));
     const x = h('button', 'op-x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Close'); x.addEventListener('click', () => { SK = null; drawSkim(); });
     hd.append(ti, x); skimBox.appendChild(hd);
     if (SK.busy || SK.err) return;
     if (!SK.points.length && !SK.data.length) { skimBox.appendChild(h('div', 'op-msg', 'No clear takeaways found. Try a document with written findings or a summary.')); return; }
     const acts = h('div', 'op-skim-acts');
-    const all = [...SK.points, ...SK.data];
+    const all = SK.points.length >= 3 ? SK.points : [...SK.points, ...SK.data];
     if (all.length) { const b = h('button', 'op-q', `Use the top ${Math.min(3, all.length)} as facts`); b.type = 'button'; b.addEventListener('click', () => { all.slice(0, 3).forEach((p, i) => { S.facts[i] = { t: p.short, s: SK.source }; }); drawFacts(); update(false); drawSkim(); }); acts.appendChild(b); }
     if (SK.title && S.topic !== SK.title.slice(0, 90)) { const b = h('button', 'op-q', 'Use its title as the topic'); b.type = 'button'; b.addEventListener('click', () => { S.topic = SK.title.slice(0, 90); $('#f-topic').value = S.topic; detect(); refreshWhy(); update(); drawSkim(); }); acts.appendChild(b); }
     skimBox.appendChild(acts);
@@ -292,7 +304,30 @@
       });
       skimBox.appendChild(ul);
     };
-    list('Key points', SK.points); list('Data rows', SK.data.slice(0, 10));
+    list('Key points', SK.points);
+    (SK.tables || []).forEach((tb, ti) => {
+      const on = !!(S.table && S.table.key === SK.name + '#' + ti);
+      const head = h('div', 'op-tbh'); const lab = h('label', 'op-tbon'); const cb = h('input'); cb.type = 'checkbox'; cb.checked = on;
+      cb.addEventListener('change', () => { S.table = cb.checked ? Object.assign(JSON.parse(JSON.stringify(tb)), { key: SK.name + '#' + ti, source: SK.source }) : null; update(false); drawSkim(); });
+      lab.append(cb, h('span', '', on ? 'Table is on the one-pager' : 'Put this table on the one-pager'));
+      head.append(h('h4', '', `Table${SK.tables.length > 1 ? ' ' + (ti + 1) : ''}: ${tb.rows.length} rows × ${tb.cols.length} columns`), lab);
+      skimBox.appendChild(head);
+      const ul = h('ul');
+      tb.rows.forEach((r, ri) => {
+        const vals = r.vals.map((v, i) => (v ? `${tb.cols[i]} ${v}` : '')).filter(Boolean).join(' · ');
+        const txt = `${r.label}: ${vals}`; const short = shorten(txt);
+        const used = S.facts.findIndex((f) => f.t === short);
+        const li = h('li', 'op-pt' + (used >= 0 ? ' used' : '')); const tx = h('p');
+        if (on) { const c = h('input'); c.type = 'checkbox'; c.checked = S.table.rows[ri].on; c.title = 'Show this row in the table'; c.setAttribute('aria-label', `Show ${r.label} in the table`); c.className = 'op-rowon';
+          c.addEventListener('change', () => { S.table.rows[ri].on = c.checked; update(false); }); tx.appendChild(c); }
+        tx.append(h('i', '', r.label + ': '), vals); if (short !== txt) tx.title = txt;
+        const use = h('div', 'op-use'); use.setAttribute('role', 'group'); use.setAttribute('aria-label', 'Use as fact');
+        [0, 1, 2].forEach((i) => { const b = h('button', '', String(i + 1)); b.type = 'button'; b.setAttribute('aria-pressed', String(used === i)); b.setAttribute('aria-label', `Use as fact ${i + 1}`); b.title = `Use as fact ${i + 1}`;
+          b.addEventListener('click', () => { S.facts[i] = used === i ? { t: '', s: '' } : { t: short, s: SK.source }; drawFacts(); update(false); drawSkim(); }); use.appendChild(b); });
+        li.append(tx, use); ul.appendChild(li);
+      });
+      skimBox.appendChild(ul);
+    });
   }
   async function importFile(file) {
     if (!file) return;
@@ -301,6 +336,7 @@
     try {
       const r = skim(await readDoc(file), file.name);
       SK = Object.assign({ name: file.name, source: r.title.slice(0, 70) }, r);
+      if (r.tables.length) { S.table = Object.assign(JSON.parse(JSON.stringify(r.tables[0])), { key: file.name + '#0', source: SK.source }); update(false); }
     } catch (e) { SK = { name: file.name, err: 'Could not read this file. Save it as PDF, Word, Excel or text and try again.' }; console.warn(e); }
     drawSkim(); skimBox.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
@@ -361,6 +397,22 @@
         li.appendChild(d); ol.appendChild(li);
       });
       p.appendChild(ol);
+    }
+    const T = S.table, trs = T ? T.rows.filter((r) => r.on) : [];
+    if (T && trs.length) {
+      p.appendChild(h('h2', '', 'By the numbers'));
+      const tb = h('table', 'pg-tb'); const hr = h('tr'); hr.appendChild(h('th', '', ''));
+      const home = T.cols.map((c) => /\b(st\.?|saint)\s*paul\b/i.test(c) && !/south/i.test(c));
+      T.cols.forEach((c, i) => { const th = h('th', home[i] ? 'home' : '', c); hr.appendChild(th); });
+      const thead = h('thead'); thead.appendChild(hr); tb.appendChild(thead); const body = h('tbody'); let g = null;
+      trs.forEach((r) => {
+        if (r.g && r.g !== g && trs.some((x) => x.g !== r.g)) { const gr = h('tr', 'grp'); const td = h('td', '', r.g); td.colSpan = T.cols.length + 1; gr.appendChild(td); body.appendChild(gr); }
+        g = r.g; const tr = h('tr'); tr.appendChild(h('th', '', r.label));
+        T.cols.forEach((c, i) => { const v = r.vals[i] || ''; const td = h('td', (home[i] ? 'home ' : '') + (/^[$\-–(]?\s?[\d,.]+%?\)?$/.test(v) ? 'n' : v ? '' : 'e'), v || '—'); tr.appendChild(td); });
+        body.appendChild(tr);
+      });
+      tb.appendChild(body); p.appendChild(tb);
+      if (T.source) p.appendChild(h('div', 'pg-tsrc', 'Source: ' + T.source));
     }
     if (filled(S.story) || preview) p.append(h('h2', '', 'A local story'), ph(h('blockquote'), S.story, 'A business in her ward, in its own words.'));
     if (filled(S.solution) || preview) p.append(h('h2', '', 'Our proposed solution'), ph(h('p', 'pg-sol'), S.solution, 'The fix you bring to the table.'));
@@ -452,7 +504,7 @@
       [noWhy.length ? 'no' : 'ok', noWhy.length ? `Ward stake: ${noWhy.join(', ')}` : 'Ward stake for each member'],
       [filled(S.story) ? 'ok' : 'no', 'A local story'],
       [filled(S.solution) ? 'ok' : 'no', 'A proposed solution'],
-      [fits ? 'ok' : 'warn', fits ? 'Fits on one page' : 'Too long: trim text'],
+      [fits ? 'ok' : 'warn', fits ? 'Fits on one page' : (S.table && S.table.rows.some((r) => r.on) ? 'Too long: trim text or untick table rows' : 'Too long: trim text')],
       [filled(S.from) ? 'ok' : 'no', 'Signed with your name'],
     ];
     items.forEach(([c, t]) => { const li = h('li', c); li.append(h('i', '', c === 'ok' ? '✓' : c === 'warn' ? '!' : '')); li.append(h('span', '', t)); ul.appendChild(li); });
@@ -502,6 +554,10 @@
     if (filled(S.ask)) L.push(`Our ask: ${S.ask.trim()}`, '');
     const why = filled((S.why[S.active] || {}).t); if (why) L.push(`Why it matters to Ward ${m.ward}: ${why}`, '');
     if (facts.length) { L.push(facts.length >= 3 ? 'Three facts to know:' : 'Key facts:'); facts.forEach((f, i) => L.push(`${i + 1}. ${f.t.trim()}${filled(f.s) ? ` (${f.s.trim()})` : ''}`)); L.push(''); }
+    if (S.table && S.table.rows.some((r) => r.on)) {
+      L.push('By the numbers:'); S.table.rows.filter((r) => r.on).forEach((r) => L.push(`- ${r.label}: ${r.vals.map((v, i) => (v ? `${S.table.cols[i]} ${v}` : '')).filter(Boolean).join(', ')}`));
+      if (S.table.source) L.push(`(Source: ${S.table.source})`); L.push('');
+    }
     if (filled(S.story)) L.push(`A local story: ${S.story.trim()}`, '');
     if (filled(S.solution)) L.push(`Our proposed solution: ${S.solution.trim()}`, '');
     L.push('Thank you,', filled(S.from) || '', filled(S.contact) || '', 'St. Paul Area Chamber');
