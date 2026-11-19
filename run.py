@@ -22,7 +22,7 @@ def main():
     for f in glob.glob(os.path.join(ROOT, 'pipeline', '*.py')):
         shutil.copy(f, os.path.join(BUILD, 'scripts'))
     for f in glob.glob(os.path.join(ROOT, 'narrative', '*')):
-        shutil.copy(f, os.path.join(BUILD, 'narrative'))
+        if os.path.isfile(f): shutil.copy(f, os.path.join(BUILD, 'narrative'))
 
     meetings, seen, skipped = [], {}, []
     for pdf in sorted(glob.glob(os.path.join(ROOT, 'minutes', '*.pdf')) + glob.glob(os.path.join(ROOT, 'minutes', '*.PDF'))):

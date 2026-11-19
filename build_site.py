@@ -659,6 +659,20 @@ def glossary():
 MEMBER_COLORS = {'1': '#2f6eb5', '2': '#f15a25', '3': '#1f8a78', '4': '#b5658f', '5': '#e0a030', '6': '#6aaed6', '7': '#8c8577'}
 
 
+def headshot(member):
+    """A council member's photo as a data URI: a file named headshot-<member>.jpg/.jpeg/.png/.webp (any letter case),
+    in web/headshots (where the GitHub build puts them), narrative/ or the project folder. Empty when there is none (the page shows initials)."""
+    want = 'headshot-' + member.lower()
+    mimes = {'.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp'}
+    for d in (os.path.join(ROOT, 'narrative', 'headshots'), os.path.join(ROOT, 'narrative'), os.path.join(ROOT, 'web', 'headshots'), ROOT):
+        if not os.path.isdir(d): continue
+        for n in sorted(os.listdir(d)):
+            stem, ext = os.path.splitext(n)
+            if stem.lower() == want and ext.lower() in mimes:
+                return f'data:{mimes[ext.lower()]};base64,' + base64.b64encode(open(os.path.join(d, n), 'rb').read()).decode()
+    return ''
+
+
 def research():
     rows = narr_rows('aide_interviews.csv')
     themes = [r for r in rows if r['kind'] == 'theme']
@@ -674,7 +688,7 @@ def research():
             short.setdefault(r['section'], []).append(r.get('short') or r['text'])
         short.pop('Best way to reach', None)
         members.append(dict(m=c['member'], full=c['full_name'], title=c['title'], ward=w, color=MEMBER_COLORS.get(w, '#8c8577'),
-                            phone=c['phone'], email=c['email'], page=c['ward_page'], aide=c['legislative_aide'], room=c['room'],
+                            phone=c['phone'], email=c['email'], page=c['ward_page'], aide=c['legislative_aide'], room=c['room'], photo=headshot(c['member']),
                             asof=c.get('as_of', ''), interviewed=fr[0]['interviewed'] if fr else '',
                             best=secs.pop('Best way to reach', []), secs=[[k, v] for k, v in secs.items()], short=[[k, v] for k, v in short.items()],
                             themes=[i for i, t in enumerate(themes) if w in said(t)]))
@@ -728,6 +742,12 @@ def research():
 .rs-m:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(42,1,87,.12); }
 .rs-m[aria-selected=true] { border-color: var(--mc); background: var(--mt); box-shadow: 0 8px 22px rgba(42,1,87,.14); }
 .rs-m .rs-mh { display: flex; align-items: center; gap: 7px; }
+.rs-face { display: block; width: 64px; height: 64px; border-radius: 50%; object-fit: cover; object-position: center 20%; border: 3px solid var(--mc); background: var(--mt); margin: 2px auto 8px; box-sizing: border-box; }
+.rs-face.rs-ini { display: grid; place-items: center; font-weight: 800; font-size: 1.25rem; color: #2a0157; letter-spacing: .02em; }
+.rs-facew { position: relative; flex: none; }
+.rs-facew .rs-face.big { width: 76px; height: 76px; margin: 0; }
+.rs-facew .rs-wn { position: absolute; right: -4px; bottom: -2px; width: 28px !important; height: 28px !important; font-size: .82rem !important; box-shadow: 0 0 0 2px #fff; }
+@media (max-width: 560px) { .rs-face { width: 52px; height: 52px; } .rs-facew .rs-face.big { width: 60px; height: 60px; } }
 .rs-wn { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: .78rem; background: var(--mc); color: var(--mtx); }
 .rs-m b { font-size: .9rem; line-height: 1.2; }
 .rs-m small { font-size: .74rem; color: var(--color-fg-muted); }
@@ -812,9 +832,15 @@ def research():
   let sel = null;
 
   // member strip
+  // headshot, or the member's initials on her color when no photo has been added
+  const face = (m, cls) => {
+    if (m.photo) { const im = document.createElement('img'); im.className = cls; im.src = m.photo; im.alt = m.full; im.loading = 'lazy'; im.decoding = 'async'; return im; }
+    const s = h('span', cls + ' rs-ini', m.full.split(/\\s+/).map((w) => w[0]).join('').slice(0, 2)); s.setAttribute('aria-hidden', 'true'); return s;
+  };
   const strip = $('.rs-strip');
   for (const m of D.members) {
     const b = h('button', 'rs-m'); b.type = 'button'; b.setAttribute('role', 'tab'); b.dataset.m = m.m; paint(b, m);
+    b.appendChild(face(m, 'rs-face'));
     const hd = h('span', 'rs-mh'); hd.append(h('span', 'rs-wn', m.ward), h('b', '', m.full)); b.appendChild(hd);
     b.title = `${m.title} ${m.full}, Ward ${m.ward}`; b.append(h('small', '', `Ward ${m.ward}`), h('span', 'rs-st' + (m.interviewed ? '' : ' no'), m.interviewed ? '● Interviewed' : '○ Not yet'));
     b.addEventListener('click', () => pick(sel === m.m ? null : m.m, true));
@@ -837,7 +863,8 @@ def research():
     const x = h('div', 'rs-x'); paint(x, m);
     const hd = h('div', 'rs-xh'); const nm = h('div'); nm.append(h('h3', '', m.full), h('div', 'rs-sub', `${m.title} · Ward ${m.ward} · ${m.interviewed ? 'Office interviewed ' + m.interviewed : 'Not interviewed yet'}`));
     const pb = printBtn('Print one-pager'); pb.addEventListener('click', () => print1(m));
-    hd.append(h('span', 'rs-wn', m.ward), nm, pb); x.appendChild(hd);
+    const fw = h('span', 'rs-facew'); fw.append(face(m, 'rs-face big'), h('span', 'rs-wn', m.ward));
+    hd.append(fw, nm, pb); x.appendChild(hd);
     const bd = h('div', 'rs-xb'); const L = h('div'), R = h('div');
     L.appendChild(h('div', 'rs-lab', 'Best ways to reach her'));
     if (m.best.length) { const ol = h('ol', 'rs-best'); m.best.forEach((t) => ol.appendChild(h('li', '', t))); L.appendChild(ol); }
@@ -950,6 +977,7 @@ def help_page():
     steps = [('After every council meeting', 'Upload the new minutes', 'Meeting minutes → Add new minutes. Every page, one-pager and agenda item updates on its own within a few minutes.', None),
              ('Each January', 'Update the Chamber’s priorities', 'Edit <code>chamber_top_priorities.csv</code>: one row per priority, the year, and today’s date in <code>as_of</code>.', 'chamber_top_priorities.csv'),
              ('Each January, and after any staff change', 'Check ward office contacts', 'Compare <code>ward_contacts.csv</code> with the city’s council page and update names, phones and the <code>as_of</code> date.', 'ward_contacts.csv'),
+             ('After an election, or when a photo changes', 'Add council member photos', 'Upload a headshot named <code>headshot-</code> plus her last name, such as <code>headshot-noecker.jpg</code> (JPG, PNG or WebP, under 300 KB). It appears on the Ward Feedback page; until then her initials show.', 'headshot-noecker.jpg'),
              ('Each January', 'Review each member’s plan', 'Read <code>c_members_text.csv</code> and update the approach, cautions and Chamber relationship for each member.', 'c_members_text.csv'),
              ('After a council election', 'Update campaign platforms', 'Replace departing members’ rows in <code>platforms.csv</code> with the new members’ platforms, and add the new members to the other files above.', 'platforms.csv'),
              ('After new interviews', 'Add what ward offices told you', 'Add rows to <code>aide_interviews.csv</code>; the “What ward offices told us” page rebuilds itself.', 'aide_interviews.csv'),
