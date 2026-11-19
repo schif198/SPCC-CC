@@ -71,8 +71,8 @@ GROUPS = [
                             ('course-of-action.html#tab=search', 'Topic search', 'A plan for any issue you type in'),
                             ('course-of-action.html#tab=priorities', 'Chamber priorities', 'Where each Chamber priority stands')]),
                           ('playbook.html', 'Chamber playbook', 'Business items, coalitions and timing')]),
-    ('One-Pager Builder', [('outreach.html', 'One-Pager Builder', 'Persuasive one-pagers tailored to each member, with facts pulled from your documents')]),
     ('Ward Feedback', [('research.html', 'Ward Feedback', 'How to reach each council member')]),
+    ('One-Pager Builder', [('outreach.html', 'One-Pager Builder', 'Persuasive one-pagers tailored to each member, with facts pulled from your documents')]),
     ('Meeting minutes', [('library.html', 'Minutes library', 'Every meeting, with the original PDFs'),
                          ('@latest', 'Latest minutes', 'Open the newest meeting minutes (PDF)'),
                          ('library.html#upload', 'Add new minutes', 'Upload the latest minutes PDF')]),
@@ -682,7 +682,7 @@ def research():
                 'Priorities': 'What the ward and its residents care about most right now.',
                 'Business': 'What local businesses in the ward face, and ideas the office raised.',
                 'Relationships': 'How trust is built with this office over time.',
-                'Follow-up': 'What the office asked for after the interview.'}
+                'Follow-up': 'What the office asked for, and our next step after the interview.'}
     data = dict(sec_help=sec_help, members=members, themes=[dict(h=t['heading'], t=t['text'], id='t-' + slug(t['heading']), wards=said(t)) for t in themes], logo=LOGO_URI)
     n_int = sum(1 for m in members if m['interviewed'])
     kpis = (f'<div class="rs-kpi"><b>{n_int}</b><span>of {len(members)} offices interviewed</span></div>'
