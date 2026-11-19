@@ -49,6 +49,9 @@ jobs:
               case "$(basename "$f")" in library.js|upload.js|print.js|shim.js|site.js|d3.min.js|pdfjs.min.js|pdfjs.worker.min.js) ;; *) cp "$f" "$dir/web/pages/";; esac
             done
             find . -path ./.git -prune -o -path ./_project -prune -o -type f -name '*.csv' -print0 | while IFS= read -r -d '' f; do cp "$f" "$dir/narrative/"; done
+            # council member headshots: files named headshot-<member>.jpg / .png / .webp
+            mkdir -p "$dir/web/headshots"
+            find . -path ./.git -prune -o -path ./_project -prune -o -type f -iname 'headshot-*' \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \) -print0 | while IFS= read -r -d '' f; do cp "$f" "$dir/web/headshots/"; done
             find . -path ./.git -prune -o -path ./_project -prune -o -type f -iname '*.pdf' -print0 | while IFS= read -r -d '' f; do cp "$f" "$dir/minutes/"; done
             first_pdf=$(find . -path ./.git -prune -o -path ./_project -prune -o -type f -iname '*.pdf' -print | head -1)
             up=$(dirname "${first_pdf:-./x}"); up=${up#./}; [ "$up" = "." ] && up=""
